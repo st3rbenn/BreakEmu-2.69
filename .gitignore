@@ -3,3 +3,9 @@ node_modules
 
 yarn-error.log
 auth.yml
+.DS_Store
+.env
+
+./src/breakEmu_Core/private.pem
+./src/breakEmu_Core/public.pem
+./src/breakEmu_Core/signature.bin

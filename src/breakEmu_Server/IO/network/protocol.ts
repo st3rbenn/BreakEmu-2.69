@@ -7698,7 +7698,7 @@ export interface RawGameServerInformations {
 }
 
 export class GameServerInformations extends DofusType {
-    public static id: number = 1852;
+    public static id: number = 8807;
 
     public isMonoAccount: boolean | undefined = false;
     public isSelectable: boolean | undefined = false;
@@ -26834,63 +26834,59 @@ export interface RawIdentificationSuccessMessage {
 }
 
 export class IdentificationSuccessMessage extends DofusMessage {
-    public static id: number = 149;
+    public static id: number = 1693;
 
     public hasRights: boolean | undefined = false;
-    public hasConsoleRight: boolean | undefined = false;
+    public hasForceRight: boolean | undefined = false;
+    public nickname: string | undefined;
+    public tagNumber: string | undefined;
     public wasAlreadyConnected: boolean | undefined = false;
     public login: string | undefined;
-    public nickname: string | undefined;
     public accountId: number | undefined = 0;
     public communityId: number | undefined = 0;
-    public secretQuestion: string | undefined;
     public accountCreation: number | undefined = 0;
-    public subscriptionElapsedDuration: number | undefined = 0;
     public subscriptionEndDate: number | undefined = 0;
     public havenbagAvailableRoom: number | undefined = 0;
 
     public constructor(
         hasRights?: boolean | undefined,
-        hasConsoleRight?: boolean | undefined,
+        hasForceRight?: boolean | undefined,
+        nickname: string | undefined,
+        tagNumber: string | undefined,
         wasAlreadyConnected?: boolean | undefined,
         login?: string | undefined,
-        nickname?: string | undefined,
         accountId?: number | undefined,
         communityId?: number | undefined,
-        secretQuestion?: string | undefined,
         accountCreation?: number | undefined,
-        subscriptionElapsedDuration?: number | undefined,
         subscriptionEndDate?: number | undefined,
-        havenbagAvailableRoom?: number | undefined,
+        havenbagAvailableRoom?: number | undefined
     ) {
         super();
         this.hasRights = hasRights;
-        this.hasConsoleRight = hasConsoleRight;
+        this.hasForceRight = hasForceRight;
         this.wasAlreadyConnected = wasAlreadyConnected;
         this.login = login;
-        this.nickname = nickname;
         this.accountId = accountId;
         this.communityId = communityId;
-        this.secretQuestion = secretQuestion;
         this.accountCreation = accountCreation;
-        this.subscriptionElapsedDuration = subscriptionElapsedDuration;
         this.subscriptionEndDate = subscriptionEndDate;
         this.havenbagAvailableRoom = havenbagAvailableRoom;
+        this.nickname = nickname;
+        this.tagNumber = tagNumber;
     }
 
     public serialize(writer: BinaryWriter): void {
         let box0: number = 0;
         box0 = setFlag(box0, 0, this.hasRights!);
-        box0 = setFlag(box0, 1, this.hasConsoleRight!);
+        box0 = setFlag(box0, 1, this.hasForceRight!)
         box0 = setFlag(box0, 2, this.wasAlreadyConnected!);
         writer.writeByte(box0);
         writer.writeUTF(this.login!);
-        writer.writeUTF(this.nickname!);
+        writer.writeUTF(this?.nickname!);
+        writer.writeUTF(this?.tagNumber!);
         writer.writeInt(this.accountId!);
         writer.writeByte(this.communityId!);
-        writer.writeUTF(this.secretQuestion!);
         writer.writeDouble(this.accountCreation!);
-        writer.writeDouble(this.subscriptionElapsedDuration!);
         writer.writeDouble(this.subscriptionEndDate!);
         writer.writeByte(this.havenbagAvailableRoom!);
     }
@@ -26898,15 +26894,14 @@ export class IdentificationSuccessMessage extends DofusMessage {
     public deserialize(reader: BinaryReader): void {
         const box0 = reader.readByte();
         this.hasRights = getFlag(box0, 0);
-        this.hasConsoleRight = getFlag(box0, 1);
+        this.hasForceRight = getFlag(box0, 1);
         this.wasAlreadyConnected = getFlag(box0, 2);
         this.login = reader.readUTF();
         this.nickname = reader.readUTF();
+        this.tagNumber = reader.readUTF();
         this.accountId = reader.readInt();
         this.communityId = reader.readByte();
-        this.secretQuestion = reader.readUTF();
         this.accountCreation = reader.readDouble();
-        this.subscriptionElapsedDuration = reader.readDouble();
         this.subscriptionEndDate = reader.readDouble();
         this.havenbagAvailableRoom = reader.readByte();
     }
@@ -26917,17 +26912,56 @@ export class IdentificationSuccessMessage extends DofusMessage {
         }
 
         this.hasRights = data.hasRights;
-        this.hasConsoleRight = data.hasConsoleRight;
+        this.hasForceRight = data.hasForceRight;
+        this.nickname = data.nickname;
+        this.tagNumber = data.tagNumber;
         this.wasAlreadyConnected = data.wasAlreadyConnected;
         this.login = data.login;
-        this.nickname = data.nickname;
+        this.accountTag = data.accountTag;
         this.accountId = data.accountId;
         this.communityId = data.communityId;
-        this.secretQuestion = data.secretQuestion;
         this.accountCreation = data.accountCreation;
-        this.subscriptionElapsedDuration = data.subscriptionElapsedDuration;
         this.subscriptionEndDate = data.subscriptionEndDate;
         this.havenbagAvailableRoom = data.havenbagAvailableRoom;
+
+        return this;
+    }
+}
+
+export interface RawAccountTagInformation {
+  nickname: string | undefined
+  tagNumber: string | undefined
+}
+
+export class AccountTagInformation extends DofusType {
+    public static id: number = 6205;
+
+    public nickname: string | undefined = "";
+    public tagNumber: string | undefined = "";
+
+    public constructor(nickname?: string | undefined, tagNumber?: string | undefined) {
+        super();
+        this.nickname = nickname;
+        this.tagNumber = tagNumber;
+    }
+
+    public serialize(writer: BinaryWriter): void {
+        writer.writeUTF(this.nickname!);
+        writer.writeUTF(this.tagNumber!);
+    }
+
+    public deserialize(reader: BinaryReader): void {
+        this.nickname = reader.readUTF();
+        this.tagNumber = reader.readUTF();
+    }
+
+    public hydrate(data: AccountTagInformation | Record<string, any>): AccountTagInformation {
+        if (data instanceof AccountTagInformation) {
+            return data;
+        }
+
+        this.nickname = data.nickname;
+        this.tagNumber = data.tagNumber;
 
         return this;
     }
@@ -27052,16 +27086,14 @@ export interface RawServersListMessage {
 }
 
 export class ServersListMessage extends DofusMessage {
-    public static id: number = 7603;
+    public static id: number = 8557;
 
     public servers: GameServerInformations[] | undefined;
-    public alreadyConnectedToServerId: number | undefined = 0;
     public canCreateNewCharacter: boolean | undefined = false;
 
-    public constructor(servers?: GameServerInformations[] | undefined, alreadyConnectedToServerId?: number | undefined, canCreateNewCharacter?: boolean | undefined) {
+    public constructor(servers?: GameServerInformations[] | undefined, canCreateNewCharacter?: boolean | undefined) {
         super();
         this.servers = servers;
-        this.alreadyConnectedToServerId = alreadyConnectedToServerId;
         this.canCreateNewCharacter = canCreateNewCharacter;
     }
 
@@ -27070,7 +27102,6 @@ export class ServersListMessage extends DofusMessage {
         this.servers!.forEach((current) => {
             current.serialize(writer);
         });
-        writer.writeVarShort(this.alreadyConnectedToServerId!);
         writer.writeBoolean(this.canCreateNewCharacter!);
     }
 
@@ -27082,7 +27113,6 @@ export class ServersListMessage extends DofusMessage {
             type.deserialize(reader);
             this.servers.push(type);
         }
-        this.alreadyConnectedToServerId = reader.readVarShort();
         this.canCreateNewCharacter = reader.readBoolean();
     }
 
@@ -27100,7 +27130,6 @@ export class ServersListMessage extends DofusMessage {
                 }
             },
         );
-        this.alreadyConnectedToServerId = data.alreadyConnectedToServerId;
         this.canCreateNewCharacter = data.canCreateNewCharacter;
 
         return this;
@@ -27487,7 +27516,7 @@ export interface RawNicknameRefusedMessage {
 }
 
 export class NicknameRefusedMessage extends DofusMessage {
-    public static id: number = 8144;
+    public static id: number = 1947;
 
     public reason: number | undefined = 99;
 
@@ -27520,7 +27549,7 @@ export interface RawNicknameAcceptedMessage {
 }
 
 export class NicknameAcceptedMessage extends DofusMessage {
-    public static id: number = 7967;
+    public static id: number = 1279;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -37310,7 +37339,7 @@ export interface RawIdentificationFailedMessage {
 }
 
 export class IdentificationFailedMessage extends DofusMessage {
-    public static id: number = 1345;
+    public static id: number = 4905;
 
     public reason: number | undefined = 99;
 
@@ -49413,7 +49442,7 @@ export interface RawNicknameRegistrationMessage {
 }
 
 export class NicknameRegistrationMessage extends DofusMessage {
-    public static id: number = 6627;
+    public static id: number = 2411;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -52627,7 +52656,7 @@ export interface RawNicknameChoiceRequestMessage {
 }
 
 export class NicknameChoiceRequestMessage extends DofusMessage {
-    public static id: number = 4237;
+    public static id: number = 4355;
 
     public nickname: string | undefined;
 
@@ -63527,6 +63556,7 @@ export const types: { [key: number]: typeof DofusType } = {
     2333: GameRolePlayActorInformations,
     4648: GameRolePlayGroupMonsterInformations,
     7542: HavenBagRoomPreviewInformation,
+    6205: AccountTagInformation,
     2401: InteractiveElement,
     8400: GameFightFighterInformations,
     9631: GameFightEntityInformation,
@@ -63628,7 +63658,7 @@ export const types: { [key: number]: typeof DofusType } = {
     557: JobDescription,
     263: SkillActionDescriptionTimed,
     6581: SkillActionDescriptionCollect,
-    1852: GameServerInformations,
+    8807: GameServerInformations,
     1824: PaddockInformations,
     4322: PaddockInstancesInformations,
     4662: PaddockBuyableInformations,
@@ -64001,11 +64031,11 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     4557: OnConnectionEventMessage,
     5863: ObjectJobAddedMessage,
     6521: LivingObjectMessageRequestMessage,
-    149: IdentificationSuccessMessage,
+    1693: IdentificationSuccessMessage,
     6945: URLOpenMessage,
     6253: RawDataMessage,
     6289: TrustStatusMessage,
-    7603: ServersListMessage,
+    8557: ServersListMessage,
     8820: BasicPongMessage,
     2340: BasicLatencyStatsRequestMessage,
     9646: BasicLatencyStatsMessage,
@@ -64015,8 +64045,8 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     7788: QuestListMessage,
     7778: QuestValidatedMessage,
     1146: CharacterCreationResultMessage,
-    8144: NicknameRefusedMessage,
-    7967: NicknameAcceptedMessage,
+    1947: NicknameRefusedMessage,
+    1279: NicknameAcceptedMessage,
     4519: HelloGameMessage,
     4710: GuildFactsErrorMessage,
     4019: AchievementDetailedListMessage,
@@ -64242,7 +64272,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     1501: JobExperienceUpdateMessage,
     8683: GuildInformationsPaddocksMessage,
     7241: GuildVersatileInfoListMessage,
-    1345: IdentificationFailedMessage,
+    4905: IdentificationFailedMessage,
     8907: IdentificationFailedForBadVersionMessage,
     8052: JobLevelUpMessage,
     1407: ExchangeBidHouseInListAddedMessage,
@@ -64525,7 +64555,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6469: JobExperienceOtherPlayerUpdateMessage,
     8188: GuildModificationStartedMessage,
     5979: PartyRestrictedMessage,
-    6627: NicknameRegistrationMessage,
+    2411: NicknameRegistrationMessage,
     6005: GameContextRemoveElementWithEventMessage,
     8153: GameRolePlayPlayerFightFriendlyRequestedMessage,
     7079: UpdateMountCharacteristicsMessage,
@@ -64604,7 +64634,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     2068: CharacterSelectedForceMessage,
     3153: GuildFactsRequestMessage,
     992: ClientKeyMessage,
-    4237: NicknameChoiceRequestMessage,
+    4355: NicknameChoiceRequestMessage,
     4229: AllianceFactsRequestMessage,
     5508: TeleportHavenBagRequestMessage,
     5569: GameMapChangeOrientationRequestMessage,

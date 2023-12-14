@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id          Int         @id @default(autoincrement())
+  username    String      @unique
+  password    String
+  pseudo      String?
+  email       String
+  is_verified Boolean     @default(false)
+  tag         String?
+  firstname   String
+  lastname    String
+  birthdate   DateTime
+  login_at    DateTime?
+  logout_at   DateTime?
+  created_at  DateTime    @default(now())
+  updated_at  DateTime?   @updatedAt
+  deleted_at  DateTime?
+  roleId      Int         @default(1)
+  ip          String
+  is_banned   Boolean     @default(false)
+  role        role        @relation(fields: [roleId], references: [id])
+  characters  character[]
+}
+
+model role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users user[]
+}
+
+model character {
+  id         Int       @id @default(autoincrement())
+  name       String
+  experience BigInt
+  level      Int
+  breed_id   Int
+  sex_id     Int
+  face_id    Int
+  images     String
+  colors     String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  user       user      @relation(fields: [userId], references: [id])
+  userId     Int
+  guild      guild?    @relation(fields: [guildId], references: [id])
+  guildId    Int?
+}
+
+model guild {
+  id         Int         @id @default(autoincrement())
+  name       String
+  level      Int
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+  deleted_at DateTime?
+  characters character[]
+}
+
+model world {
+  id                  Int       @id @default(autoincrement())
+  name                String
+  port                Int
+  address             String
+  requireSubscription Boolean   @default(false)
+  completion          Int
+  serverSelectable    Boolean   @default(false)
+  charCapacity        Int
+  charsCount          Int
+  requiredRole        Int
+  status              Int
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  deleted_at          DateTime?
+}
