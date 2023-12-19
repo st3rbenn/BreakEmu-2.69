@@ -7,13 +7,14 @@
   "private": true,
   "scripts": {
     "build": "babel src --out-dir dist --extensions \".ts\" --source-maps inline",
-    "dev": "nodemon -q --exec babel-node src/main.ts --extensions \".ts\" --source-maps inline",
+    "auth": "nodemon -q --exec babel-node src/AuthMain.ts --extensions \".ts\" --source-maps inline",
+    "world": "nodemon -q --exec babel-node src/WorldMain.ts --extensions \".ts\" --source-maps inline",
     "playground": "babel-node src/ProtocolPlayground.ts --extensions \".ts\" --source-maps inline"
   },
-  "_moduleAliases": {
-    "@breakEmu_Auth": "dist/src/breakEmu_Auth",
-    "@breakEmu_Core": "dist/src/breakEmu_Core",
-    "@breakEmu_Protocol": "dist/src/breakEmu_Protocol"
+  "nodemonConfig": {
+    "ignore": [
+      "*"
+    ]
   },
   "dependencies": {
     "@jridgewell/gen-mapping": "^0.3.3",
@@ -27,6 +28,7 @@
     "bcrypt": "^5.1.1",
     "extended-buffer": "^6.1.0",
     "iconv-lite": "^0.6.3",
+    "ioredis": "^5.3.2",
     "js-yaml": "^4.1.0",
     "lzma-native": "^8.0.6",
     "memorystream": "^0.3.1",
@@ -42,8 +44,13 @@
     "@babel/plugin-transform-typescript": "^7.23.4",
     "@babel/preset-env": "^7.23.3",
     "@babel/preset-typescript": "^7.23.3",
+    "@types/amqplib": "^0.10.4",
+    "@types/cli-progress": "^3.11.5",
+    "@types/ioredis": "^5.0.0",
     "@types/node": "^20.10.0",
+    "amqplib": "^0.10.3",
     "blessed": "^0.1.81",
+    "cli-progress": "^3.12.0",
     "csharp-binary-stream": "^1.0.3",
     "js-base64": "^3.7.5",
     "pirates": "^4.0.6",

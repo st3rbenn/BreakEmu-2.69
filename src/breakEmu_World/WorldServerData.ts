@@ -1,61 +1,71 @@
 class WorldServerData {
-  private _id: number;
-  private _address: string;
-  private _port: number;
-  private _name: string;
-  private _capacity: number;
-  private _requiredRole: number;
-  private _isMonoAccount: boolean;
-  // private _isSelectable: boolean;
-  private _requireSubscription: boolean;
-  
-  constructor(id: number, address: string, port: number, name: string, capacity: number, requiredRole: number, isMonoAccount: boolean, requireSubscription: boolean) {
-    this._id = id
-    this._address = address
-    this._port = port
-    this._name = name
-    this._capacity = capacity
-    this._requiredRole = requiredRole
-    this._isMonoAccount = isMonoAccount
-    // this._isSelectable = isSelectable
-    this._requireSubscription = requireSubscription
-  }
+	private id: number
+	private address: string
+	private port: number
+	private name: string
+	private capacity: number
+	private requiredRole: number
+	private isMonoAccount: boolean
+	private isSelectable: boolean
+	private requireSubscription: boolean
 
-  public get Id(): number {
-    return this._id
-  }
+	constructor(
+		id: number,
+		address: string,
+		port: number,
+		name: string,
+		capacity: number,
+		requiredRole: number,
+		isMonoAccount: boolean,
+		isSelectable: boolean,
+		requireSubscription: boolean
+	) {
+		this.id = id
+		this.address = address
+		this.port = port
+		this.name = name
+		this.capacity = capacity
+		this.requiredRole = requiredRole
+		this.isMonoAccount = isMonoAccount
+		this.isSelectable = isSelectable
+		this.requireSubscription = requireSubscription
+	}
 
-  public get Address(): string {
-    return this._address
-  }
+	public get Id(): number {
+		return this.id
+	}
 
-  public get Port(): number {
-    return this._port
-  }
+	public get Address(): string {
+		return this.address
+	}
 
-  public get Name(): string {
-    return this._name
-  }
+	public get Port(): number {
+		return this.port
+	}
 
-  public get Capacity(): number {
-    return this._capacity
-  }
+	public get Name(): string {
+		return this.name
+	}
 
-  public get RequiredRole(): number {
-    return this._requiredRole
-  }
+	public get Capacity(): number {
+		return this.capacity
+	}
 
-  public get IsMonoAccount(): boolean {
-    return this._isMonoAccount
-  }
+	public get RequiredRole(): number {
+		return this.requiredRole
+	}
 
-  // public get IsSelectable(): boolean {
-  //   return this._isSelectable
-  // }
+	public get IsMonoAccount(): boolean {
+		return this.isMonoAccount
+	}
 
-  public get RequireSubscription(): boolean {
-    return this._requireSubscription
-  }
+	public get IsSelectable(): boolean {
+		return this.isSelectable
+	}
+
+	public get RequireSubscription(): boolean {
+		return this.requireSubscription
+	}
 }
 
 export default WorldServerData

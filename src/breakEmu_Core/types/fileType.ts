@@ -45,4 +45,5 @@ interface IDebugOptions {
 interface IAuthServer {
 	host: string
 	port: number
+  transitionUri: string
 }

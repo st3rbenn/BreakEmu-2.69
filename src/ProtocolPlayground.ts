@@ -20,7 +20,7 @@ class ProtocolPlayground {
 
 	public async main(): Promise<void> {
     const salt = genSaltSync(10)
-    const hash = hashSync("test", salt)
+    const hash = hashSync("admin", salt)
     this.logger.write(hash)
 		
 	}

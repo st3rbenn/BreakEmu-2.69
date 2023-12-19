@@ -19684,7 +19684,7 @@ export interface RawBasicPingMessage {
 }
 
 export class BasicPingMessage extends DofusMessage {
-    public static id: number = 9070;
+    public static id: number = 6075;
 
     public quiet: boolean | undefined = false;
 
@@ -27142,7 +27142,7 @@ export interface RawBasicPongMessage {
 }
 
 export class BasicPongMessage extends DofusMessage {
-    public static id: number = 8820;
+    public static id: number = 8522;
 
     public quiet: boolean | undefined = false;
 
@@ -35774,7 +35774,7 @@ export interface RawSelectedServerDataMessage {
 }
 
 export class SelectedServerDataMessage extends DofusMessage {
-    public static id: number = 9610;
+    public static id: number = 2882;
 
     public serverId: number | undefined = 0;
     public address: string | undefined;
@@ -47219,7 +47219,7 @@ export interface RawServerStatusUpdateMessage {
 }
 
 export class ServerStatusUpdateMessage extends DofusMessage {
-    public static id: number = 2105;
+    public static id: number = 3516;
 
     public server: GameServerInformations | undefined;
 
@@ -58716,7 +58716,7 @@ export interface RawServerSelectionMessage {
 }
 
 export class ServerSelectionMessage extends DofusMessage {
-    public static id: number = 7721;
+    public static id: number = 6291;
 
     public serverId: number | undefined = 0;
 
@@ -63351,6 +63351,67 @@ export class BasicWhoAmIRequestMessage extends DofusMessage {
     }
 }
 
+export class WorldRegistrationRequestMessage extends DofusMessage {
+	public static id: number = 2590
+
+	public serverId: number
+	public address: string
+	public port: number
+	public name: string
+	public capacity: number
+	public requiredRole: number
+	public isMonoAccount: boolean
+	public isSelectable: boolean
+	public requireSubscription: boolean
+
+	constructor(
+		id: number,
+		address: string,
+		port: number,
+		name: string,
+		capacity: number,
+		requiredRole: number,
+		isMonoAccount: boolean,
+		isSelectable: boolean,
+		requireSubscription: boolean
+	) {
+		super()
+		this.serverId = id
+		this.address = address
+		this.port = port
+		this.name = name
+		this.capacity = capacity
+		this.requiredRole = requiredRole
+		this.isMonoAccount = isMonoAccount
+		this.isSelectable = isSelectable
+		this.requireSubscription = requireSubscription
+	}
+
+	public serialize(writer: BinaryWriter): void {
+    writer.writeVarInt(this.serverId)
+    writer.writeUTF(this.address)
+    writer.writeVarShort(this.port)
+    writer.writeUTF(this.name)
+    writer.writeVarShort(this.capacity)
+    writer.writeByte(this.requiredRole)
+    writer.writeBoolean(this.isMonoAccount)
+    writer.writeBoolean(this.isSelectable)
+    writer.writeBoolean(this.requireSubscription)
+	}
+
+	public deserialize(reader: BinaryReader): void {
+    this.serverId = reader.readVarInt()
+    this.address = reader.readUTF()
+    this.port = reader.readVarShort()
+    this.name = reader.readVarShort()
+    this.capacity = reader.readByte()
+    this.requiredRole = reader.readByte()
+    this.isMonoAccount = reader.readBoolean()
+    this.isSelectable = reader.readBoolean()
+    this.requireSubscription = reader.readBoolean()
+	}
+}
+
 export interface RawBasicStatMessage {
     id: number;
     timeSpent: number;
@@ -63878,7 +63939,8 @@ export const types: { [key: number]: typeof DofusType } = {
 };
 
 export const messages: { [key: number]: typeof DofusMessage } = {
-    9070: BasicPingMessage,
+    6075: BasicPingMessage,
+    2590: WorldRegistrationRequestMessage,
     4824: GameFightSynchronizeMessage,
     8791: AbstractGameActionMessage,
     7655: AbstractGameActionFightTargetedAbilityMessage,
@@ -64036,7 +64098,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6253: RawDataMessage,
     6289: TrustStatusMessage,
     8557: ServersListMessage,
-    8820: BasicPongMessage,
+    8522: BasicPongMessage,
     2340: BasicLatencyStatsRequestMessage,
     9646: BasicLatencyStatsMessage,
     8389: CheckIntegrityMessage,
@@ -64238,7 +64300,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     799: JobCrafterDirectorySettingsMessage,
     4794: MoodSmileyUpdateMessage,
     6496: EmotePlayMessage,
-    9610: SelectedServerDataMessage,
+    2882: SelectedServerDataMessage,
     7321: SelectedServerDataExtendedMessage,
     6364: FriendWarnOnConnectionStateMessage,
     3771: DungeonPartyFinderRoomContentMessage,
@@ -64505,7 +64567,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     8234: TeleportOnSameMapMessage,
     9952: TreasureHuntShowLegendaryUIMessage,
     6: ChatSmileyExtraPackListMessage,
-    2105: ServerStatusUpdateMessage,
+    3516: ServerStatusUpdateMessage,
     8443: TeleportBuddiesMessage,
     8421: AlignmentWarEffortDonatePreviewMessage,
     1255: GoldAddedMessage,
@@ -64812,7 +64874,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     8305: GameContextCreateRequestMessage,
     3569: CharacterDeletionRequestMessage,
     4981: AcquaintanceSearchMessage,
-    7721: ServerSelectionMessage,
+    6291: ServerSelectionMessage,
     2262: CheckFileMessage,
     7828: ResetCharacterStatsRequestMessage,
     9735: StatsUpgradeRequestMessage,

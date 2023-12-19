@@ -1,61 +1,84 @@
-import Logger from "../breakEmu_Core/Logger"
-import ServerClient from "../breakEmu_Server/ServerClient"
-import { Socket, createServer } from "net"
-import WorldServerData from "./WorldServerData"
+import { Server, Socket, createServer } from "net"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
-import ServerStatus from "../breakEmu_Auth/enum/ServerStatus"
-
+import Logger from "../breakEmu_Core/Logger"
+import WorldServerData from "./WorldServerData"
+import ServerStatusEnum from "./enum/ServerStatusEnum"
+import TransitionServer from "../breakEmu_Auth/TransitionServer"
 class WorldServer {
 	public logger: Logger = new Logger("WorldServer")
 
-	public SERVER_STATE: number = ServerStatus.Offline
+	public SERVER_STATE: number = ServerStatusEnum.OFFLINE
 
 	public worldServerData: WorldServerData
 
+	private _server: Server | undefined
+
 	public constructor(worldServerData: WorldServerData) {
-		this.worldServerData = worldServerData 
+		this.worldServerData = worldServerData
 	}
 
 	public async Start(): Promise<void> {
-		const server = createServer(
-			async (socket) => await this.handleConnection(socket)
+		this.logger.write(`Starting server ${this.worldServerData.Name}`)
+		this.SERVER_STATE = ServerStatusEnum.STARTING
+		await TransitionServer.getInstance().send(
+			"ServerStatusUpdateMessage",
+			JSON.stringify({
+				serverId: this.worldServerData.Id,
+				status: this.SERVER_STATE.toString(),
+			})
+		)
+		this._server = createServer((socket) => this.handleConnection(socket))
+		this._server.listen(
+			{ port: this.worldServerData.Port, host: this.worldServerData.Address },
+			async () => {
+				await this.logger.writeAsync(
+					`Server listening on ${this.worldServerData.Address}:${this.worldServerData.Port}`
+				)
+			}
 		)
 
-		return new Promise((resolve, reject) => {
-			server.listen(
-				{ port: this.worldServerData.Port, host: this.worldServerData.Address },
-				async () => {
-					await this.logger.writeAsync(
-						`Server listening on ${this.worldServerData.Address}:${this.worldServerData.Port}`
-					)
-					this.SERVER_STATE = ServerStatus.Online
-
-					resolve()
-				}
-			)
-
-			server.on("error", (err) => {
-				this.logger.write(
-					`Error starting server: ${err.message}`,
-					ansiColorCodes.red
-				)
-				reject(err)
+		this.SERVER_STATE = ServerStatusEnum.ONLINE
+		await TransitionServer.getInstance().send(
+			"ServerStatusUpdateMessage",
+			JSON.stringify({
+				serverId: this.worldServerData.Id,
+				status: this.SERVER_STATE.toString(),
 			})
+		)
+
+		this._server.on("error", (err) => {
+			this.logger.write(
+				`Error starting server: ${err.message}`,
+				ansiColorCodes.red
+			)
+		})
+	}
+
+	public async Stop(): Promise<void> {
+		this.logger.write(`Stoping server ${this.worldServerData.Name}`)
+		this.SERVER_STATE = ServerStatusEnum.STOPING
+		await TransitionServer.getInstance().send(
+			"ServerStatusUpdateMessage",
+			JSON.stringify({
+				serverId: this.worldServerData.Id,
+				status: this.SERVER_STATE.toString(),
+			})
+		)
+
+		this._server?.close(async () => {
+			this.SERVER_STATE = ServerStatusEnum.OFFLINE
+			await TransitionServer.getInstance().send(
+				"ServerStatusUpdateMessage",
+				JSON.stringify({
+					serverId: this.worldServerData.Id,
+					status: ServerStatusEnum.OFFLINE.toString(),
+				})
+			)
 		})
 	}
 
 	private async handleConnection(socket: Socket): Promise<void> {
-		return await new Promise<void>(async (resolve, reject) => {
-			this.logger.write(`New connection from ${socket.remoteAddress}`)
-			// const client = new AuthClient(socket)
-			// await this.AddClient(client) // Attendre l'ajout et l'initialisation du client
-			// // Configurer les gestionnaires d'événements après l'initialisation
-			// await client.setupEventHandlers()
-
-			// await client.initialize()
-
-			resolve()
-		})
+		await this.logger.writeAsync(`New connection from ${socket.remoteAddress}`)
 	}
 }
 

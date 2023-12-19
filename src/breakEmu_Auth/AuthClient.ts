@@ -1,33 +1,40 @@
+import { RSA_PKCS1_PADDING } from "constants"
+import { privateDecrypt } from "crypto"
 import { Socket } from "net"
-import Logger from "../breakEmu_Core/Logger"
-import { AuthServer } from "./AuthServer"
-import { ansiColorCodes } from "../breakEmu_Core/Colors"
-import ServerClient from "../breakEmu_Server/ServerClient"
+import AuthController from "../breakEmu_API/controller/auth.controller"
+import Account from "../breakEmu_API/model/account.model"
 import { AuthConfiguration } from "../breakEmu_Core/AuthConfiguration"
+import { ansiColorCodes } from "../breakEmu_Core/Colors"
+import Logger from "../breakEmu_Core/Logger"
 import RSAKeyHandler from "../breakEmu_Core/RSAKeyHandler"
-import ServerStatus from "./enum/ServerStatus"
 import {
+	BasicPingMessage,
+	BasicPongMessage,
 	BinaryBigEndianReader,
 	BinaryBigEndianWriter,
+	CredentialsAcknowledgementMessage,
 	DofusMessage,
 	DofusNetworkMessage,
 	HelloConnectMessage,
 	IdentificationMessage,
+	IdentificationSuccessMessage,
+	NicknameChoiceRequestMessage,
+	ProtocolRequired,
+	SelectedServerDataMessage,
+	SelectedServerRefusedMessage,
+	ServerSelectionMessage,
+	ServersListMessage,
 	SystemMessageDisplayMessage,
 	messages,
-	ProtocolRequired,
-	CredentialsAcknowledgementMessage,
-	NicknameChoiceRequestMessage,
-	IdentificationSuccessMessage,
-	ServersListMessage,
 } from "../breakEmu_Server/IO"
-import { privateDecrypt } from "crypto"
-import { RSA_PKCS1_PADDING } from "constants"
-import AuthController from "../breakEmu_API/controller/auth.controller"
-import Prisma from "@prisma/client"
-import Account from "../breakEmu_API/model/account.model"
-import WorldServerManager from "../breakEmu_World/WorldServerManager"
+import ServerClient from "../breakEmu_Server/ServerClient"
 import WorldServer from "../breakEmu_World/WorldServer"
+import WorldServerManager from "../breakEmu_World/WorldServerManager"
+import { AuthServer } from "./AuthServer"
+import ServerStatus from "./enum/ServerStatus"
+import WorldController from "../breakEmu_API/controller/world.controller"
+import ServerConnectionErrorEnum from "../breakEmu_World/enum/ServerConnectionErrorEnum"
+import ServerStatusEnum from "../breakEmu_World/enum/ServerStatusEnum"
 
 export class AuthClient extends ServerClient {
 	public logger: Logger = new Logger("AuthClient")
@@ -69,13 +76,23 @@ export class AuthClient extends ServerClient {
 
 		const message = this.deserialize(data)
 
+		await this.logger.writeAsync(
+			`Deserialized dofus message '${message.id}'`,
+			ansiColorCodes.lightGray
+		)
+
 		switch (message.id) {
 			case IdentificationMessage.id:
-				this.handleIdentificationMessage(attrs, message)
+				await this.handleIdentificationMessage(attrs, message)
 				break
 			case NicknameChoiceRequestMessage.id:
-				this.handleNicknameChoiceRequestMessage(message)
+				await this.handleNicknameChoiceRequestMessage(message)
 				break
+			case BasicPingMessage.id:
+				await this.Send(this.serialize(new BasicPongMessage()))
+				break
+			case ServerSelectionMessage.id:
+				await this.handleServerSelectionMessage(message)
 		}
 	}
 
@@ -165,6 +182,8 @@ export class AuthClient extends ServerClient {
 			payloadSize,
 		} = DofusNetworkMessage.readHeader(reader)
 
+		console.log("messageId: ", messageId)
+
 		if (!(messageId in messages)) {
 			this.logger.writeAsync(
 				`Undefined message (id: ${messageId})`,
@@ -213,11 +232,6 @@ export class AuthClient extends ServerClient {
 			ansiColorCodes.lightGray
 		)
 
-		await this.logger.writeAsync(
-			"Sending CredentialsAknowledgementMessage message"
-		)
-		await this.Send(this.serialize(new CredentialsAcknowledgementMessage()))
-
 		const authController = new AuthController(this)
 
 		const user = await authController.login(username, password)
@@ -238,12 +252,19 @@ export class AuthClient extends ServerClient {
 			user?.created_at as Date,
 			user?.deleted_at as Date,
 			user?.ip as string,
-			user?.roleId as number,
-			user?.is_banned as boolean
+			user?.role as number,
+			user?.is_banned as boolean,
+			user?.tagNumber as number
 		)
 
-		await this.handleIdentificationSuccessMessage()
-		await this.handleServersListMessage()
+		if (this._account?.pseudo !== null) {
+			await this.logger.writeAsync(
+				"Sending CredentialsAknowledgementMessage message"
+			)
+			await this.Send(this.serialize(new CredentialsAcknowledgementMessage()))
+			await this.handleIdentificationSuccessMessage()
+			await this.handleServersListMessage()
+		}
 	}
 
 	private async handleNicknameChoiceRequestMessage(
@@ -251,12 +272,15 @@ export class AuthClient extends ServerClient {
 	): Promise<void> {
 		const nickname = (message as NicknameChoiceRequestMessage).nickname
 		const nicknameController = new AuthController(this)
-		this.logger.writeAsync(`Nickname: ${nickname}`)
+
+		this.logger.writeAsync(`Nickname: ${nickname}`, ansiColorCodes.lightGray)
+
 		const isNicknameDone = await nicknameController.setNickname(
 			nickname as string
 		)
 
 		if (isNicknameDone) {
+			this?._account?.setPseudo(nickname as string)
 			await this.handleIdentificationSuccessMessage()
 		}
 	}
@@ -265,20 +289,17 @@ export class AuthClient extends ServerClient {
 		wasArleadyConnected: boolean = false
 	): Promise<void> {
 		await this.logger.writeAsync("Sending IdentificationSuccessMessage message")
-		console.log(this.account)
 		const subscriptionEndDateUnix = Math.floor(Date.now() * 1000) + 31536000
-		// const subscriptionElapsedDuration =
-		// 	(this._account?.created_at.getTime() as number) - Date.now()
 
 		const identificationSuccessMessage = new IdentificationSuccessMessage(
 			this._account?.is_admin,
 			false,
-      this._account?.pseudo,
-      "1",
+			this._account?.pseudo,
+			(this._account?.tagNumber as number).toString(),
 			wasArleadyConnected,
 			this._account?.username,
 			this._account?.id,
-			0,
+			134,
 			this._account?.created_at.getTime(),
 			subscriptionEndDateUnix,
 			0
@@ -288,6 +309,7 @@ export class AuthClient extends ServerClient {
 	}
 
 	public async handleServersListMessage(): Promise<void> {
+		console.log("handleServersListMessage")
 		this.Send(
 			this.serialize(
 				new ServersListMessage(
@@ -298,9 +320,80 @@ export class AuthClient extends ServerClient {
 		)
 	}
 
+	public async handleServerSelectionMessage(
+		message: DofusMessage
+	): Promise<void> {
+		const server = WorldController.getInstance().worldList
+
+		if (server.length <= 0) {
+			await this.Send(
+				this.serialize(
+					new SelectedServerRefusedMessage(
+						server[0].worldServerData.Id,
+						ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_NO_REASON,
+						0
+					)
+				)
+			)
+			return
+		}
+
+		if (server[0].SERVER_STATE != ServerStatusEnum.ONLINE) {
+			await this.Send(
+				this.serialize(
+					new SelectedServerRefusedMessage(
+						server[0].worldServerData.Id,
+						ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_DUE_TO_STATUS,
+						0
+					)
+				)
+			)
+			return
+		}
+
+		if (
+			server[0].worldServerData.RequiredRole > (this._account?.role as number)
+		) {
+			await this.Send(
+				this.serialize(
+					new SelectedServerRefusedMessage(
+						server[0].worldServerData.Id,
+						ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_ACCOUNT_RESTRICTED,
+						0
+					)
+				)
+			)
+			return
+		}
+
+		await this.sendSelectServerData(this, server[0])
+	}
+
+	async sendSelectServerData(client: AuthClient, server: WorldServer) {
+		if (!server || !client.canAccessWorld(server)) {
+			return
+		}
+
+		const selectedServerDataMessage = new SelectedServerDataMessage(
+			server.worldServerData.Id,
+			server.worldServerData.Address,
+			[server.worldServerData.Port],
+			true,
+			Buffer.from(
+				[...Array(32)].map(() => Math.random().toString(36)[2]).join("")
+			).toJSON().data
+		)
+
+		await client.Send(client.serialize(selectedServerDataMessage))
+
+		await client.disconnect()
+	}
+
 	public canAccessWorld(server: WorldServer): boolean {
 		const isAccessGranted =
-			(this?.account?.role as number) <= server.worldServerData.RequiredRole
+			(this?.account?.role as number) >= server.worldServerData.RequiredRole &&
+			this.account?.is_verified &&
+			this.account?.is_banned === false
 
 		if (!isAccessGranted) {
 			this.logger.writeAsync(
@@ -309,6 +402,10 @@ export class AuthClient extends ServerClient {
 			)
 		}
 
-		return isAccessGranted
+		return isAccessGranted as boolean
+	}
+
+	public async disconnect() {
+		this.Socket.end()
 	}
 }

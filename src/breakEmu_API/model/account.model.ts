@@ -16,6 +16,7 @@ class Account {
 	private _IP: string
 	private _role: number
 	private _is_banned: boolean
+  private _tagNumber: number
 
 	constructor(
 		id: number,
@@ -34,7 +35,8 @@ class Account {
 		deleted_at: Date,
 		IP: string,
 		role: number,
-		is_banned: boolean
+		is_banned: boolean,
+    tagNumber: number
 	) {
 		this._id = id
 		this._username = username
@@ -53,6 +55,7 @@ class Account {
 		this._IP = IP
 		this._role = role
 		this._is_banned = is_banned
+    this._tagNumber = tagNumber
 	}
 
 	public get id(): number {
@@ -103,34 +106,45 @@ class Account {
 		return this._is_banned
 	}
 
-  public get role(): number {
-    return this._role
+	public get role(): number {
+		return this._role
+	}
+
+	public get is_admin(): boolean {
+		return this._role === 5
+	}
+
+	public get logout_at(): Date {
+		return this._logout_at
+	}
+
+	public get created_at(): Date {
+		return this._created_at
+	}
+
+	public get updated_at(): Date {
+		return this._updated_at
+	}
+
+	public get deleted_at(): Date {
+		return this._deleted_at
+	}
+
+  public get tagNumber(): number {
+    return this._tagNumber
   }
 
-  public get is_admin(): boolean {
-    return this._role === 5
+  public getRandomTagNumber(): number {
+    return Math.floor(Math.random() * 100000)
   }
 
-  public get logout_at(): Date {
-    return this._logout_at
-  }
+	public setPseudo(pseudo: string): void {
+		this._pseudo = pseudo
+	}
 
-  public get created_at(): Date {
-    return this._created_at
-  }
-
-  public get updated_at(): Date {
-    return this._updated_at
-  }
-
-  public get deleted_at(): Date {
-    return this._deleted_at
-  }
-
-
-  public toString(): string {
-    return JSON.stringify(this)
-  }
+	public toString(): string {
+		return JSON.stringify(this)
+	}
 }
 
 export default Account

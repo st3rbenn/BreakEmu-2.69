@@ -17,17 +17,13 @@
 		"experimentalDecorators": true, // Active les décorateurs si nécessaire
 		"emitDecoratorMetadata": true, // Émet des métadonnées pour les décorateurs,
 		"baseUrl": "./src",
-		"paths": {
-			"@breakEmu_Auth/*": ["breakEmu_Auth/*"],
-			"@breakEmu_Protocol/*": ["breakEmu_Protocol/*"],
-			"@breakEmu_Core/*": ["breakEmu_Core/*"]
-		}
 	},
 	"include": [
 		"src/breakEmu_Auth/**/*.ts",
 		"src/breakEmu_Protocol/**/*.ts",
 		"src/breakEmu_ServerSync/**/*.ts",
-		"src/main.ts"
+		"src/AuthMain.ts",
+    "src/WorldMain.ts"
 	],
 	"exclude": [
 		"node_modules", // Exclut 'node_modules'

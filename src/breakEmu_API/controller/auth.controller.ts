@@ -1,7 +1,6 @@
 import Logger from "../../breakEmu_Core/Logger"
 import Database from "../Database"
 import BaseController from "./base.controller"
-import Prisma from "@prisma/client"
 import { AuthClient } from "../../breakEmu_Auth/AuthClient"
 import {
 	IdentificationFailedMessage,

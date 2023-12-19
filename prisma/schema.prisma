@@ -26,17 +26,11 @@ model user {
   created_at  DateTime    @default(now())
   updated_at  DateTime?   @updatedAt
   deleted_at  DateTime?
-  roleId      Int         @default(1)
   ip          String
   is_banned   Boolean     @default(false)
-  role        role        @relation(fields: [roleId], references: [id])
+  role        Int         @default(1)
+  tagNumber   Int?        @unique
   characters  character[]
-}
-
-model role {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
-  users user[]
 }
 
 model character {
