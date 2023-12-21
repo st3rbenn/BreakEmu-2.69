@@ -67,8 +67,6 @@ class RSAKeyHandler {
 			salt: [...Array(32)].map(() => Math.random().toString(36)[2]).join(""),
 		}
 	}
-
-	initialize(): void {}
 }
 
 export default RSAKeyHandler

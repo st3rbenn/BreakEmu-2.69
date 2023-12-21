@@ -11,16 +11,6 @@ export interface IAuthConfiguration {
 export interface IWorldConfiguration {
 	host: string
 	port: number
-	// id: number
-	// name: string
-	// address: string
-	// port: number
-	// capacity: number
-	// isMonoAccount: boolean
-	// isRestrictedToSubscribers: boolean
-	// isSelectable: boolean
-	// charactersCount: number
-	// charactersSlots: number
 }
 
 interface IDofusInfo {
@@ -39,11 +29,11 @@ interface IDatabaseCredentials {
 
 interface IDebugOptions {
 	showDebugMessages: boolean
-	showMessageProtocol: boolean
+	showProtocolMessage: boolean
+  showDatabaseLogs: boolean
 }
 
 interface IAuthServer {
 	host: string
 	port: number
-  transitionUri: string
 }

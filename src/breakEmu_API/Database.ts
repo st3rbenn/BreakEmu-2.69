@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client"
 import Logger from "../breakEmu_Core/Logger"
+import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
 class Database {
 	private static instance: Database
 	public _logger: Logger = new Logger("Database")
@@ -14,12 +15,26 @@ class Database {
 	}
 
 	private constructor() {
-		this.prisma = new PrismaClient()
+		this.prisma = new PrismaClient({
+			log: ConfigurationManager.getInstance().showDatabaseLogs
+				? ["query", "info", "warn", "error"]
+				: [],
+		})
+
+		//@ts-ignore
+		this.prisma.$on("query", (e: any) => {
+			this._logger.write("Query: " + e.query)
+			this._logger.write("Params: " + e.params)
+			this._logger.write("Duration: " + e.duration + "ms")
+		})
 	}
 
 	public async initialize(): Promise<void> {
 		try {
 			await this.prisma.$connect()
+			const queryTestConnection = "SELECT 1 + 1;"
+
+			await this.prisma.$executeRawUnsafe(queryTestConnection)
 			await this._logger.writeAsync("Database initialized")
 		} catch (error) {
 			await this._logger.writeAsync(

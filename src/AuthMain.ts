@@ -2,9 +2,9 @@ import Database from "./breakEmu_API/Database"
 import WorldController from "./breakEmu_API/controller/world.controller"
 import { AuthServer } from "./breakEmu_Auth/AuthServer"
 import TransitionServer from "./breakEmu_Auth/TransitionServer"
-import { AuthConfiguration } from "./breakEmu_Core/AuthConfiguration"
+import ConfigurationManager from "./breakEmu_Core/configuration/ConfigurationManager"
 import Logger from "./breakEmu_Core/Logger"
-import RSAKeyHandler from "./breakEmu_Core/RSAKeyHandler"
+import Playground from "./Playground"
 
 class Main {
 	public logger: Logger = new Logger("Main")
@@ -14,16 +14,23 @@ class Main {
 	}
 
 	async Start(): Promise<void> {
-		await this.logger.onStartup()
-		RSAKeyHandler.getInstance().initialize()
-		await AuthConfiguration.getInstance().Load()
-		await Database.getInstance().initialize()
-		await TransitionServer.getInstance().connect()
-    await WorldController.getInstance().getRealmList()
-		// await WorldServerManager.getInstance().initialize()
-		await AuthServer.getInstance().Start()
+		try {
+			await this.logger.onStartup()
+			await ConfigurationManager.getInstance().Load()
+			await Database.getInstance().initialize()
+			await TransitionServer.getInstance().connect()
+			await WorldController.getInstance().getRealmList()
+			await AuthServer.getInstance().Start()
 
-    await AuthServer.getInstance().handleMessages()
+      AuthServer.getInstance().handleMessages()
+
+			// await this.logger.writeAsync(`start server stress test socket in 5s`)
+			// wait 5s
+			// await new Promise((resolve) => setTimeout(resolve, 5000))
+			// new Playground()
+		} catch (error) {
+			await this.logger.writeAsync(`Error starting server: ${error}`, "red")
+		}
 	}
 }
 

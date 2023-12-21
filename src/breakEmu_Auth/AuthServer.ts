@@ -1,22 +1,24 @@
+import { ConsumeMessage } from "amqplib"
 import { Socket, createServer } from "net"
-import { AuthConfiguration } from "../breakEmu_Core/AuthConfiguration"
+import WorldController from "../breakEmu_API/controller/world.controller"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
-import { AuthClient } from "./AuthClient"
-import ServerStatus from "./enum/ServerStatus"
+import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
 import {
 	BinaryBigEndianWriter,
 	DofusMessage,
 	DofusNetworkMessage,
-	GameServerInformations,
 	ServerStatusUpdateMessage,
 	messages,
 } from "../breakEmu_Server/IO"
-import TransitionManager from "./TransitionServer"
-import { ConsumeMessage } from "amqplib"
-import WorldController from "../breakEmu_API/controller/world.controller"
 import WorldServerManager from "../breakEmu_World/WorldServerManager"
-import TransitionServer from "./TransitionServer"
+import { AuthClient } from "./AuthClient"
+import {
+	default as TransitionManager,
+	default as TransitionServer,
+} from "./TransitionServer"
+import ServerStatus from "./enum/ServerStatus"
+import ConnectionQueue from "./ConnectionQueue"
 
 export class AuthServer {
 	public logger: Logger = new Logger("AuthServer")
@@ -36,9 +38,24 @@ export class AuthServer {
 		this.port = port
 	}
 
+	public static getInstance(): AuthServer {
+		if (!AuthServer._instance) {
+			AuthServer._instance = new AuthServer(
+				ConfigurationManager.getInstance().authServerHost,
+				ConfigurationManager.getInstance().authServerPort
+			)
+		}
+
+		return AuthServer._instance
+	}
+
+	public get ServerState(): number {
+		return this.SERVER_STATE
+	}
+
 	public async Start(): Promise<void> {
 		const server = createServer(
-			async (socket) => await this.handleConnection(socket)
+			async (socket) => await ConnectionQueue.getInstance().enqueue(socket)
 		)
 
 		server.listen({ port: this.port, host: this.ip }, async () => {
@@ -49,78 +66,33 @@ export class AuthServer {
 			this.SERVER_STATE = ServerStatus.Online
 		})
 
-		server.on("error", (err) => {
-			this.logger.write(
+		server.on("error", async (err) => {
+			await this.logger.writeAsync(
 				`Error starting server: ${err.message}`,
 				ansiColorCodes.red
 			)
 		})
 	}
 
-	public get ServerState(): number {
-		return this.SERVER_STATE
-	}
-
-	public static getInstance(): AuthServer {
-		if (!AuthServer._instance) {
-			AuthServer._instance = new AuthServer(
-				AuthConfiguration.getInstance().authServerHost,
-				AuthConfiguration.getInstance().authServerPort
+	public async AddClient(client: AuthClient): Promise<void> {
+		// Log de la nouvelle connexion
+		return new Promise(async (resolve) => {
+			this.clients.push(client)
+			await this.logger.writeAsync(
+				`New client connected: ${client.Socket.remoteAddress}:${client.Socket.remotePort}`,
+				ansiColorCodes.magenta
 			)
-		}
 
-		return AuthServer._instance
-	}
+			this.handleMessages()
 
-	private async handleConnection(socket: Socket): Promise<void> {
-		return await new Promise<void>(async (resolve, reject) => {
-			const client = new AuthClient(socket)
-			await this.AddClient(client) // Attendre l'ajout et l'initialisation du client
-			// Configurer les gestionnaires d'événements après l'initialisation
-			await client.setupEventHandlers()
-
-			await client.initialize()
+			await this.logger.writeAsync(
+				`Total clients: ${
+					this.clients.filter((c) => c.Socket.writable).length
+				} | Total clients connected: ${this.TotalConnectedClients()}`
+			)
 
 			resolve()
 		})
-	}
-
-	public async AddClient(client: AuthClient): Promise<void> {
-		// Log de la nouvelle connexion
-		this.clients.push(client)
-		await this.logger.writeAsync(
-			`New client connected: ${client.Socket.remoteAddress}:${client.Socket.remotePort}`,
-			ansiColorCodes.magenta
-		)
-		await this.logger.writeAsync(
-			`Total clients: ${
-				this.clients.length
-			} | Total clients connected: ${this.TotalConnectedClients()}`
-		)
-
-		await TransitionServer.getInstance().send("needServerStatus", "")
-	}
-
-	public serialize(message: DofusMessage): Buffer {
-		const headerWriter = new BinaryBigEndianWriter({
-			maxBufferLength: this.MAX_DOFUS_MESSAGE_HEADER_SIZE,
-		})
-		const messageWriter = new BinaryBigEndianWriter({
-			maxBufferLength: 10240,
-		})
-
-		if (!(message?.id in messages)) {
-			throw `Undefined message (id: ${message.id})`
-		}
-
-		// @ts-ignore
-		message.serialize(messageWriter)
-
-		DofusNetworkMessage.writeHeader(headerWriter, message.id, messageWriter)
-
-		this.logger.writeAsync(`Serialized dofus message '${message.id}'`)
-
-		return Buffer.concat([headerWriter.getBuffer(), messageWriter.getBuffer()])
 	}
 
 	public RemoveClient(client: AuthClient): void {
@@ -136,10 +108,6 @@ export class AuthServer {
 		return this.clients
 	}
 
-	public delay(ms: number): Promise<void> {
-		return new Promise((resolve) => setTimeout(resolve, ms))
-	}
-
 	public async handleMessages() {
 		// Supposons que TransitionManager a une méthode pour écouter les messages
 		TransitionManager.getInstance().receive(
@@ -149,15 +117,15 @@ export class AuthServer {
 				if (msg) {
 					// const message = this.deserialize(msg?.content)
 					const message = JSON.parse(msg.content.toString())
-          await this.logger.writeAsync(`ServerStatusUpdateMessage`)
+					await this.logger.writeAsync(`ServerStatusUpdateMessage`)
 					const server = WorldController.getInstance().worldList.find(
 						(s) => s.worldServerData.Id === message.serverId
 					)
 					if (!server) return
 
-          server.SERVER_STATE = message.status
+					server.SERVER_STATE = message.status
 
-					for (const client of this.clients) {
+					for (const client of AuthServer.getInstance().GetClients()) {
 						const gameServerMessage = WorldServerManager.getInstance().gameServerInformation(
 							client,
 							server,
@@ -187,7 +155,7 @@ export class AuthServer {
 						listOfWorlds.push(server.worldServerData)
 					}
 
-					await TransitionServer.getInstance().send(
+					await TransitionManager.getInstance().send(
 						"worlds",
 						JSON.stringify({
 							messageId: 2590,

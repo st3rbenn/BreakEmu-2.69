@@ -1,7 +1,10 @@
-import { AuthConfiguration } from "../breakEmu_Core/AuthConfiguration"
-import amqp, { Connection, Channel, ConsumeMessage } from "amqplib"
 import Logger from "../breakEmu_Core/Logger"
+import WorldController from "../breakEmu_API/controller/world.controller"
+import WorldServerManager from "../breakEmu_World/WorldServerManager"
+import amqp, { Channel, Connection, ConsumeMessage } from "amqplib"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
+import { AuthServer } from "./AuthServer"
+import { ServerStatusUpdateMessage } from "../breakEmu_Server/IO"
 
 class TransitionManager {
 	private logger: Logger = new Logger("TransitionServer")
@@ -13,7 +16,7 @@ class TransitionManager {
 	public static getInstance(): TransitionManager {
 		if (!TransitionManager._instance) {
 			TransitionManager._instance = new TransitionManager(
-				AuthConfiguration.getInstance().authServerTransitionUri
+				process.env.RABBITMQ_URI || "amqp://localhost"
 			)
 		}
 
@@ -47,25 +50,6 @@ class TransitionManager {
 		}
 	}
 
-  async deleteAllQueues(): Promise<void> {
-    if (!this.channel) {
-      throw new Error("Cannot delete queues: Channel is not created")
-    }
-
-    const queues = await this.getAllQueues()
-    for (const queue of queues) {
-      await this.channel.deleteQueue(queue)
-    }
-  }
-
-  async getAllQueues(): Promise<string[]> {
-    if (!this.channel) {
-      throw new Error("Cannot get queues: Channel is not created")
-    }
-    const queues = await this.channel?.assertQueue("", { exclusive: true })
-    return queues?.queue ? [queues.queue] : []
-  }
-
 	async disconnect(): Promise<void> {
 		if (this.channel) {
 			await this.channel.close()
@@ -97,13 +81,17 @@ class TransitionManager {
 			throw new Error("Cannot receive message: Channel is not created")
 		}
 		await this.channel.assertQueue(queueName, { durable: true })
-		this.channel.consume(queueName, (msg) => {
-      onMessage(msg)
+		this.channel.consume(
+			queueName,
+			(msg) => {
+				onMessage(msg)
 
-      if (msg) {
-        this.channel?.ack(msg)
-      }
-    }, { noAck: false })
+				if (msg) {
+					this.channel?.ack(msg)
+				}
+			},
+			{ noAck: false }
+		)
 	}
 
 	// Ajoutez d'autres méthodes selon vos besoins

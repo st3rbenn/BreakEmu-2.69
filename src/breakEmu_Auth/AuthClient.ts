@@ -3,7 +3,7 @@ import { privateDecrypt } from "crypto"
 import { Socket } from "net"
 import AuthController from "../breakEmu_API/controller/auth.controller"
 import Account from "../breakEmu_API/model/account.model"
-import { AuthConfiguration } from "../breakEmu_Core/AuthConfiguration"
+import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import RSAKeyHandler from "../breakEmu_Core/RSAKeyHandler"
@@ -35,6 +35,7 @@ import ServerStatus from "./enum/ServerStatus"
 import WorldController from "../breakEmu_API/controller/world.controller"
 import ServerConnectionErrorEnum from "../breakEmu_World/enum/ServerConnectionErrorEnum"
 import ServerStatusEnum from "../breakEmu_World/enum/ServerStatusEnum"
+import TransitionServer from "./TransitionServer"
 
 export class AuthClient extends ServerClient {
 	public logger: Logger = new Logger("AuthClient")
@@ -69,17 +70,21 @@ export class AuthClient extends ServerClient {
 		data: Buffer,
 		attrs: any
 	): Promise<void> {
-		await this.logger.writeAsync(
-			`Received data from ${socket.remoteAddress}: ${data.toString("hex")}`,
-			ansiColorCodes.lightGray
-		)
+		if (ConfigurationManager.getInstance().showDebugMessages) {
+			await this.logger.writeAsync(
+				`Received data from ${socket.remoteAddress}: ${data.toString("hex")}`,
+				ansiColorCodes.lightGray
+			)
+		}
 
 		const message = this.deserialize(data)
 
-		await this.logger.writeAsync(
-			`Deserialized dofus message '${message.id}'`,
-			ansiColorCodes.lightGray
-		)
+		if (ConfigurationManager.getInstance().showProtocolMessage) {
+			await this.logger.writeAsync(
+				`Deserialized dofus message '${message.id}'`,
+				ansiColorCodes.lightGray
+			)
+		}
 
 		switch (message.id) {
 			case IdentificationMessage.id:
@@ -92,7 +97,7 @@ export class AuthClient extends ServerClient {
 				await this.Send(this.serialize(new BasicPongMessage()))
 				break
 			case ServerSelectionMessage.id:
-				await this.handleServerSelectionMessage(message)
+				await this.handleServerSelectionMessage()
 		}
 	}
 
@@ -116,16 +121,20 @@ export class AuthClient extends ServerClient {
 				return
 			}
 
-			await this.logger.writeAsync("Sending ProtocolRequired message")
+			if (ConfigurationManager.getInstance().showProtocolMessage) {
+				await this.logger.writeAsync("Sending ProtocolRequired message")
+			}
 			await this.Send(
 				this.serialize(
 					new ProtocolRequired(
-						AuthConfiguration.getInstance().dofusProtocolVersion
+						ConfigurationManager.getInstance().dofusProtocolVersion
 					)
 				)
 			)
 
-			await this.logger.writeAsync("Sending HelloConnectMessage message")
+			if (ConfigurationManager.getInstance().showProtocolMessage) {
+				await this.logger.writeAsync("Sending HelloConnectMessage message")
+			}
 
 			this._RSAKeyHandler.generateKeyPair()
 			const attrs = this._RSAKeyHandler.getAttribute()
@@ -166,7 +175,9 @@ export class AuthClient extends ServerClient {
 
 		DofusNetworkMessage.writeHeader(headerWriter, message.id, messageWriter)
 
-		this.logger.writeAsync(`Serialized dofus message '${message.id}'`)
+		if (ConfigurationManager.getInstance().showProtocolMessage) {
+			this.logger.write(`Serialized dofus message '${message.id}'`)
+		}
 
 		return Buffer.concat([headerWriter.getBuffer(), messageWriter.getBuffer()])
 	}
@@ -182,9 +193,14 @@ export class AuthClient extends ServerClient {
 			payloadSize,
 		} = DofusNetworkMessage.readHeader(reader)
 
-		console.log("messageId: ", messageId)
+		if (ConfigurationManager.getInstance().showProtocolMessage) {
+			this.logger.write(`messageId: ${messageId}`)
+		}
 
-		if (!(messageId in messages)) {
+		if (
+			!(messageId in messages) &&
+			ConfigurationManager.getInstance().showProtocolMessage
+		) {
 			this.logger.writeAsync(
 				`Undefined message (id: ${messageId})`,
 				ansiColorCodes.red
@@ -225,12 +241,14 @@ export class AuthClient extends ServerClient {
 			credentialsReader.getReadableSize()
 		)
 
-		this.logger.writeAsync(
-			`AESKey: ${AESKey.toString(
-				"hex"
-			)}, username: ${username}, password: ${password}`,
-			ansiColorCodes.lightGray
-		)
+		if (ConfigurationManager.getInstance().showDebugMessages) {
+			await this.logger.writeAsync(
+				`AESKey: ${AESKey.toString(
+					"hex"
+				)}, username: ${username}, password: ${password}`,
+				ansiColorCodes.lightGray
+			)
+		}
 
 		const authController = new AuthController(this)
 
@@ -258,9 +276,11 @@ export class AuthClient extends ServerClient {
 		)
 
 		if (this._account?.pseudo !== null) {
-			await this.logger.writeAsync(
-				"Sending CredentialsAknowledgementMessage message"
-			)
+			if (ConfigurationManager.getInstance().showProtocolMessage) {
+				await this.logger.writeAsync(
+					"Sending CredentialsAknowledgementMessage message"
+				)
+			}
 			await this.Send(this.serialize(new CredentialsAcknowledgementMessage()))
 			await this.handleIdentificationSuccessMessage()
 			await this.handleServersListMessage()
@@ -273,7 +293,12 @@ export class AuthClient extends ServerClient {
 		const nickname = (message as NicknameChoiceRequestMessage).nickname
 		const nicknameController = new AuthController(this)
 
-		this.logger.writeAsync(`Nickname: ${nickname}`, ansiColorCodes.lightGray)
+		if (ConfigurationManager.getInstance().showDebugMessages) {
+			await this.logger.writeAsync(
+				`Nickname: ${nickname}`,
+				ansiColorCodes.lightGray
+			)
+		}
 
 		const isNicknameDone = await nicknameController.setNickname(
 			nickname as string
@@ -288,7 +313,6 @@ export class AuthClient extends ServerClient {
 	public async handleIdentificationSuccessMessage(
 		wasArleadyConnected: boolean = false
 	): Promise<void> {
-		await this.logger.writeAsync("Sending IdentificationSuccessMessage message")
 		const subscriptionEndDateUnix = Math.floor(Date.now() * 1000) + 31536000
 
 		const identificationSuccessMessage = new IdentificationSuccessMessage(
@@ -305,11 +329,26 @@ export class AuthClient extends ServerClient {
 			0
 		)
 
+		if (ConfigurationManager.getInstance().showProtocolMessage) {
+			await this.logger.writeAsync(
+				"Sending IdentificationSuccessMessage message"
+			)
+		}
+
+    if (ConfigurationManager.getInstance().showDebugMessages) {
+			await this.logger.writeAsync(
+				"Sending needServerStatus to transition server"
+			)
+		}
+
+		await TransitionServer.getInstance().send("needServerStatus", "")
 		await this.Send(this.serialize(identificationSuccessMessage))
 	}
 
 	public async handleServersListMessage(): Promise<void> {
-		console.log("handleServersListMessage")
+		if (ConfigurationManager.getInstance().showProtocolMessage) {
+			await this.logger.writeAsync("Sending ServersListMessage message")
+		}
 		this.Send(
 			this.serialize(
 				new ServersListMessage(
@@ -320,9 +359,7 @@ export class AuthClient extends ServerClient {
 		)
 	}
 
-	public async handleServerSelectionMessage(
-		message: DofusMessage
-	): Promise<void> {
+	public async handleServerSelectionMessage(): Promise<void> {
 		const server = WorldController.getInstance().worldList
 
 		if (server.length <= 0) {

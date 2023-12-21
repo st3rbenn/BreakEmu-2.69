@@ -9,7 +9,7 @@
     "build": "babel src --out-dir dist --extensions \".ts\" --source-maps inline",
     "auth": "nodemon -q --exec babel-node src/AuthMain.ts --extensions \".ts\" --source-maps inline",
     "world": "nodemon -q --exec babel-node src/WorldMain.ts --extensions \".ts\" --source-maps inline",
-    "playground": "babel-node src/ProtocolPlayground.ts --extensions \".ts\" --source-maps inline"
+    "playground": "babel-node src/Playground.ts --extensions \".ts\" --source-maps inline"
   },
   "nodemonConfig": {
     "ignore": [
@@ -19,6 +19,7 @@
   "dependencies": {
     "@jridgewell/gen-mapping": "^0.3.3",
     "@prisma/client": "5.7.0",
+    "@supercharge/promise-pool": "^3.1.0",
     "@types/bcrypt": "^5.0.2",
     "@types/blessed": "^0.1.25",
     "@types/js-yaml": "^4.0.9",

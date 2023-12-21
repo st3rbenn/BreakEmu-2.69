@@ -1,7 +1,7 @@
 import { ConsumeMessage } from "amqplib"
 import { AuthClient } from "../breakEmu_Auth/AuthClient"
 import TransitionManager from "../breakEmu_Auth/TransitionServer"
-import { AuthConfiguration } from "../breakEmu_Core/AuthConfiguration"
+import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import {
@@ -15,7 +15,7 @@ import WorldServer from "./WorldServer"
 import { WorldRegistrationRequestMessage } from "../breakEmu_Server/IO"
 import WorldServerData from "./WorldServerData"
 import WorldController from "../breakEmu_API/controller/world.controller"
-
+import TransitionServer from "../breakEmu_Auth/TransitionServer"
 class WorldServerManager {
 	public logger: Logger = new Logger("WorldServerManager")
 
@@ -36,12 +36,18 @@ class WorldServerManager {
 	public static getInstance(): WorldServerManager {
 		if (!WorldServerManager._instance) {
 			WorldServerManager._instance = new WorldServerManager(
-				AuthConfiguration.getInstance().worldServerHost,
-				AuthConfiguration.getInstance().worldServerPort
+				ConfigurationManager.getInstance().worldServerHost,
+				ConfigurationManager.getInstance().worldServerPort
 			)
 		}
 
 		return WorldServerManager._instance
+	}
+
+	public async Start(): Promise<void> {
+    this.logger.writeAsync(`Starting WorldServerManager...`, ansiColorCodes.dim)
+		TransitionServer.getInstance().send("RequestForWorldListMessage", "")
+    this.handleMessages()
 	}
 
 	public async handleMessages() {
@@ -53,7 +59,6 @@ class WorldServerManager {
 				if (msg) {
 					// const message = this.deserialize(msg?.content)
 					const message = JSON.parse(msg.content.toString())
-					console.log("WorldRegistrationRequestMessage")
 					const worldServerData = new WorldServerData(
 						message.content.id,
 						message.content.address,
@@ -76,7 +81,6 @@ class WorldServerManager {
 		TransitionManager.getInstance().receive(
 			"needServerStatus",
 			async (msg: ConsumeMessage | null) => {
-        console.log("needServerStatus")
 				await TransitionManager.getInstance().send(
 					"ServerStatusUpdateMessage",
 					JSON.stringify({
@@ -100,7 +104,6 @@ class WorldServerManager {
 			instanceId,
 			payloadSize,
 		} = DofusNetworkMessage.readHeader(reader)
-		console.log(messageId)
 		if (!(messageId in messages)) {
 			this.logger.writeAsync(
 				`Undefined message (id: ${messageId})`,
@@ -117,7 +120,6 @@ class WorldServerManager {
 	public gameServerInformationArray(
 		client: AuthClient
 	): GameServerInformations[] {
-		console.log("gameServerInformationArray")
 		return WorldController.getInstance()
 			.worldList.filter((server) => client.canAccessWorld(server))
 			.map((server) => this.gameServerInformation(client, server))

@@ -1,11 +1,7 @@
 import * as PinoLogger from "pino"
-import { AnsiColorCodeMap, ansiColorCodes } from "./Colors"
-import BlessedStream from "../breakEmu_AuthConsole/BlessedStream"
-import AuthServerStatus from "../breakEmu_AuthConsole/AuthServerStatus"
-import { Widgets } from "blessed"
+import { ansiColorCodes } from "./Colors"
 
 class Logger {
-	private static _instance: Logger
 	private _logger: PinoLogger.Logger
 
 	constructor(msgPrefix: string = "breakEmu",) {
@@ -53,7 +49,7 @@ class Logger {
         this.write(message, color); // Assuming this.write is your existing synchronous method
         setTimeout(resolve, 10); // Adjust the delay as needed
     });
-}
+  }
 
 	public async logo(): Promise<void> {
     this.newLine()
