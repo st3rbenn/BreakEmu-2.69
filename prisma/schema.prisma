@@ -11,37 +11,35 @@ datasource db {
 }
 
 model user {
-  id          Int         @id @default(autoincrement())
-  username    String      @unique
-  password    String
-  pseudo      String?
-  email       String
-  is_verified Boolean     @default(false)
-  tag         String?
-  firstname   String
-  lastname    String
-  birthdate   DateTime
-  login_at    DateTime?
-  logout_at   DateTime?
-  created_at  DateTime    @default(now())
-  updated_at  DateTime?   @updatedAt
-  deleted_at  DateTime?
-  ip          String
-  is_banned   Boolean     @default(false)
-  role        Int         @default(1)
-  tagNumber   Int?        @unique
-  characters  character[]
+  id             Int         @id @default(autoincrement())
+  username       String      @unique
+  password       String
+  pseudo         String?     @unique
+  email          String
+  is_verified    Boolean     @default(false)
+  tag            String?
+  firstname      String
+  lastname       String
+  birthdate      DateTime
+  secretQuestion String?
+  login_at       DateTime?
+  logout_at      DateTime?
+  created_at     DateTime    @default(now())
+  updated_at     DateTime?   @updatedAt
+  deleted_at     DateTime?
+  ip             String
+  is_banned      Boolean     @default(false)
+  role           Int         @default(1)
+  tagNumber      Int?        @unique
+  characters     character[]
 }
 
 model character {
   id         Int       @id @default(autoincrement())
-  name       String
-  experience BigInt
-  level      Int
   breed_id   Int
-  sex_id     Int
-  face_id    Int
-  images     String
+  sex        Boolean
+  cosmeticId Int
+  name       String
   colors     String
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
@@ -77,4 +75,32 @@ model world {
   created_at          DateTime  @default(now())
   updated_at          DateTime  @updatedAt
   deleted_at          DateTime?
+}
+
+model breed {
+  id                Int       @id
+  name              String
+  maleLook          String
+  femaleLook        String
+  maleColors        String
+  femaleColors      String
+  spForIntelligence String
+  spForAgility      String
+  spForStrength     String
+  spForVitality     String
+  spforWisdom       String
+  spForChance       String
+  startLifePoints   Int
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+  deleted_at        DateTime?
+}
+
+model dungeon {
+  id                 Int    @id
+  name               String
+  optimalPlayerLevel Int
+  mapId              String
+  entranceMapId      BigInt
+  exitMapId          BigInt
 }

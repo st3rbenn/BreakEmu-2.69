@@ -2466,7 +2466,7 @@ export interface RawEntityLook {
 }
 
 export class EntityLook extends DofusType {
-    public static id: number = 2892;
+    public static id: number = 3340;
 
     public bonesId: number | undefined = 0;
     public skins: number[] | undefined;
@@ -2560,7 +2560,7 @@ export interface RawSubEntity {
 }
 
 export class SubEntity extends DofusType {
-    public static id: number = 5174;
+    public static id: number = 7682;
 
     public bindingPointCategory: number | undefined = 0;
     public bindingPointIndex: number | undefined = 0;
@@ -5991,7 +5991,7 @@ export interface RawAbstractCharacterInformation {
 }
 
 export class AbstractCharacterInformation extends DofusType {
-    public static id: number = 120;
+    public static id: number = 2111;
 
     public id_: number | undefined = 0;
 
@@ -6025,7 +6025,7 @@ export interface RawCharacterBasicMinimalInformations extends RawAbstractCharact
 }
 
 export class CharacterBasicMinimalInformations extends AbstractCharacterInformation {
-    public static id: number = 9273;
+    public static id: number = 4297;
 
     public name: string | undefined;
 
@@ -6063,7 +6063,7 @@ export interface RawCharacterMinimalInformations extends RawCharacterBasicMinima
 }
 
 export class CharacterMinimalInformations extends CharacterBasicMinimalInformations {
-    public static id: number = 8058;
+    public static id: number = 1869;
 
     public level: number | undefined = 0;
 
@@ -6102,7 +6102,7 @@ export interface RawCharacterMinimalPlusLookInformations extends RawCharacterMin
 }
 
 export class CharacterMinimalPlusLookInformations extends CharacterMinimalInformations {
-    public static id: number = 8237;
+    public static id: number = 9181;
 
     public entityLook: EntityLook | undefined;
     public breed: number | undefined = 0;
@@ -6146,7 +6146,7 @@ export interface RawCharacterBaseInformations extends RawCharacterMinimalPlusLoo
 }
 
 export class CharacterBaseInformations extends CharacterMinimalPlusLookInformations {
-    public static id: number = 6238;
+    public static id: number = 7798;
 
     public sex: boolean | undefined = false;
 
@@ -26282,7 +26282,7 @@ export interface RawHaapiApiKeyRequestMessage {
 }
 
 export class HaapiApiKeyRequestMessage extends DofusMessage {
-    public static id: number = 1761;
+    public static id: number = 2027;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -26851,8 +26851,8 @@ export class IdentificationSuccessMessage extends DofusMessage {
     public constructor(
         hasRights?: boolean | undefined,
         hasForceRight?: boolean | undefined,
-        nickname: string | undefined,
-        tagNumber: string | undefined,
+        nickname?: string | undefined,
+        tagNumber?: string | undefined,
         wasAlreadyConnected?: boolean | undefined,
         login?: string | undefined,
         accountId?: number | undefined,
@@ -26917,7 +26917,6 @@ export class IdentificationSuccessMessage extends DofusMessage {
         this.tagNumber = data.tagNumber;
         this.wasAlreadyConnected = data.wasAlreadyConnected;
         this.login = data.login;
-        this.accountTag = data.accountTag;
         this.accountId = data.accountId;
         this.communityId = data.communityId;
         this.accountCreation = data.accountCreation;
@@ -27482,7 +27481,7 @@ export interface RawCharacterCreationResultMessage {
 }
 
 export class CharacterCreationResultMessage extends DofusMessage {
-    public static id: number = 1146;
+    public static id: number = 1293;
 
     public result: number | undefined = 1;
 
@@ -27571,7 +27570,7 @@ export interface RawHelloGameMessage {
 }
 
 export class HelloGameMessage extends DofusMessage {
-    public static id: number = 4519;
+    public static id: number = 6694;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -27701,7 +27700,7 @@ export interface RawAuthenticationTicketAcceptedMessage {
 }
 
 export class AuthenticationTicketAcceptedMessage extends DofusMessage {
-    public static id: number = 9026;
+    public static id: number = 9044;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -29965,7 +29964,7 @@ export interface RawCharactersListMessage extends RawBasicCharactersListMessage 
 }
 
 export class CharactersListMessage extends BasicCharactersListMessage {
-    public static id = 434;
+    public static id = 1165;
 
     public hasStartupActions: boolean | undefined = false;
 
@@ -31499,12 +31498,12 @@ export interface RawReloginTokenStatusMessage {
 }
 
 export class ReloginTokenStatusMessage extends DofusMessage {
-    public static id: number = 6343;
+    public static id: number = 3729;
 
     public validToken: boolean | undefined = false;
-    public ticket: number[] | undefined;
+    public ticket: string | undefined = ""
 
-    public constructor(validToken?: boolean | undefined, ticket?: number[] | undefined) {
+    public constructor(validToken?: boolean | undefined, ticket?: string | undefined) {
         super();
         this.validToken = validToken;
         this.ticket = ticket;
@@ -31512,17 +31511,12 @@ export class ReloginTokenStatusMessage extends DofusMessage {
 
     public serialize(writer: BinaryWriter): void {
         writer.writeBoolean(this.validToken!);
-        writer.writeVarInt(this.ticket!.length);
-        this.ticket!.forEach((current: number) => writer.writeByte(current));
+        writer.writeUTF(this.ticket!);
     }
 
     public deserialize(reader: BinaryReader): void {
         this.validToken = reader.readBoolean();
-        this.ticket = [];
-        const countTicket = reader.readVarInt();
-        for (let i: number = 0; i < countTicket; i++) {
-            this.ticket.push(reader.readByte());
-        }
+        this.ticket = reader.readUTF();
     }
 
     public hydrate(data: ReloginTokenStatusMessage | Record<string, any>): ReloginTokenStatusMessage {
@@ -44459,10 +44453,11 @@ export class IdentificationSuccessWithLoginTokenMessage extends IdentificationSu
 
     public constructor(
         hasRights?: boolean | undefined,
-        hasConsoleRight?: boolean | undefined,
+        hasforceRights?: boolean | undefined,
+        nickname?: string | undefined,
+        tagNumber?: string | undefined,
         wasAlreadyConnected?: boolean | undefined,
         login?: string | undefined,
-        nickname?: string | undefined,
         accountId?: number | undefined,
         communityId?: number | undefined,
         secretQuestion?: string | undefined,
@@ -44474,15 +44469,14 @@ export class IdentificationSuccessWithLoginTokenMessage extends IdentificationSu
     ) {
         super(
             hasRights,
-            hasConsoleRight,
+            hasforceRights,
+            nickname,
+            tagNumber,
             wasAlreadyConnected,
             login,
-            nickname,
             accountId,
             communityId,
-            secretQuestion,
             accountCreation,
-            subscriptionElapsedDuration,
             subscriptionEndDate,
             havenbagAvailableRoom,
         );
@@ -54710,7 +54704,7 @@ export interface RawGuildFightTakePlaceRequestMessage extends RawGuildFightJoinR
 }
 
 export class GuildFightTakePlaceRequestMessage extends GuildFightJoinRequestMessage {
-    public static id = 2027;
+    public static id = 11111;
 
     public replacedCharacterId: number | undefined = 0;
 
@@ -58186,7 +58180,7 @@ export interface RawAuthenticationTicketMessage {
 }
 
 export class AuthenticationTicketMessage extends DofusMessage {
-    public static id: number = 1864;
+    public static id: number = 3503;
 
     public lang: string | undefined;
     public ticket: string | undefined;
@@ -58341,7 +58335,7 @@ export interface RawCharactersListRequestMessage {
 }
 
 export class CharactersListRequestMessage extends DofusMessage {
-    public static id: number = 2566;
+    public static id: number = 5450;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -58368,7 +58362,7 @@ export interface RawCharacterCreationRequestMessage {
 }
 
 export class CharacterCreationRequestMessage extends DofusMessage {
-    public static id: number = 1738;
+    public static id: number = 774;
 
     public name: string | undefined;
     public breed: number | undefined = 0;
@@ -59264,7 +59258,7 @@ export interface RawReloginTokenRequestMessage {
 }
 
 export class ReloginTokenRequestMessage extends DofusMessage {
-    public static id: number = 2386;
+    public static id: number = 567;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -59281,12 +59275,96 @@ export class ReloginTokenRequestMessage extends DofusMessage {
     }
 }
 
+export class CharacterDeletionPrepareRequestMessage extends DofusMessage {
+    public static id: number = 9338;
+
+    public characterId: number | undefined = 0;
+
+    public constructor(
+      characterId?: number | undefined
+    ) {
+      super()
+      this.characterId = characterId
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+    public serialize(writer: BinaryWriter): void {
+      writer.writeVarLong(this.characterId!)
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+    public deserialize(reader: BinaryReader): void {
+      this.characterId = reader.readVarUhLong()
+    }
+
+    public hydrate(data: CharacterDeletionPrepareRequestMessage | Record<string, any>): CharacterDeletionPrepareRequestMessage {
+      if (data instanceof CharacterDeletionPrepareRequestMessage) {
+          return data;
+      }
+
+      this.characterId = data.characterId;
+
+      return this;
+  }
+}
+export class CharacterDeletionPrepareMessage extends DofusMessage {
+  public static id: number = 4740;
+
+  public characterId: number | undefined = 0;
+  public characterName: string | undefined = "";
+  public secretQuestion: string | undefined = "";
+  public needSecretAnswer: boolean | undefined = false;
+
+  public constructor(
+    characterId?: number | undefined,
+    characterName?: string | undefined,
+    secretQuestion?: string | undefined,
+    needSecretAnswer?: boolean | undefined
+  ) {
+    super()
+    this.characterId = characterId
+    this.characterName = characterName
+    this.secretQuestion = secretQuestion
+    this.needSecretAnswer = needSecretAnswer
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+  public serialize(writer: BinaryWriter): void {
+    writer.writeVarLong(this.characterId!)
+    writer.writeUTF(this.characterName!)
+    writer.writeUTF(this.secretQuestion!)
+    writer.writeBoolean(this.needSecretAnswer!)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
+  public deserialize(reader: BinaryReader): void {
+    this.characterId = reader.readVarUhLong()
+    this.characterName = reader.readUTF()
+    this.secretQuestion = reader.readUTF()
+    this.needSecretAnswer = reader.readBoolean()
+  }
+
+  public hydrate(data: CharacterDeletionPrepareMessage | Record<string, any>): CharacterDeletionPrepareMessage {
+    if (data instanceof CharacterDeletionPrepareMessage) {
+        return data;
+    }
+
+    this.characterId = data.characterId;
+    this.characterName = data.characterName;
+    this.secretQuestion = data.secretQuestion;
+    this.needSecretAnswer = data.needSecretAnswer;
+
+    return this;
+}
+}
+
+
 export interface RawAnomalySubareaInformationRequestMessage {
     id: number;
 }
 
 export class AnomalySubareaInformationRequestMessage extends DofusMessage {
-    public static id: number = 5450;
+    public static id: number = 2320;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -63354,26 +63432,26 @@ export class BasicWhoAmIRequestMessage extends DofusMessage {
 export class WorldRegistrationRequestMessage extends DofusMessage {
 	public static id: number = 2590
 
-	public serverId: number
-	public address: string
-	public port: number
-	public name: string
-	public capacity: number
-	public requiredRole: number
-	public isMonoAccount: boolean
-	public isSelectable: boolean
-	public requireSubscription: boolean
+	public serverId: number | undefined
+	public address: string | undefined
+	public port: number | undefined
+	public name: string | undefined
+	public capacity: number | undefined
+	public requiredRole: number | undefined
+	public isMonoAccount: boolean | undefined
+	public isSelectable: boolean | undefined
+	public requireSubscription: boolean | undefined
 
 	constructor(
-		id: number,
-		address: string,
-		port: number,
-		name: string,
-		capacity: number,
-		requiredRole: number,
-		isMonoAccount: boolean,
-		isSelectable: boolean,
-		requireSubscription: boolean
+		id?: number | undefined,
+		address?: string | undefined,
+		port?: number | undefined,
+		name?: string | undefined,
+		capacity?: number | undefined,
+		requiredRole?: number | undefined,
+		isMonoAccount?: boolean | undefined,
+		isSelectable?: boolean | undefined,
+		requireSubscription?: boolean | undefined
 	) {
 		super()
 		this.serverId = id
@@ -63388,22 +63466,22 @@ export class WorldRegistrationRequestMessage extends DofusMessage {
 	}
 
 	public serialize(writer: BinaryWriter): void {
-    writer.writeVarInt(this.serverId)
-    writer.writeUTF(this.address)
-    writer.writeVarShort(this.port)
-    writer.writeUTF(this.name)
-    writer.writeVarShort(this.capacity)
-    writer.writeByte(this.requiredRole)
-    writer.writeBoolean(this.isMonoAccount)
-    writer.writeBoolean(this.isSelectable)
-    writer.writeBoolean(this.requireSubscription)
+    writer.writeVarInt(this.serverId!)
+    writer.writeUTF(this.address!)
+    writer.writeVarShort(this.port!)
+    writer.writeUTF(this.name!)
+    writer.writeVarShort(this.capacity!)
+    writer.writeByte(this.requiredRole!)
+    writer.writeBoolean(this.isMonoAccount!)
+    writer.writeBoolean(this.isSelectable!)
+    writer.writeBoolean(this.requireSubscription!)
 	}
 
 	public deserialize(reader: BinaryReader): void {
     this.serverId = reader.readVarInt()
     this.address = reader.readUTF()
     this.port = reader.readVarShort()
-    this.name = reader.readVarShort()
+    this.name = reader.readUTF()
     this.capacity = reader.readByte()
     this.requiredRole = reader.readByte()
     this.isMonoAccount = reader.readBoolean()
@@ -63638,8 +63716,8 @@ export const types: { [key: number]: typeof DofusType } = {
     6665: GameFightFighterNamedInformations,
     7807: GameFightCharacterInformations,
     6975: GameFightTaxCollectorInformations,
-    2892: EntityLook,
-    5174: SubEntity,
+    3340: EntityLook,
+    7682: SubEntity,
     9836: AbstractFightDispellableEffect,
     2131: SpawnInformation,
     7811: SpawnCompanionInformation,
@@ -63684,11 +63762,11 @@ export const types: { [key: number]: typeof DofusType } = {
     8031: StatedElement,
     4964: ActorRestrictionsInformations,
     1092: CharacterCharacteristicsInformations,
-    120: AbstractCharacterInformation,
-    9273: CharacterBasicMinimalInformations,
-    8058: CharacterMinimalInformations,
-    8237: CharacterMinimalPlusLookInformations,
-    6238: CharacterBaseInformations,
+    2111: AbstractCharacterInformation,
+    4297: CharacterBasicMinimalInformations,
+    1869: CharacterMinimalInformations,
+    9181: CharacterMinimalPlusLookInformations,
+    7798: CharacterBaseInformations,
     2740: FightDispellableEffectExtendedInformations,
     7802: GameActionMarkedCell,
     5766: FightResultListEntry,
@@ -64080,7 +64158,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     4660: GameFightNewRoundMessage,
     1497: RefreshCharacterStatsMessage,
     5295: SlaveSwitchContextMessage,
-    1761: HaapiApiKeyRequestMessage,
+    2027: HaapiApiKeyRequestMessage,
     2501: DebugClearHighlightCellsMessage,
     7861: DebugHighlightCellsMessage,
     2283: DebugInClientMessage,
@@ -64106,13 +64184,13 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     2223: ConsoleMessage,
     7788: QuestListMessage,
     7778: QuestValidatedMessage,
-    1146: CharacterCreationResultMessage,
+    1293: CharacterCreationResultMessage,
     1947: NicknameRefusedMessage,
     1279: NicknameAcceptedMessage,
-    4519: HelloGameMessage,
+    6694: HelloGameMessage,
     4710: GuildFactsErrorMessage,
     4019: AchievementDetailedListMessage,
-    9026: AuthenticationTicketAcceptedMessage,
+    9044: AuthenticationTicketAcceptedMessage,
     6703: GuildInvitationStateRecrutedMessage,
     7707: KamasUpdateMessage,
     7292: StorageObjectsUpdateMessage,
@@ -64165,7 +64243,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     3787: CheckFileRequestMessage,
     3230: ForgettableSpellListUpdateMessage,
     6850: ChatAbstractServerMessage,
-    434: CharactersListMessage,
+    1165: CharactersListMessage,
     1171: CharactersListWithRemodelingMessage,
     9817: InteractiveElementUpdatedMessage,
     5454: GameRolePlayFightRequestCanceledMessage,
@@ -64201,7 +64279,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     5722: GuildFightPlayersHelpersJoinMessage,
     3995: TaxCollectorMovementsOfflineMessage,
     2752: UpdateLifePointsMessage,
-    6343: ReloginTokenStatusMessage,
+    3729: ReloginTokenStatusMessage,
     6677: TitleGainedMessage,
     7685: InventoryContentMessage,
     8231: StorageInventoryContentMessage,
@@ -64757,7 +64835,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     429: FriendSetWarnOnLevelGainMessage,
     7455: FriendsGetListMessage,
     5265: GuildInvitationByNameMessage,
-    2027: GuildFightTakePlaceRequestMessage,
+    1111: GuildFightTakePlaceRequestMessage,
     7045: ChatAbstractClientMessage,
     6307: ChatClientPrivateMessage,
     5903: ChatClientPrivateWithObjectMessage,
@@ -64858,13 +64936,13 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6179: QuestStartRequestMessage,
     8701: AchievementDetailedListRequestMessage,
     2632: TreasureHuntDigRequestMessage,
-    1864: AuthenticationTicketMessage,
+    3503: AuthenticationTicketMessage,
     6200: CharacterSelectionMessage,
     3592: CharacterSelectionWithRemodelMessage,
     2144: CharacterNameSuggestionRequestMessage,
     5754: CharacterSelectedForceReadyMessage,
-    2566: CharactersListRequestMessage,
-    1738: CharacterCreationRequestMessage,
+    5450: CharactersListRequestMessage,
+    774: CharacterCreationRequestMessage,
     709: CharacterCanBeCreatedRequestMessage,
     9005: CharacterReplayRequestMessage,
     8678: CharacterReplayWithRemodelRequestMessage,
@@ -64889,8 +64967,8 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     8514: AlignmentWarEffortDonateRequestMessage,
     8769: AlignmentWarEffortProgressionRequestMessage,
     809: ObjectAveragePricesGetMessage,
-    2386: ReloginTokenRequestMessage,
-    5450: AnomalySubareaInformationRequestMessage,
+    567: ReloginTokenRequestMessage,
+    2320: AnomalySubareaInformationRequestMessage,
     8078: ZaapRespawnSaveRequestMessage,
     657: TeleportRequestMessage,
     3428: JobCrafterDirectoryDefineSettingsMessage,
@@ -64899,6 +64977,8 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     3123: ExchangeObjectUseInWorkshopMessage,
     4712: ExchangeReplayStopMessage,
     1855: ExchangeCraftCountRequestMessage,
+    4740: CharacterDeletionPrepareMessage,
+    9338: CharacterDeletionPrepareRequestMessage,
     2252: ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage,
     9081: ExchangeCraftPaymentModificationRequestMessage,
     9959: ExchangeSetCraftRecipeMessage,

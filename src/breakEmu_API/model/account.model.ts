@@ -8,6 +8,7 @@ class Account {
 	private _firstname: string
 	private _lastname: string
 	private _birthdate: Date
+  private _secretQuestion: string
 	private _login_at: Date
 	private _logout_at: Date
 	private _created_at: Date
@@ -28,6 +29,7 @@ class Account {
 		firstname: string,
 		lastname: string,
 		birthdate: Date,
+    secretQuestion: string,
 		login_at: Date,
 		logout_at: Date,
 		created_at: Date,
@@ -47,6 +49,7 @@ class Account {
 		this._firstname = firstname
 		this._lastname = lastname
 		this._birthdate = birthdate
+    this._secretQuestion = secretQuestion
 		this._login_at = login_at
 		this._logout_at = logout_at
 		this._created_at = created_at
@@ -93,6 +96,10 @@ class Account {
 	public get birthdate(): Date {
 		return this._birthdate
 	}
+
+  public get secretQuestion(): string {
+    return this._secretQuestion
+  }
 
 	public get login_at(): Date {
 		return this._login_at

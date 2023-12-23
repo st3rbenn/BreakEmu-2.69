@@ -151,14 +151,16 @@ class AuthController extends BaseController {
 				},
 			})
 
+			this.AuthClient?.account?.setPseudo(nickname as string)
+
 			await this.AuthClient.Send(
 				this.AuthClient.serialize(new NicknameAcceptedMessage())
 			)
 
-      return true
+			return true
 		} catch (error) {
 			this._logger.write(`Error setting nickname: ${error}`)
-      return false
+			return false
 		}
 	}
 }

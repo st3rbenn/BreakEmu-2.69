@@ -7,6 +7,16 @@ import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationMa
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import RSAKeyHandler from "../breakEmu_Core/RSAKeyHandler"
+import ServerClient from "../breakEmu_Server/ServerClient"
+import WorldServer from "../breakEmu_World/WorldServer"
+import WorldServerManager from "../breakEmu_World/WorldServerManager"
+import { AuthServer } from "./AuthServer"
+import ServerStatus from "./enum/ServerStatus"
+import WorldController from "../breakEmu_API/controller/world.controller"
+import ServerConnectionErrorEnum from "../breakEmu_World/enum/ServerConnectionErrorEnum"
+import ServerStatusEnum from "../breakEmu_World/enum/ServerStatusEnum"
+import TransitionServer from "./TransitionServer"
+
 import {
 	BasicPingMessage,
 	BasicPongMessage,
@@ -27,15 +37,6 @@ import {
 	SystemMessageDisplayMessage,
 	messages,
 } from "../breakEmu_Server/IO"
-import ServerClient from "../breakEmu_Server/ServerClient"
-import WorldServer from "../breakEmu_World/WorldServer"
-import WorldServerManager from "../breakEmu_World/WorldServerManager"
-import { AuthServer } from "./AuthServer"
-import ServerStatus from "./enum/ServerStatus"
-import WorldController from "../breakEmu_API/controller/world.controller"
-import ServerConnectionErrorEnum from "../breakEmu_World/enum/ServerConnectionErrorEnum"
-import ServerStatusEnum from "../breakEmu_World/enum/ServerStatusEnum"
-import TransitionServer from "./TransitionServer"
 
 export class AuthClient extends ServerClient {
 	public logger: Logger = new Logger("AuthClient")
@@ -46,8 +47,12 @@ export class AuthClient extends ServerClient {
 
 	private _account: Account | null = null
 
+	private authController: AuthController
+
 	public constructor(socket: Socket) {
 		super(socket)
+
+		this.authController = new AuthController(this)
 	}
 
 	public async setupEventHandlers(): Promise<void> {
@@ -250,9 +255,7 @@ export class AuthClient extends ServerClient {
 			)
 		}
 
-		const authController = new AuthController(this)
-
-		const user = await authController.login(username, password)
+		const user = await this.authController.login(username, password)
 
 		this._account = new Account(
 			user?.id as number,
@@ -264,6 +267,7 @@ export class AuthClient extends ServerClient {
 			user?.firstname as string,
 			user?.lastname as string,
 			user?.birthdate as Date,
+      user?.secretQuestion as string,
 			user?.login_at as Date,
 			user?.logout_at as Date,
 			user?.updated_at as Date,
@@ -291,7 +295,6 @@ export class AuthClient extends ServerClient {
 		message: DofusMessage
 	): Promise<void> {
 		const nickname = (message as NicknameChoiceRequestMessage).nickname
-		const nicknameController = new AuthController(this)
 
 		if (ConfigurationManager.getInstance().showDebugMessages) {
 			await this.logger.writeAsync(
@@ -300,13 +303,14 @@ export class AuthClient extends ServerClient {
 			)
 		}
 
-		const isNicknameDone = await nicknameController.setNickname(
+		const isNicknameDone = await this.authController.setNickname(
 			nickname as string
 		)
 
 		if (isNicknameDone) {
-			this?._account?.setPseudo(nickname as string)
+			this.logger.write(`isNicknameDone: ${isNicknameDone}`)
 			await this.handleIdentificationSuccessMessage()
+			await this.handleServersListMessage()
 		}
 	}
 
@@ -328,6 +332,7 @@ export class AuthClient extends ServerClient {
 			subscriptionEndDateUnix,
 			0
 		)
+		console.log("handleIdentificationSuccessMessage")
 
 		if (ConfigurationManager.getInstance().showProtocolMessage) {
 			await this.logger.writeAsync(
@@ -335,7 +340,7 @@ export class AuthClient extends ServerClient {
 			)
 		}
 
-    if (ConfigurationManager.getInstance().showDebugMessages) {
+		if (ConfigurationManager.getInstance().showDebugMessages) {
 			await this.logger.writeAsync(
 				"Sending needServerStatus to transition server"
 			)
@@ -349,13 +354,13 @@ export class AuthClient extends ServerClient {
 		if (ConfigurationManager.getInstance().showProtocolMessage) {
 			await this.logger.writeAsync("Sending ServersListMessage message")
 		}
+
+		const gameServerInformationArray = await WorldServerManager.getInstance().gameServerInformationArray(
+			this
+		)
+
 		this.Send(
-			this.serialize(
-				new ServersListMessage(
-					WorldServerManager.getInstance().gameServerInformationArray(this),
-					true
-				)
-			)
+			this.serialize(new ServersListMessage(gameServerInformationArray, true))
 		)
 	}
 
@@ -366,7 +371,7 @@ export class AuthClient extends ServerClient {
 			await this.Send(
 				this.serialize(
 					new SelectedServerRefusedMessage(
-						server[0].worldServerData.Id,
+						server[0].worldServerData?.Id,
 						ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_NO_REASON,
 						0
 					)
@@ -379,7 +384,7 @@ export class AuthClient extends ServerClient {
 			await this.Send(
 				this.serialize(
 					new SelectedServerRefusedMessage(
-						server[0].worldServerData.Id,
+						server[0].worldServerData?.Id,
 						ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_DUE_TO_STATUS,
 						0
 					)
@@ -389,12 +394,13 @@ export class AuthClient extends ServerClient {
 		}
 
 		if (
-			server[0].worldServerData.RequiredRole > (this._account?.role as number)
+			(server[0].worldServerData?.RequiredRole as number) >
+			(this._account?.role as number)
 		) {
 			await this.Send(
 				this.serialize(
 					new SelectedServerRefusedMessage(
-						server[0].worldServerData.Id,
+						server[0].worldServerData?.Id,
 						ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_ACCOUNT_RESTRICTED,
 						0
 					)
@@ -412,9 +418,9 @@ export class AuthClient extends ServerClient {
 		}
 
 		const selectedServerDataMessage = new SelectedServerDataMessage(
-			server.worldServerData.Id,
-			server.worldServerData.Address,
-			[server.worldServerData.Port],
+			server.worldServerData?.Id,
+			server.worldServerData?.Address,
+			[server.worldServerData?.Port as number],
 			true,
 			Buffer.from(
 				[...Array(32)].map(() => Math.random().toString(36)[2]).join("")
@@ -423,18 +429,23 @@ export class AuthClient extends ServerClient {
 
 		await client.Send(client.serialize(selectedServerDataMessage))
 
+		await TransitionServer.getInstance().sendAccountTransferMessage(
+			this._account?.pseudo as string
+		)
+
 		await client.disconnect()
 	}
 
 	public canAccessWorld(server: WorldServer): boolean {
 		const isAccessGranted =
-			(this?.account?.role as number) >= server.worldServerData.RequiredRole &&
+			(this?.account?.role as number) >=
+				(server.worldServerData?.RequiredRole as number) &&
 			this.account?.is_verified &&
 			this.account?.is_banned === false
 
 		if (!isAccessGranted) {
 			this.logger.writeAsync(
-				`User ${this.account?.username} tried to access server ${server.worldServerData.Id} but was denied`,
+				`User ${this.account?.username} tried to access server ${server.worldServerData?.Id} but was denied`,
 				ansiColorCodes.red
 			)
 		}

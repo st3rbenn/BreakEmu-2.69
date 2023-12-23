@@ -58,10 +58,6 @@ class ConnectionQueue {
 					(queue) => queue.position === socket.position
 				)
 				if (res) {
-					await this.logger.writeAsync(
-						`Client ${res.position} removed from queue`
-					)
-
           const index = this.queue.indexOf(res)
 
           if (index > -1) {
@@ -71,6 +67,9 @@ class ConnectionQueue {
 					await this.logger.writeAsync(
 						`Client ${socket.position} processed | ${this.queue.length} in queue`,
 						ansiColorCodes.bgMagenta
+					)
+					await this.logger.writeAsync(
+						`Client ${res.position} removed from queue`
 					)
 				}
 				this.isProcessing = false

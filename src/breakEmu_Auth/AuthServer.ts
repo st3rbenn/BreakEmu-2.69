@@ -1,24 +1,10 @@
-import { ConsumeMessage } from "amqplib"
-import { Socket, createServer } from "net"
-import WorldController from "../breakEmu_API/controller/world.controller"
+import { createServer } from "net"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
-import {
-	BinaryBigEndianWriter,
-	DofusMessage,
-	DofusNetworkMessage,
-	ServerStatusUpdateMessage,
-	messages,
-} from "../breakEmu_Server/IO"
-import WorldServerManager from "../breakEmu_World/WorldServerManager"
 import { AuthClient } from "./AuthClient"
-import {
-	default as TransitionManager,
-	default as TransitionServer,
-} from "./TransitionServer"
-import ServerStatus from "./enum/ServerStatus"
 import ConnectionQueue from "./ConnectionQueue"
+import ServerStatus from "./enum/ServerStatus"
 
 export class AuthServer {
 	public logger: Logger = new Logger("AuthServer")
@@ -83,8 +69,6 @@ export class AuthServer {
 				ansiColorCodes.magenta
 			)
 
-			this.handleMessages()
-
 			await this.logger.writeAsync(
 				`Total clients: ${
 					this.clients.filter((c) => c.Socket.writable).length
@@ -106,66 +90,5 @@ export class AuthServer {
 
 	public GetClients(): AuthClient[] {
 		return this.clients
-	}
-
-	public async handleMessages() {
-		// Supposons que TransitionManager a une méthode pour écouter les messages
-		TransitionManager.getInstance().receive(
-			"ServerStatusUpdateMessage",
-			async (msg: ConsumeMessage | null) => {
-				// Traiter le message ici
-				if (msg) {
-					// const message = this.deserialize(msg?.content)
-					const message = JSON.parse(msg.content.toString())
-					await this.logger.writeAsync(`ServerStatusUpdateMessage`)
-					const server = WorldController.getInstance().worldList.find(
-						(s) => s.worldServerData.Id === message.serverId
-					)
-					if (!server) return
-
-					server.SERVER_STATE = message.status
-
-					for (const client of AuthServer.getInstance().GetClients()) {
-						const gameServerMessage = WorldServerManager.getInstance().gameServerInformation(
-							client,
-							server,
-							message.status
-						)
-						const serverStatusUpdateMessage = new ServerStatusUpdateMessage(
-							gameServerMessage
-						)
-
-						await client.Send(client.serialize(serverStatusUpdateMessage))
-					}
-				}
-			}
-		)
-
-		TransitionManager.getInstance().receive(
-			"RequestForWorldListMessage",
-			async (msg: ConsumeMessage | null) => {
-				// Traiter le message ici
-				if (msg) {
-					console.log("RequestForWorldListMessage")
-					const serverList = WorldController.getInstance().worldList
-
-					let listOfWorlds: any[] = []
-
-					for (const server of serverList) {
-						listOfWorlds.push(server.worldServerData)
-					}
-
-					await TransitionManager.getInstance().send(
-						"worlds",
-						JSON.stringify({
-							messageId: 2590,
-							content: listOfWorlds[0],
-						})
-					)
-				}
-			}
-		)
-
-		// La méthode reste en écoute pour de nouveaux messages
 	}
 }

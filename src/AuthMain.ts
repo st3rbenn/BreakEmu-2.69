@@ -2,9 +2,8 @@ import Database from "./breakEmu_API/Database"
 import WorldController from "./breakEmu_API/controller/world.controller"
 import { AuthServer } from "./breakEmu_Auth/AuthServer"
 import TransitionServer from "./breakEmu_Auth/TransitionServer"
-import ConfigurationManager from "./breakEmu_Core/configuration/ConfigurationManager"
 import Logger from "./breakEmu_Core/Logger"
-import Playground from "./Playground"
+import ConfigurationManager from "./breakEmu_Core/configuration/ConfigurationManager"
 
 class Main {
 	public logger: Logger = new Logger("Main")
@@ -22,7 +21,7 @@ class Main {
 			await WorldController.getInstance().getRealmList()
 			await AuthServer.getInstance().Start()
 
-      AuthServer.getInstance().handleMessages()
+			await TransitionServer.getInstance().handleMessagesForAuth()
 
 			// await this.logger.writeAsync(`start server stress test socket in 5s`)
 			// wait 5s

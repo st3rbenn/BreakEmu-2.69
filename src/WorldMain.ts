@@ -1,11 +1,9 @@
 import Database from "./breakEmu_API/Database"
 import TransitionServer from "./breakEmu_Auth/TransitionServer"
-import ConfigurationManager from "./breakEmu_Core/configuration/ConfigurationManager"
 import { ansiColorCodes } from "./breakEmu_Core/Colors"
 import Logger from "./breakEmu_Core/Logger"
-import RSAKeyHandler from "./breakEmu_Core/RSAKeyHandler"
+import ConfigurationManager from "./breakEmu_Core/configuration/ConfigurationManager"
 import WorldServerManager from "./breakEmu_World/WorldServerManager"
-import ServerStatusEnum from "./breakEmu_World/enum/ServerStatusEnum"
 
 class Main {
 	public logger: Logger = new Logger("Main")
@@ -19,11 +17,17 @@ class Main {
 		await ConfigurationManager.getInstance().Load()
 		await Database.getInstance().initialize()
 		await TransitionServer.getInstance().connect()
-
-		await WorldServerManager.getInstance().Start()
+		TransitionServer.getInstance().handleMessagesForWorld()
 
 		await this.logger.writeAsync(`Server started!`, ansiColorCodes.bgGreen)
 	}
 }
+
+process.on("SIGINT", async () => {
+	WorldServerManager.getInstance()._realmList[0].Stop()
+  await Database.getInstance().prisma.$disconnect()
+	await TransitionServer.getInstance().disconnect()
+	process.exit()
+})
 
 new Main()

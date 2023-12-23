@@ -12,7 +12,7 @@ worldServer:
   port: 443
 debug:
   showDebugMessages: true
-  showProtocolMessage: false
+  showProtocolMessage: true
   showDatabaseLogs: false
 dofus:
   dofusProtocolVersion: 1.0.3+7dfcc24
