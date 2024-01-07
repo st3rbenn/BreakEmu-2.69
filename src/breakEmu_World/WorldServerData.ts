@@ -1,3 +1,7 @@
+import CharacterController from "../breakEmu_API/controller/character.controller"
+import { GameServerInformations } from "../breakEmu_Server/IO"
+import WorldClient from "./WorldClient"
+
 class WorldServerData {
 	private id: number
 	private address: string
@@ -65,6 +69,29 @@ class WorldServerData {
 
 	public get RequireSubscription(): boolean {
 		return this.requireSubscription
+	}
+
+	public async toGameServerInformations(
+		client: WorldClient,
+		status: number
+	): Promise<GameServerInformations> {
+		const charCount = await CharacterController.getInstance().getCharactersByAccountId(
+			client.account?.id || 0
+		)
+
+		const gameServerMessage = new GameServerInformations(
+			this.IsMonoAccount,
+			this.IsSelectable,
+			this.Id,
+			0,
+			status,
+			1,
+			charCount?.length,
+			5,
+			new Date().getTime()
+		)
+
+		return gameServerMessage
 	}
 }
 

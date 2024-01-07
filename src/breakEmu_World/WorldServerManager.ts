@@ -1,16 +1,19 @@
 import CharacterController from "../breakEmu_API/controller/character.controller"
 import WorldController from "../breakEmu_API/controller/world.controller"
-import { AuthClient } from "../breakEmu_Auth/AuthClient"
+import Account from "../breakEmu_API/model/account.model"
+import Character from "../breakEmu_API/model/character.model"
+import AuthClient from "../breakEmu_Auth/AuthClient"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import {
-	BinaryBigEndianReader,
-	DofusMessage,
-	DofusNetworkMessage,
-	GameServerInformations,
-	messages,
+  BinaryBigEndianReader,
+  DofusMessage,
+  DofusNetworkMessage,
+  GameServerInformations,
+  messages,
 } from "../breakEmu_Server/IO"
 import WorldServer from "./WorldServer"
+
 class WorldServerManager {
 	public logger: Logger = new Logger("WorldServerManager")
 
@@ -58,19 +61,28 @@ class WorldServerManager {
 	): Promise<GameServerInformations[]> {
 		const gsif = WorldController.getInstance()
 			.worldList.filter((server) => client.canAccessWorld(server))
-			.map(async (server) => await this.gameServerInformation(client, server))
+			.map(async (server) => await this.gameServerInformation(server, client))
 
 		return Promise.all(gsif)
 	}
 
 	public async gameServerInformation(
-		client: AuthClient,
 		server: WorldServer,
+		client: AuthClient | Account,
 		status?: number
 	): Promise<GameServerInformations> {
-		const charCount = await CharacterController.getInstance().getCharactersByAccountId(
-			client.account?.id || 0
-		)
+		let charCount: Character[] | undefined = undefined
+		if (client instanceof AuthClient) {
+			charCount = await CharacterController.getInstance().getCharactersByAccountId(
+				client?.account?.id || 0
+			)
+		}
+
+		if (client instanceof Account) {
+			charCount = await CharacterController.getInstance().getCharactersByAccountId(
+				client?.id || 0
+			)
+		}
 
 		const gameServerMessage = new GameServerInformations(
 			server.worldServerData?.IsMonoAccount,

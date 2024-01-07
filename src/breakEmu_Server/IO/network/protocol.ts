@@ -803,6 +803,136 @@ export enum AllianceRightsBitEnum {
     ALLIANCE_RIGHT_MANAGE_RIGHTS = 32,
 }
 
+export enum CharacteristicEnum
+{
+    LIFE_POINTS = 0,
+    ACTION_POINTS = 1,
+    STATS_POINTS = 3,
+    SPELLS_POINTS = 4,
+    LEVEL = 5,
+    STRENGTH = 10,
+    VITALITY = 11,
+    WISDOM = 12,
+    CHANCE = 13,
+    AGILITY = 14,
+    INTELLIGENCE = 15,
+    ALL_DAMAGES_BONUS = 16,
+    CRITICAL_HIT = 18,
+    RANGE = 19,
+    MAGICAL_REDUCTION = 20,
+    PHYSICAL_REDUCTION = 21,
+    EXPERIENCE_BOOST = 22,
+    MOVEMENT_POINTS = 23,
+    INVISIBILITY = 24,
+    DAMAGES_BONUS_PERCENT = 25,
+    SUMMONABLE_CREATURES_BOOST = 26,
+    DODGE_PALOST_PROBABILITY = 27,
+    DODGE_PMLOST_PROBABILITY = 28,
+    ENERGY_POINTS = 29,
+    ALIGNEMENT_VALUE = 30,
+    WEAPON_DAMAGES_BONUS_PERCENT = 31,
+    PHYSICAL_DAMAGES = 32,
+    EARTH_ELEMENT_RESIST_PERCENT = 33,
+    FIRE_ELEMENT_RESIST_PERCENT = 34,
+    WATER_ELEMENT_RESIST_PERCENT = 35,
+    AIR_ELEMENT_RESIST_PERCENT = 36,
+    NEUTRAL_ELEMENT_RESIST_PERCENT = 37,
+    CRITICAL_MISS = 39,
+    WEIGHT = 40,
+    NULL = 41,
+    NULL42 = 42,
+    ALIGNEMENT_SIDE = 43,
+    INITIATIVE = 44,
+    SHOP_PERCENT_REDUCTION = 45,
+    ALIGNEMENT_RANK = 46,
+    MAX_ENERGY_POINTS = 47,
+    PROSPECTING = 48,
+    HEAL_BONUS = 49,
+    REFLECT = 50,
+    ENERGY_LOOSE = 51,
+    HONOUR_POINTS = 52,
+    NULL53 = 53,
+    EARTH_ELEMENT_REDUCTION = 54,
+    FIRE_ELEMENT_REDUCTION = 55,
+    WATER_ELEMENT_REDUCTION = 56,
+    AIR_ELEMENT_REDUCTION = 57,
+    NEUTRAL_ELEMENT_REDUCTION = 58,
+    TRAP_BONUS_PERCENT = 69,
+    TRAP_BONUS = 70,
+    SOUL_CAPTURE_BONUS = 72,
+    RIDE_XPBONUS = 73,
+    CONFUSION = 74,
+    PERMANENT_DAMAGE_PERCENT = 75,
+    UNLUCKY = 76,
+    MAXIMIZE_ROLL = 77,
+    TACKLE_EVADE = 78,
+    TACKLE_BLOCK = 79,
+    ALLIANCE_AUTO_AGRESS_RANGE = 80,
+    ALLIANCE_AUTO_AGRESS_RESIST = 81,
+    PAATTACK = 82,
+    PMATTACK = 83,
+    PUSH_DAMAGE_BONUS = 84,
+    PUSH_DAMAGE_REDUCTION = 85,
+    CRITICAL_DAMAGE_BONUS = 86,
+    CRITICAL_DAMAGE_REDUCTION = 87,
+    EARTH_DAMAGE_BONUS = 88,
+    FIRE_DAMAGE_BONUS = 89,
+    WATER_DAMAGE_BONUS = 90,
+    AIR_DAMAGE_BONUS = 91,
+    NEUTRAL_DAMAGE_BONUS = 92,
+    MAX_BOMB = 93,
+    BOMB_COMBO = 94,
+    MAX_LIFE_POINTS = 95,
+    SHIELD = 96,
+    CUR_LIFE = 97,
+    SPELL_PERCENT_DAMAGES = 98,
+    EXTRA_SCALE = 99,
+    PASS_TURN = 100,
+    PERCENT_RESIST = 101,
+    WEAPON_POWER = 103,
+    INCOMING_PERCENT_DAMAGE_MULTIPLICATOR = 104,
+    INCOMING_PERCENT_HEAL_MULTIPLICATOR = 105,
+    GLYPH_POWER = 106,
+    DEALT_DAMAGES_MULTIPLICATOR = 107,
+    STOP_XP = 108,
+    HUNTER = 109,
+    RUNE_POWER = 110,
+    MELEE_DAMAGE_DONE_PERCENT = 112,
+    RANGED_DAMAGE_DONE_PERCENT = 113,
+    WEAPON_DAMAGE_DONE_PERCENT = 114,
+    MELEE_DAMAGE_RECEIVED_PERCENT = 115,
+    SPELL_DAMAGE_DONE_PERCENT = 116,
+    RANGED_DAMAGE_RECEIVED_PERCENT = 117,
+    WEAPON_DAMAGE_RECEIVED_PERCENT = 118,
+    SPELL_DAMAGE_RECEIVED_PERCENT = 119,
+    RANGED_DAMAGE_DONE_PERCENT120 = 120,
+    RANGED_DAMAGE_RECEIVED_PERCENT121 = 121,
+    WEAPON_DAMAGE_DONE_PERCENT122 = 122,
+    SPELL_DAMAGE_DONE_PERCENT123 = 123,
+    MELEE_DAMAGE_RECEIVED_PERCENT124 = 124,
+    MELEE_DAMAGE_DONE_PERCENT125 = 125,
+    AGILITY_INITIAL_PERCENT = 126,
+    STRENGTH_INITIAL_PERCENT = 127,
+    CHANCE_INITIAL_PERCENT = 128,
+    INTELLIGENCE_INITIAL_PERCENT = 129,
+    VITALITY_INITIAL_PERCENT = 130,
+    WISDOM_INITIAL_PERCENT = 131,
+    TACKLE_BLOCK_INITIAL_PERCENT = 132,
+    TACKLE_EVADE_INITIAL_PERCENT = 133,
+    ACTION_POINTS_INITIAL_PERCENT = 134,
+    MOVEMENT_POINTS_INITIAL_PERCENT = 135,
+    PAATTACK_INITIAL_PERCENT = 136,
+    PMATTACK_INITIAL_PERCENT = 137,
+    DODGE_PALOST_PROBABILITY_INITIAL_PERCENT = 138,
+    DODGE_PMLOST_PROBABILITY_INITIAL_PERCENT = 139,
+    EXTRA_SCALE_PERCENT = 140,
+    SPELL_DAMAGE_RECEIVED_PERCENT141 = 141,
+    WEAPON_DAMAGE_RECEIVED_PERCENT142 = 142,
+    MAX_ACTION_POINTS = 144,
+    MAX_MOVEMENT_POINTS = 145,
+
+}
+
 export enum AccessoryPreviewErrorEnum {
     PREVIEW_ERROR = 0,
     PREVIEW_COOLDOWN = 1,
@@ -1235,7 +1365,7 @@ export interface RawHavenBagRoomPreviewInformation {
 }
 
 export class HavenBagRoomPreviewInformation extends DofusType {
-    public static id: number = 7542;
+    public static id: number = 3168;
 
     public roomId: number | undefined = 0;
     public themeId: number | undefined = 0;
@@ -5276,6 +5406,112 @@ export class ActorRestrictionsInformations extends DofusType {
     }
 }
 
+export class SpellModifierMessage extends DofusType {
+  public static id: number = 1094;
+
+  public spellId: number | undefined = 0;
+  public actionType: number | undefined = 0;
+  public modifierType: number | undefined = 0;
+  public context: number | undefined = 0;
+  public equipment: number | undefined = 0;
+
+  public constructor(
+    spellId?: number | undefined,
+    actionType?: number | undefined,
+    modifierType?: number | undefined,
+    context?: number | undefined,
+    equipment?: number | undefined
+  ) {
+    super();
+    this.spellId = spellId;
+    this.actionType = actionType;
+    this.modifierType = modifierType;
+    this.context = context;
+    this.equipment = equipment;
+  }
+
+  public serialize(writer: BinaryWriter): void {
+    writer.writeVarShort(this.spellId!);
+    writer.writeByte(this.actionType!);
+    writer.writeByte(this.modifierType!);
+    writer.writeInt(this.context!);
+    writer.writeInt(this.equipment!);
+  }
+
+  public deserialize(reader: BinaryReader): void {
+    this.spellId = reader.readVarUShort();
+    this.actionType = reader.readByte();
+    this.modifierType = reader.readByte();
+    this.context = reader.readInt();
+    this.equipment = reader.readInt();
+  }
+}
+
+export class CharacterCharacteristic extends DofusType {
+  public static id: number = 9225;
+
+  public characteristicId: number | undefined = 0;
+
+  constructor(characteristicId?: number | undefined) {
+    super()
+    this.characteristicId = characteristicId
+  }
+
+  public serialize(writer: BinaryWriter): void {
+    writer.writeShort(this.characteristicId!);
+  }
+
+  public deserialize(reader: BinaryReader): void {
+    this.characteristicId = reader.readShort();
+  }
+}
+
+
+export class CharacterCharacteristicDetailed extends CharacterCharacteristic {
+  public static id: number = 446;
+
+  public base: number | undefined = 0;
+  public additional: number | undefined = 0;
+  public objectsAndMountBonus: number | undefined = 0;
+  public alignGiftBonus: number | undefined = 0;
+  public contextModif: number | undefined = 0;
+
+  constructor(
+    characteristicId?: number,
+    base?: number,
+    additional?: number,
+    objectsAndMountBonus?: number,
+    alignGiftBonus?: number,
+    contextModif?: number
+  ) {
+    super(characteristicId)
+    this.base = base;
+    this.additional = additional;
+    this.objectsAndMountBonus = objectsAndMountBonus;
+    this.alignGiftBonus = alignGiftBonus;
+    this.contextModif = contextModif;
+  }
+
+  public serialize(writer: BinaryWriter)
+  {
+      super.serialize(writer);
+      writer.writeVarShort(this.base!);
+      writer.writeVarShort(this.additional!);
+      writer.writeVarShort(this.objectsAndMountBonus!);
+      writer.writeVarShort(this.alignGiftBonus!);
+      writer.writeVarShort(this.contextModif!);
+  }
+  public deserialize(reader: BinaryReader)
+  {
+      super.deserialize(reader);
+      this.base = reader.readVarShort();
+      this.additional = reader.readVarShort();
+      this.objectsAndMountBonus = reader.readVarShort();
+      this.alignGiftBonus = reader.readVarShort();
+      this.contextModif = reader.readVarShort();
+  }
+}
+
 export interface RawCharacterCharacteristicsInformations {
     id: number;
     experience: number;
@@ -5364,94 +5600,18 @@ export interface RawCharacterCharacteristicsInformations {
     spellModifications: CharacterSpellModification[];
     probationTime: number;
 }
-
 export class CharacterCharacteristicsInformations extends DofusType {
-    public static id: number = 1092;
+    public static id: number = 4995;
 
     public experience: number | undefined = 0;
     public experienceLevelFloor: number | undefined = 0;
     public experienceNextLevelFloor: number | undefined = 0;
     public experienceBonusLimit: number | undefined = 0;
     public kamas: number | undefined = 0;
-    public statsPoints: number | undefined = 0;
-    public additionnalPoints: number | undefined = 0;
-    public spellsPoints: number | undefined = 0;
     public alignmentInfos: ActorExtendedAlignmentInformations | undefined;
-    public lifePoints: number | undefined = 0;
-    public maxLifePoints: number | undefined = 0;
-    public energyPoints: number | undefined = 0;
-    public maxEnergyPoints: number | undefined = 0;
-    public actionPointsCurrent: number | undefined = 0;
-    public movementPointsCurrent: number | undefined = 0;
-    public initiative: CharacterBaseCharacteristic | undefined;
-    public prospecting: CharacterBaseCharacteristic | undefined;
-    public actionPoints: CharacterBaseCharacteristic | undefined;
-    public movementPoints: CharacterBaseCharacteristic | undefined;
-    public strength: CharacterBaseCharacteristic | undefined;
-    public vitality: CharacterBaseCharacteristic | undefined;
-    public wisdom: CharacterBaseCharacteristic | undefined;
-    public chance: CharacterBaseCharacteristic | undefined;
-    public agility: CharacterBaseCharacteristic | undefined;
-    public intelligence: CharacterBaseCharacteristic | undefined;
-    public range: CharacterBaseCharacteristic | undefined;
-    public summonableCreaturesBoost: CharacterBaseCharacteristic | undefined;
-    public reflect: CharacterBaseCharacteristic | undefined;
-    public criticalHit: CharacterBaseCharacteristic | undefined;
+    public characteristics: CharacterCharacteristic[] | undefined = [];
     public criticalHitWeapon: number | undefined = 0;
-    public criticalMiss: CharacterBaseCharacteristic | undefined;
-    public healBonus: CharacterBaseCharacteristic | undefined;
-    public allDamagesBonus: CharacterBaseCharacteristic | undefined;
-    public weaponDamagesBonusPercent: CharacterBaseCharacteristic | undefined;
-    public damagesBonusPercent: CharacterBaseCharacteristic | undefined;
-    public trapBonus: CharacterBaseCharacteristic | undefined;
-    public trapBonusPercent: CharacterBaseCharacteristic | undefined;
-    public glyphBonusPercent: CharacterBaseCharacteristic | undefined;
-    public runeBonusPercent: CharacterBaseCharacteristic | undefined;
-    public permanentDamagePercent: CharacterBaseCharacteristic | undefined;
-    public tackleBlock: CharacterBaseCharacteristic | undefined;
-    public tackleEvade: CharacterBaseCharacteristic | undefined;
-    public PAAttack: CharacterBaseCharacteristic | undefined;
-    public PMAttack: CharacterBaseCharacteristic | undefined;
-    public pushDamageBonus: CharacterBaseCharacteristic | undefined;
-    public criticalDamageBonus: CharacterBaseCharacteristic | undefined;
-    public neutralDamageBonus: CharacterBaseCharacteristic | undefined;
-    public earthDamageBonus: CharacterBaseCharacteristic | undefined;
-    public waterDamageBonus: CharacterBaseCharacteristic | undefined;
-    public airDamageBonus: CharacterBaseCharacteristic | undefined;
-    public fireDamageBonus: CharacterBaseCharacteristic | undefined;
-    public dodgePALostProbability: CharacterBaseCharacteristic | undefined;
-    public dodgePMLostProbability: CharacterBaseCharacteristic | undefined;
-    public neutralElementResistPercent: CharacterBaseCharacteristic | undefined;
-    public earthElementResistPercent: CharacterBaseCharacteristic | undefined;
-    public waterElementResistPercent: CharacterBaseCharacteristic | undefined;
-    public airElementResistPercent: CharacterBaseCharacteristic | undefined;
-    public fireElementResistPercent: CharacterBaseCharacteristic | undefined;
-    public neutralElementReduction: CharacterBaseCharacteristic | undefined;
-    public earthElementReduction: CharacterBaseCharacteristic | undefined;
-    public waterElementReduction: CharacterBaseCharacteristic | undefined;
-    public airElementReduction: CharacterBaseCharacteristic | undefined;
-    public fireElementReduction: CharacterBaseCharacteristic | undefined;
-    public pushDamageReduction: CharacterBaseCharacteristic | undefined;
-    public criticalDamageReduction: CharacterBaseCharacteristic | undefined;
-    public pvpNeutralElementResistPercent: CharacterBaseCharacteristic | undefined;
-    public pvpEarthElementResistPercent: CharacterBaseCharacteristic | undefined;
-    public pvpWaterElementResistPercent: CharacterBaseCharacteristic | undefined;
-    public pvpAirElementResistPercent: CharacterBaseCharacteristic | undefined;
-    public pvpFireElementResistPercent: CharacterBaseCharacteristic | undefined;
-    public pvpNeutralElementReduction: CharacterBaseCharacteristic | undefined;
-    public pvpEarthElementReduction: CharacterBaseCharacteristic | undefined;
-    public pvpWaterElementReduction: CharacterBaseCharacteristic | undefined;
-    public pvpAirElementReduction: CharacterBaseCharacteristic | undefined;
-    public pvpFireElementReduction: CharacterBaseCharacteristic | undefined;
-    public meleeDamageDonePercent: CharacterBaseCharacteristic | undefined;
-    public meleeDamageReceivedPercent: CharacterBaseCharacteristic | undefined;
-    public rangedDamageDonePercent: CharacterBaseCharacteristic | undefined;
-    public rangedDamageReceivedPercent: CharacterBaseCharacteristic | undefined;
-    public weaponDamageDonePercent: CharacterBaseCharacteristic | undefined;
-    public weaponDamageReceivedPercent: CharacterBaseCharacteristic | undefined;
-    public spellDamageDonePercent: CharacterBaseCharacteristic | undefined;
-    public spellDamageReceivedPercent: CharacterBaseCharacteristic | undefined;
-    public spellModifications: CharacterSpellModification[] | undefined;
+    public spellModifiers: SpellModifierMessage[] | undefined;
     public probationTime: number | undefined = 0;
 
     public constructor(
@@ -5460,85 +5620,10 @@ export class CharacterCharacteristicsInformations extends DofusType {
         experienceNextLevelFloor?: number | undefined,
         experienceBonusLimit?: number | undefined,
         kamas?: number | undefined,
-        statsPoints?: number | undefined,
-        additionnalPoints?: number | undefined,
-        spellsPoints?: number | undefined,
         alignmentInfos?: ActorExtendedAlignmentInformations | undefined,
-        lifePoints?: number | undefined,
-        maxLifePoints?: number | undefined,
-        energyPoints?: number | undefined,
-        maxEnergyPoints?: number | undefined,
-        actionPointsCurrent?: number | undefined,
-        movementPointsCurrent?: number | undefined,
-        initiative?: CharacterBaseCharacteristic | undefined,
-        prospecting?: CharacterBaseCharacteristic | undefined,
-        actionPoints?: CharacterBaseCharacteristic | undefined,
-        movementPoints?: CharacterBaseCharacteristic | undefined,
-        strength?: CharacterBaseCharacteristic | undefined,
-        vitality?: CharacterBaseCharacteristic | undefined,
-        wisdom?: CharacterBaseCharacteristic | undefined,
-        chance?: CharacterBaseCharacteristic | undefined,
-        agility?: CharacterBaseCharacteristic | undefined,
-        intelligence?: CharacterBaseCharacteristic | undefined,
-        range?: CharacterBaseCharacteristic | undefined,
-        summonableCreaturesBoost?: CharacterBaseCharacteristic | undefined,
-        reflect?: CharacterBaseCharacteristic | undefined,
-        criticalHit?: CharacterBaseCharacteristic | undefined,
+        characteristics?: CharacterCharacteristic[] | undefined,
         criticalHitWeapon?: number | undefined,
-        criticalMiss?: CharacterBaseCharacteristic | undefined,
-        healBonus?: CharacterBaseCharacteristic | undefined,
-        allDamagesBonus?: CharacterBaseCharacteristic | undefined,
-        weaponDamagesBonusPercent?: CharacterBaseCharacteristic | undefined,
-        damagesBonusPercent?: CharacterBaseCharacteristic | undefined,
-        trapBonus?: CharacterBaseCharacteristic | undefined,
-        trapBonusPercent?: CharacterBaseCharacteristic | undefined,
-        glyphBonusPercent?: CharacterBaseCharacteristic | undefined,
-        runeBonusPercent?: CharacterBaseCharacteristic | undefined,
-        permanentDamagePercent?: CharacterBaseCharacteristic | undefined,
-        tackleBlock?: CharacterBaseCharacteristic | undefined,
-        tackleEvade?: CharacterBaseCharacteristic | undefined,
-        PAAttack?: CharacterBaseCharacteristic | undefined,
-        PMAttack?: CharacterBaseCharacteristic | undefined,
-        pushDamageBonus?: CharacterBaseCharacteristic | undefined,
-        criticalDamageBonus?: CharacterBaseCharacteristic | undefined,
-        neutralDamageBonus?: CharacterBaseCharacteristic | undefined,
-        earthDamageBonus?: CharacterBaseCharacteristic | undefined,
-        waterDamageBonus?: CharacterBaseCharacteristic | undefined,
-        airDamageBonus?: CharacterBaseCharacteristic | undefined,
-        fireDamageBonus?: CharacterBaseCharacteristic | undefined,
-        dodgePALostProbability?: CharacterBaseCharacteristic | undefined,
-        dodgePMLostProbability?: CharacterBaseCharacteristic | undefined,
-        neutralElementResistPercent?: CharacterBaseCharacteristic | undefined,
-        earthElementResistPercent?: CharacterBaseCharacteristic | undefined,
-        waterElementResistPercent?: CharacterBaseCharacteristic | undefined,
-        airElementResistPercent?: CharacterBaseCharacteristic | undefined,
-        fireElementResistPercent?: CharacterBaseCharacteristic | undefined,
-        neutralElementReduction?: CharacterBaseCharacteristic | undefined,
-        earthElementReduction?: CharacterBaseCharacteristic | undefined,
-        waterElementReduction?: CharacterBaseCharacteristic | undefined,
-        airElementReduction?: CharacterBaseCharacteristic | undefined,
-        fireElementReduction?: CharacterBaseCharacteristic | undefined,
-        pushDamageReduction?: CharacterBaseCharacteristic | undefined,
-        criticalDamageReduction?: CharacterBaseCharacteristic | undefined,
-        pvpNeutralElementResistPercent?: CharacterBaseCharacteristic | undefined,
-        pvpEarthElementResistPercent?: CharacterBaseCharacteristic | undefined,
-        pvpWaterElementResistPercent?: CharacterBaseCharacteristic | undefined,
-        pvpAirElementResistPercent?: CharacterBaseCharacteristic | undefined,
-        pvpFireElementResistPercent?: CharacterBaseCharacteristic | undefined,
-        pvpNeutralElementReduction?: CharacterBaseCharacteristic | undefined,
-        pvpEarthElementReduction?: CharacterBaseCharacteristic | undefined,
-        pvpWaterElementReduction?: CharacterBaseCharacteristic | undefined,
-        pvpAirElementReduction?: CharacterBaseCharacteristic | undefined,
-        pvpFireElementReduction?: CharacterBaseCharacteristic | undefined,
-        meleeDamageDonePercent?: CharacterBaseCharacteristic | undefined,
-        meleeDamageReceivedPercent?: CharacterBaseCharacteristic | undefined,
-        rangedDamageDonePercent?: CharacterBaseCharacteristic | undefined,
-        rangedDamageReceivedPercent?: CharacterBaseCharacteristic | undefined,
-        weaponDamageDonePercent?: CharacterBaseCharacteristic | undefined,
-        weaponDamageReceivedPercent?: CharacterBaseCharacteristic | undefined,
-        spellDamageDonePercent?: CharacterBaseCharacteristic | undefined,
-        spellDamageReceivedPercent?: CharacterBaseCharacteristic | undefined,
-        spellModifications?: CharacterSpellModification[] | undefined,
+        spellModifiers?: SpellModifierMessage[] | undefined,
         probationTime?: number | undefined,
     ) {
         super();
@@ -5547,85 +5632,10 @@ export class CharacterCharacteristicsInformations extends DofusType {
         this.experienceNextLevelFloor = experienceNextLevelFloor;
         this.experienceBonusLimit = experienceBonusLimit;
         this.kamas = kamas;
-        this.statsPoints = statsPoints;
-        this.additionnalPoints = additionnalPoints;
-        this.spellsPoints = spellsPoints;
         this.alignmentInfos = alignmentInfos;
-        this.lifePoints = lifePoints;
-        this.maxLifePoints = maxLifePoints;
-        this.energyPoints = energyPoints;
-        this.maxEnergyPoints = maxEnergyPoints;
-        this.actionPointsCurrent = actionPointsCurrent;
-        this.movementPointsCurrent = movementPointsCurrent;
-        this.initiative = initiative;
-        this.prospecting = prospecting;
-        this.actionPoints = actionPoints;
-        this.movementPoints = movementPoints;
-        this.strength = strength;
-        this.vitality = vitality;
-        this.wisdom = wisdom;
-        this.chance = chance;
-        this.agility = agility;
-        this.intelligence = intelligence;
-        this.range = range;
-        this.summonableCreaturesBoost = summonableCreaturesBoost;
-        this.reflect = reflect;
-        this.criticalHit = criticalHit;
+        this.characteristics = characteristics;
         this.criticalHitWeapon = criticalHitWeapon;
-        this.criticalMiss = criticalMiss;
-        this.healBonus = healBonus;
-        this.allDamagesBonus = allDamagesBonus;
-        this.weaponDamagesBonusPercent = weaponDamagesBonusPercent;
-        this.damagesBonusPercent = damagesBonusPercent;
-        this.trapBonus = trapBonus;
-        this.trapBonusPercent = trapBonusPercent;
-        this.glyphBonusPercent = glyphBonusPercent;
-        this.runeBonusPercent = runeBonusPercent;
-        this.permanentDamagePercent = permanentDamagePercent;
-        this.tackleBlock = tackleBlock;
-        this.tackleEvade = tackleEvade;
-        this.PAAttack = PAAttack;
-        this.PMAttack = PMAttack;
-        this.pushDamageBonus = pushDamageBonus;
-        this.criticalDamageBonus = criticalDamageBonus;
-        this.neutralDamageBonus = neutralDamageBonus;
-        this.earthDamageBonus = earthDamageBonus;
-        this.waterDamageBonus = waterDamageBonus;
-        this.airDamageBonus = airDamageBonus;
-        this.fireDamageBonus = fireDamageBonus;
-        this.dodgePALostProbability = dodgePALostProbability;
-        this.dodgePMLostProbability = dodgePMLostProbability;
-        this.neutralElementResistPercent = neutralElementResistPercent;
-        this.earthElementResistPercent = earthElementResistPercent;
-        this.waterElementResistPercent = waterElementResistPercent;
-        this.airElementResistPercent = airElementResistPercent;
-        this.fireElementResistPercent = fireElementResistPercent;
-        this.neutralElementReduction = neutralElementReduction;
-        this.earthElementReduction = earthElementReduction;
-        this.waterElementReduction = waterElementReduction;
-        this.airElementReduction = airElementReduction;
-        this.fireElementReduction = fireElementReduction;
-        this.pushDamageReduction = pushDamageReduction;
-        this.criticalDamageReduction = criticalDamageReduction;
-        this.pvpNeutralElementResistPercent = pvpNeutralElementResistPercent;
-        this.pvpEarthElementResistPercent = pvpEarthElementResistPercent;
-        this.pvpWaterElementResistPercent = pvpWaterElementResistPercent;
-        this.pvpAirElementResistPercent = pvpAirElementResistPercent;
-        this.pvpFireElementResistPercent = pvpFireElementResistPercent;
-        this.pvpNeutralElementReduction = pvpNeutralElementReduction;
-        this.pvpEarthElementReduction = pvpEarthElementReduction;
-        this.pvpWaterElementReduction = pvpWaterElementReduction;
-        this.pvpAirElementReduction = pvpAirElementReduction;
-        this.pvpFireElementReduction = pvpFireElementReduction;
-        this.meleeDamageDonePercent = meleeDamageDonePercent;
-        this.meleeDamageReceivedPercent = meleeDamageReceivedPercent;
-        this.rangedDamageDonePercent = rangedDamageDonePercent;
-        this.rangedDamageReceivedPercent = rangedDamageReceivedPercent;
-        this.weaponDamageDonePercent = weaponDamageDonePercent;
-        this.weaponDamageReceivedPercent = weaponDamageReceivedPercent;
-        this.spellDamageDonePercent = spellDamageDonePercent;
-        this.spellDamageReceivedPercent = spellDamageReceivedPercent;
-        this.spellModifications = spellModifications;
+        this.spellModifiers = spellModifiers;
         this.probationTime = probationTime;
     }
 
@@ -5635,353 +5645,46 @@ export class CharacterCharacteristicsInformations extends DofusType {
         writer.writeVarLong(this.experienceNextLevelFloor!);
         writer.writeVarLong(this.experienceBonusLimit!);
         writer.writeVarLong(this.kamas!);
-        writer.writeVarShort(this.statsPoints!);
-        writer.writeVarShort(this.additionnalPoints!);
-        writer.writeVarShort(this.spellsPoints!);
         this.alignmentInfos!.serialize(writer);
-        writer.writeVarInt(this.lifePoints!);
-        writer.writeVarInt(this.maxLifePoints!);
-        writer.writeVarShort(this.energyPoints!);
-        writer.writeVarShort(this.maxEnergyPoints!);
-        writer.writeVarShort(this.actionPointsCurrent!);
-        writer.writeVarShort(this.movementPointsCurrent!);
-        this.initiative!.serialize(writer);
-        this.prospecting!.serialize(writer);
-        this.actionPoints!.serialize(writer);
-        this.movementPoints!.serialize(writer);
-        this.strength!.serialize(writer);
-        this.vitality!.serialize(writer);
-        this.wisdom!.serialize(writer);
-        this.chance!.serialize(writer);
-        this.agility!.serialize(writer);
-        this.intelligence!.serialize(writer);
-        this.range!.serialize(writer);
-        this.summonableCreaturesBoost!.serialize(writer);
-        this.reflect!.serialize(writer);
-        this.criticalHit!.serialize(writer);
         writer.writeVarShort(this.criticalHitWeapon!);
-        this.criticalMiss!.serialize(writer);
-        this.healBonus!.serialize(writer);
-        this.allDamagesBonus!.serialize(writer);
-        this.weaponDamagesBonusPercent!.serialize(writer);
-        this.damagesBonusPercent!.serialize(writer);
-        this.trapBonus!.serialize(writer);
-        this.trapBonusPercent!.serialize(writer);
-        this.glyphBonusPercent!.serialize(writer);
-        this.runeBonusPercent!.serialize(writer);
-        this.permanentDamagePercent!.serialize(writer);
-        this.tackleBlock!.serialize(writer);
-        this.tackleEvade!.serialize(writer);
-        this.PAAttack!.serialize(writer);
-        this.PMAttack!.serialize(writer);
-        this.pushDamageBonus!.serialize(writer);
-        this.criticalDamageBonus!.serialize(writer);
-        this.neutralDamageBonus!.serialize(writer);
-        this.earthDamageBonus!.serialize(writer);
-        this.waterDamageBonus!.serialize(writer);
-        this.airDamageBonus!.serialize(writer);
-        this.fireDamageBonus!.serialize(writer);
-        this.dodgePALostProbability!.serialize(writer);
-        this.dodgePMLostProbability!.serialize(writer);
-        this.neutralElementResistPercent!.serialize(writer);
-        this.earthElementResistPercent!.serialize(writer);
-        this.waterElementResistPercent!.serialize(writer);
-        this.airElementResistPercent!.serialize(writer);
-        this.fireElementResistPercent!.serialize(writer);
-        this.neutralElementReduction!.serialize(writer);
-        this.earthElementReduction!.serialize(writer);
-        this.waterElementReduction!.serialize(writer);
-        this.airElementReduction!.serialize(writer);
-        this.fireElementReduction!.serialize(writer);
-        this.pushDamageReduction!.serialize(writer);
-        this.criticalDamageReduction!.serialize(writer);
-        this.pvpNeutralElementResistPercent!.serialize(writer);
-        this.pvpEarthElementResistPercent!.serialize(writer);
-        this.pvpWaterElementResistPercent!.serialize(writer);
-        this.pvpAirElementResistPercent!.serialize(writer);
-        this.pvpFireElementResistPercent!.serialize(writer);
-        this.pvpNeutralElementReduction!.serialize(writer);
-        this.pvpEarthElementReduction!.serialize(writer);
-        this.pvpWaterElementReduction!.serialize(writer);
-        this.pvpAirElementReduction!.serialize(writer);
-        this.pvpFireElementReduction!.serialize(writer);
-        this.meleeDamageDonePercent!.serialize(writer);
-        this.meleeDamageReceivedPercent!.serialize(writer);
-        this.rangedDamageDonePercent!.serialize(writer);
-        this.rangedDamageReceivedPercent!.serialize(writer);
-        this.weaponDamageDonePercent!.serialize(writer);
-        this.weaponDamageReceivedPercent!.serialize(writer);
-        this.spellDamageDonePercent!.serialize(writer);
-        this.spellDamageReceivedPercent!.serialize(writer);
-        writer.writeShort(this.spellModifications!.length);
-        this.spellModifications!.forEach((current) => {
+        writer.writeShort(this.characteristics!.length);
+        this.characteristics!.forEach((current) => {
+
+          current.serialize(writer);
+      });
+        writer.writeShort(this.spellModifiers!.length);
+        this.spellModifiers!.forEach((current) => {
             current.serialize(writer);
         });
         writer.writeInt(this.probationTime!);
     }
 
     public deserialize(reader: BinaryReader): void {
+        let id1 = 0;
         this.experience = reader.readVarLong();
         this.experienceLevelFloor = reader.readVarLong();
         this.experienceNextLevelFloor = reader.readVarLong();
         this.experienceBonusLimit = reader.readVarLong();
         this.kamas = reader.readVarLong();
-        this.statsPoints = reader.readVarShort();
-        this.additionnalPoints = reader.readVarShort();
-        this.spellsPoints = reader.readVarShort();
         this.alignmentInfos = new ActorExtendedAlignmentInformations();
         this.alignmentInfos!.deserialize(reader);
-        this.lifePoints = reader.readVarInt();
-        this.maxLifePoints = reader.readVarInt();
-        this.energyPoints = reader.readVarShort();
-        this.maxEnergyPoints = reader.readVarShort();
-        this.actionPointsCurrent = reader.readVarShort();
-        this.movementPointsCurrent = reader.readVarShort();
-        this.initiative = new CharacterBaseCharacteristic();
-        this.initiative!.deserialize(reader);
-        this.prospecting = new CharacterBaseCharacteristic();
-        this.prospecting!.deserialize(reader);
-        this.actionPoints = new CharacterBaseCharacteristic();
-        this.actionPoints!.deserialize(reader);
-        this.movementPoints = new CharacterBaseCharacteristic();
-        this.movementPoints!.deserialize(reader);
-        this.strength = new CharacterBaseCharacteristic();
-        this.strength!.deserialize(reader);
-        this.vitality = new CharacterBaseCharacteristic();
-        this.vitality!.deserialize(reader);
-        this.wisdom = new CharacterBaseCharacteristic();
-        this.wisdom!.deserialize(reader);
-        this.chance = new CharacterBaseCharacteristic();
-        this.chance!.deserialize(reader);
-        this.agility = new CharacterBaseCharacteristic();
-        this.agility!.deserialize(reader);
-        this.intelligence = new CharacterBaseCharacteristic();
-        this.intelligence!.deserialize(reader);
-        this.range = new CharacterBaseCharacteristic();
-        this.range!.deserialize(reader);
-        this.summonableCreaturesBoost = new CharacterBaseCharacteristic();
-        this.summonableCreaturesBoost!.deserialize(reader);
-        this.reflect = new CharacterBaseCharacteristic();
-        this.reflect!.deserialize(reader);
-        this.criticalHit = new CharacterBaseCharacteristic();
-        this.criticalHit!.deserialize(reader);
         this.criticalHitWeapon = reader.readVarShort();
-        this.criticalMiss = new CharacterBaseCharacteristic();
-        this.criticalMiss!.deserialize(reader);
-        this.healBonus = new CharacterBaseCharacteristic();
-        this.healBonus!.deserialize(reader);
-        this.allDamagesBonus = new CharacterBaseCharacteristic();
-        this.allDamagesBonus!.deserialize(reader);
-        this.weaponDamagesBonusPercent = new CharacterBaseCharacteristic();
-        this.weaponDamagesBonusPercent!.deserialize(reader);
-        this.damagesBonusPercent = new CharacterBaseCharacteristic();
-        this.damagesBonusPercent!.deserialize(reader);
-        this.trapBonus = new CharacterBaseCharacteristic();
-        this.trapBonus!.deserialize(reader);
-        this.trapBonusPercent = new CharacterBaseCharacteristic();
-        this.trapBonusPercent!.deserialize(reader);
-        this.glyphBonusPercent = new CharacterBaseCharacteristic();
-        this.glyphBonusPercent!.deserialize(reader);
-        this.runeBonusPercent = new CharacterBaseCharacteristic();
-        this.runeBonusPercent!.deserialize(reader);
-        this.permanentDamagePercent = new CharacterBaseCharacteristic();
-        this.permanentDamagePercent!.deserialize(reader);
-        this.tackleBlock = new CharacterBaseCharacteristic();
-        this.tackleBlock!.deserialize(reader);
-        this.tackleEvade = new CharacterBaseCharacteristic();
-        this.tackleEvade!.deserialize(reader);
-        this.PAAttack = new CharacterBaseCharacteristic();
-        this.PAAttack!.deserialize(reader);
-        this.PMAttack = new CharacterBaseCharacteristic();
-        this.PMAttack!.deserialize(reader);
-        this.pushDamageBonus = new CharacterBaseCharacteristic();
-        this.pushDamageBonus!.deserialize(reader);
-        this.criticalDamageBonus = new CharacterBaseCharacteristic();
-        this.criticalDamageBonus!.deserialize(reader);
-        this.neutralDamageBonus = new CharacterBaseCharacteristic();
-        this.neutralDamageBonus!.deserialize(reader);
-        this.earthDamageBonus = new CharacterBaseCharacteristic();
-        this.earthDamageBonus!.deserialize(reader);
-        this.waterDamageBonus = new CharacterBaseCharacteristic();
-        this.waterDamageBonus!.deserialize(reader);
-        this.airDamageBonus = new CharacterBaseCharacteristic();
-        this.airDamageBonus!.deserialize(reader);
-        this.fireDamageBonus = new CharacterBaseCharacteristic();
-        this.fireDamageBonus!.deserialize(reader);
-        this.dodgePALostProbability = new CharacterBaseCharacteristic();
-        this.dodgePALostProbability!.deserialize(reader);
-        this.dodgePMLostProbability = new CharacterBaseCharacteristic();
-        this.dodgePMLostProbability!.deserialize(reader);
-        this.neutralElementResistPercent = new CharacterBaseCharacteristic();
-        this.neutralElementResistPercent!.deserialize(reader);
-        this.earthElementResistPercent = new CharacterBaseCharacteristic();
-        this.earthElementResistPercent!.deserialize(reader);
-        this.waterElementResistPercent = new CharacterBaseCharacteristic();
-        this.waterElementResistPercent!.deserialize(reader);
-        this.airElementResistPercent = new CharacterBaseCharacteristic();
-        this.airElementResistPercent!.deserialize(reader);
-        this.fireElementResistPercent = new CharacterBaseCharacteristic();
-        this.fireElementResistPercent!.deserialize(reader);
-        this.neutralElementReduction = new CharacterBaseCharacteristic();
-        this.neutralElementReduction!.deserialize(reader);
-        this.earthElementReduction = new CharacterBaseCharacteristic();
-        this.earthElementReduction!.deserialize(reader);
-        this.waterElementReduction = new CharacterBaseCharacteristic();
-        this.waterElementReduction!.deserialize(reader);
-        this.airElementReduction = new CharacterBaseCharacteristic();
-        this.airElementReduction!.deserialize(reader);
-        this.fireElementReduction = new CharacterBaseCharacteristic();
-        this.fireElementReduction!.deserialize(reader);
-        this.pushDamageReduction = new CharacterBaseCharacteristic();
-        this.pushDamageReduction!.deserialize(reader);
-        this.criticalDamageReduction = new CharacterBaseCharacteristic();
-        this.criticalDamageReduction!.deserialize(reader);
-        this.pvpNeutralElementResistPercent = new CharacterBaseCharacteristic();
-        this.pvpNeutralElementResistPercent!.deserialize(reader);
-        this.pvpEarthElementResistPercent = new CharacterBaseCharacteristic();
-        this.pvpEarthElementResistPercent!.deserialize(reader);
-        this.pvpWaterElementResistPercent = new CharacterBaseCharacteristic();
-        this.pvpWaterElementResistPercent!.deserialize(reader);
-        this.pvpAirElementResistPercent = new CharacterBaseCharacteristic();
-        this.pvpAirElementResistPercent!.deserialize(reader);
-        this.pvpFireElementResistPercent = new CharacterBaseCharacteristic();
-        this.pvpFireElementResistPercent!.deserialize(reader);
-        this.pvpNeutralElementReduction = new CharacterBaseCharacteristic();
-        this.pvpNeutralElementReduction!.deserialize(reader);
-        this.pvpEarthElementReduction = new CharacterBaseCharacteristic();
-        this.pvpEarthElementReduction!.deserialize(reader);
-        this.pvpWaterElementReduction = new CharacterBaseCharacteristic();
-        this.pvpWaterElementReduction!.deserialize(reader);
-        this.pvpAirElementReduction = new CharacterBaseCharacteristic();
-        this.pvpAirElementReduction!.deserialize(reader);
-        this.pvpFireElementReduction = new CharacterBaseCharacteristic();
-        this.pvpFireElementReduction!.deserialize(reader);
-        this.meleeDamageDonePercent = new CharacterBaseCharacteristic();
-        this.meleeDamageDonePercent!.deserialize(reader);
-        this.meleeDamageReceivedPercent = new CharacterBaseCharacteristic();
-        this.meleeDamageReceivedPercent!.deserialize(reader);
-        this.rangedDamageDonePercent = new CharacterBaseCharacteristic();
-        this.rangedDamageDonePercent!.deserialize(reader);
-        this.rangedDamageReceivedPercent = new CharacterBaseCharacteristic();
-        this.rangedDamageReceivedPercent!.deserialize(reader);
-        this.weaponDamageDonePercent = new CharacterBaseCharacteristic();
-        this.weaponDamageDonePercent!.deserialize(reader);
-        this.weaponDamageReceivedPercent = new CharacterBaseCharacteristic();
-        this.weaponDamageReceivedPercent!.deserialize(reader);
-        this.spellDamageDonePercent = new CharacterBaseCharacteristic();
-        this.spellDamageDonePercent!.deserialize(reader);
-        this.spellDamageReceivedPercent = new CharacterBaseCharacteristic();
-        this.spellDamageReceivedPercent!.deserialize(reader);
-        this.spellModifications = [];
-        const countSpellModifications = reader.readShort();
+        this.characteristics = [];
+        const countCharacteristics = reader.readUShort();
+        for (let i: number = 0; i < countCharacteristics; i++) {
+          id1 = reader.readUShort()
+          const type: CharacterCharacteristic = new CharacterCharacteristic();
+          type.deserialize(reader);
+          this.characteristics.push(type);
+      }
+        this.spellModifiers = [];
+        const countSpellModifications = reader.readUShort();
         for (let i: number = 0; i < countSpellModifications; i++) {
-            const type: CharacterSpellModification = new CharacterSpellModification();
+            const type: SpellModifierMessage = new SpellModifierMessage();
             type.deserialize(reader);
-            this.spellModifications.push(type);
+            this.spellModifiers.push(type);
         }
         this.probationTime = reader.readInt();
-    }
-
-    public hydrate(data: CharacterCharacteristicsInformations | Record<string, any>): CharacterCharacteristicsInformations {
-        if (data instanceof CharacterCharacteristicsInformations) {
-            return data;
-        }
-
-        this.experience = data.experience;
-        this.experienceLevelFloor = data.experienceLevelFloor;
-        this.experienceNextLevelFloor = data.experienceNextLevelFloor;
-        this.experienceBonusLimit = data.experienceBonusLimit;
-        this.kamas = data.kamas;
-        this.statsPoints = data.statsPoints;
-        this.additionnalPoints = data.additionnalPoints;
-        this.spellsPoints = data.spellsPoints;
-        this.alignmentInfos = new ActorExtendedAlignmentInformations().hydrate(data.alignmentInfos);
-        this.lifePoints = data.lifePoints;
-        this.maxLifePoints = data.maxLifePoints;
-        this.energyPoints = data.energyPoints;
-        this.maxEnergyPoints = data.maxEnergyPoints;
-        this.actionPointsCurrent = data.actionPointsCurrent;
-        this.movementPointsCurrent = data.movementPointsCurrent;
-        this.initiative = new CharacterBaseCharacteristic().hydrate(data.initiative);
-        this.prospecting = new CharacterBaseCharacteristic().hydrate(data.prospecting);
-        this.actionPoints = new CharacterBaseCharacteristic().hydrate(data.actionPoints);
-        this.movementPoints = new CharacterBaseCharacteristic().hydrate(data.movementPoints);
-        this.strength = new CharacterBaseCharacteristic().hydrate(data.strength);
-        this.vitality = new CharacterBaseCharacteristic().hydrate(data.vitality);
-        this.wisdom = new CharacterBaseCharacteristic().hydrate(data.wisdom);
-        this.chance = new CharacterBaseCharacteristic().hydrate(data.chance);
-        this.agility = new CharacterBaseCharacteristic().hydrate(data.agility);
-        this.intelligence = new CharacterBaseCharacteristic().hydrate(data.intelligence);
-        this.range = new CharacterBaseCharacteristic().hydrate(data.range);
-        this.summonableCreaturesBoost = new CharacterBaseCharacteristic().hydrate(data.summonableCreaturesBoost);
-        this.reflect = new CharacterBaseCharacteristic().hydrate(data.reflect);
-        this.criticalHit = new CharacterBaseCharacteristic().hydrate(data.criticalHit);
-        this.criticalHitWeapon = data.criticalHitWeapon;
-        this.criticalMiss = new CharacterBaseCharacteristic().hydrate(data.criticalMiss);
-        this.healBonus = new CharacterBaseCharacteristic().hydrate(data.healBonus);
-        this.allDamagesBonus = new CharacterBaseCharacteristic().hydrate(data.allDamagesBonus);
-        this.weaponDamagesBonusPercent = new CharacterBaseCharacteristic().hydrate(data.weaponDamagesBonusPercent);
-        this.damagesBonusPercent = new CharacterBaseCharacteristic().hydrate(data.damagesBonusPercent);
-        this.trapBonus = new CharacterBaseCharacteristic().hydrate(data.trapBonus);
-        this.trapBonusPercent = new CharacterBaseCharacteristic().hydrate(data.trapBonusPercent);
-        this.glyphBonusPercent = new CharacterBaseCharacteristic().hydrate(data.glyphBonusPercent);
-        this.runeBonusPercent = new CharacterBaseCharacteristic().hydrate(data.runeBonusPercent);
-        this.permanentDamagePercent = new CharacterBaseCharacteristic().hydrate(data.permanentDamagePercent);
-        this.tackleBlock = new CharacterBaseCharacteristic().hydrate(data.tackleBlock);
-        this.tackleEvade = new CharacterBaseCharacteristic().hydrate(data.tackleEvade);
-        this.PAAttack = new CharacterBaseCharacteristic().hydrate(data.PAAttack);
-        this.PMAttack = new CharacterBaseCharacteristic().hydrate(data.PMAttack);
-        this.pushDamageBonus = new CharacterBaseCharacteristic().hydrate(data.pushDamageBonus);
-        this.criticalDamageBonus = new CharacterBaseCharacteristic().hydrate(data.criticalDamageBonus);
-        this.neutralDamageBonus = new CharacterBaseCharacteristic().hydrate(data.neutralDamageBonus);
-        this.earthDamageBonus = new CharacterBaseCharacteristic().hydrate(data.earthDamageBonus);
-        this.waterDamageBonus = new CharacterBaseCharacteristic().hydrate(data.waterDamageBonus);
-        this.airDamageBonus = new CharacterBaseCharacteristic().hydrate(data.airDamageBonus);
-        this.fireDamageBonus = new CharacterBaseCharacteristic().hydrate(data.fireDamageBonus);
-        this.dodgePALostProbability = new CharacterBaseCharacteristic().hydrate(data.dodgePALostProbability);
-        this.dodgePMLostProbability = new CharacterBaseCharacteristic().hydrate(data.dodgePMLostProbability);
-        this.neutralElementResistPercent = new CharacterBaseCharacteristic().hydrate(data.neutralElementResistPercent);
-        this.earthElementResistPercent = new CharacterBaseCharacteristic().hydrate(data.earthElementResistPercent);
-        this.waterElementResistPercent = new CharacterBaseCharacteristic().hydrate(data.waterElementResistPercent);
-        this.airElementResistPercent = new CharacterBaseCharacteristic().hydrate(data.airElementResistPercent);
-        this.fireElementResistPercent = new CharacterBaseCharacteristic().hydrate(data.fireElementResistPercent);
-        this.neutralElementReduction = new CharacterBaseCharacteristic().hydrate(data.neutralElementReduction);
-        this.earthElementReduction = new CharacterBaseCharacteristic().hydrate(data.earthElementReduction);
-        this.waterElementReduction = new CharacterBaseCharacteristic().hydrate(data.waterElementReduction);
-        this.airElementReduction = new CharacterBaseCharacteristic().hydrate(data.airElementReduction);
-        this.fireElementReduction = new CharacterBaseCharacteristic().hydrate(data.fireElementReduction);
-        this.pushDamageReduction = new CharacterBaseCharacteristic().hydrate(data.pushDamageReduction);
-        this.criticalDamageReduction = new CharacterBaseCharacteristic().hydrate(data.criticalDamageReduction);
-        this.pvpNeutralElementResistPercent = new CharacterBaseCharacteristic().hydrate(data.pvpNeutralElementResistPercent);
-        this.pvpEarthElementResistPercent = new CharacterBaseCharacteristic().hydrate(data.pvpEarthElementResistPercent);
-        this.pvpWaterElementResistPercent = new CharacterBaseCharacteristic().hydrate(data.pvpWaterElementResistPercent);
-        this.pvpAirElementResistPercent = new CharacterBaseCharacteristic().hydrate(data.pvpAirElementResistPercent);
-        this.pvpFireElementResistPercent = new CharacterBaseCharacteristic().hydrate(data.pvpFireElementResistPercent);
-        this.pvpNeutralElementReduction = new CharacterBaseCharacteristic().hydrate(data.pvpNeutralElementReduction);
-        this.pvpEarthElementReduction = new CharacterBaseCharacteristic().hydrate(data.pvpEarthElementReduction);
-        this.pvpWaterElementReduction = new CharacterBaseCharacteristic().hydrate(data.pvpWaterElementReduction);
-        this.pvpAirElementReduction = new CharacterBaseCharacteristic().hydrate(data.pvpAirElementReduction);
-        this.pvpFireElementReduction = new CharacterBaseCharacteristic().hydrate(data.pvpFireElementReduction);
-        this.meleeDamageDonePercent = new CharacterBaseCharacteristic().hydrate(data.meleeDamageDonePercent);
-        this.meleeDamageReceivedPercent = new CharacterBaseCharacteristic().hydrate(data.meleeDamageReceivedPercent);
-        this.rangedDamageDonePercent = new CharacterBaseCharacteristic().hydrate(data.rangedDamageDonePercent);
-        this.rangedDamageReceivedPercent = new CharacterBaseCharacteristic().hydrate(data.rangedDamageReceivedPercent);
-        this.weaponDamageDonePercent = new CharacterBaseCharacteristic().hydrate(data.weaponDamageDonePercent);
-        this.weaponDamageReceivedPercent = new CharacterBaseCharacteristic().hydrate(data.weaponDamageReceivedPercent);
-        this.spellDamageDonePercent = new CharacterBaseCharacteristic().hydrate(data.spellDamageDonePercent);
-        this.spellDamageReceivedPercent = new CharacterBaseCharacteristic().hydrate(data.spellDamageReceivedPercent);
-        this.spellModifications = data.spellModifications.map(
-            (dataElement: CharacterSpellModification | Record<string, any>): CharacterSpellModification => {
-                if (dataElement instanceof CharacterSpellModification) {
-                    return dataElement;
-                } else {
-                    return new CharacterSpellModification().hydrate(dataElement);
-                }
-            },
-        );
-        this.probationTime = data.probationTime;
-
-        return this;
     }
 }
 
@@ -6957,7 +6660,7 @@ export interface RawAchievementAchieved {
 }
 
 export class AchievementAchieved extends DofusType {
-    public static id: number = 9231;
+    public static id: number = 5822;
 
     public id_: number | undefined = 0;
     public achievedBy: number | undefined = 0;
@@ -6995,7 +6698,7 @@ export interface RawItem {
 }
 
 export class Item extends DofusType {
-    public static id: number = 2202;
+    public static id: number = 5596;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -7022,7 +6725,7 @@ export interface RawObjectItem extends RawItem {
 }
 
 export class ObjectItem extends Item {
-    public static id: number = 5598;
+    public static id: number = 9326;
 
     public position: number | undefined = 63;
     public objectGID: number | undefined = 0;
@@ -7326,7 +7029,7 @@ export interface RawQuestActiveInformations {
 }
 
 export class QuestActiveInformations extends DofusType {
-    public static id: number = 2513;
+    public static id: number = 6433;
 
     public questId: number | undefined = 0;
 
@@ -8996,7 +8699,7 @@ export interface RawFriendInformations extends RawAbstractContactInformations {
 }
 
 export class FriendInformations extends AbstractContactInformations {
-    public static id: number = 3453;
+    public static id: number = 9286;
 
     public playerState: number | undefined = 99;
     public lastConnection: number | undefined = 0;
@@ -10750,7 +10453,7 @@ export interface RawActorExtendedAlignmentInformations extends RawActorAlignment
 }
 
 export class ActorExtendedAlignmentInformations extends ActorAlignmentInformations {
-    public static id: number = 5506;
+    public static id: number = 8515;
 
     public honor: number | undefined = 0;
     public honorGradeFloor: number | undefined = 0;
@@ -12390,6 +12093,20 @@ export class IdolsPreset extends Preset {
     }
 }
 
+export class AllianceGetPlayerApplicationMessage extends DofusMessage {
+  public static id: number = 4833;
+
+  constructor() {
+    super()
+  }
+
+  public serialize(writer: BinaryWriter): void {
+  }
+
+  public deserialize(reader: BinaryReader): void {
+  }
+}
+
 export interface RawAlliancedGuildFactSheetInformations extends RawGuildInformations {
     id: number;
     allianceInfos: BasicNamedAllianceInformations;
@@ -12503,7 +12220,7 @@ export interface RawShortcut {
 }
 
 export class Shortcut extends DofusType {
-    public static id: number = 5811;
+    public static id: number = 8239;
 
     public slot: number | undefined = 0;
 
@@ -16475,7 +16192,7 @@ export interface RawRemodelingInformation {
 }
 
 export class RemodelingInformation extends DofusType {
-    public static id: number = 6075;
+    public static id: number = 7815;
 
     public name: string | undefined;
     public breed: number | undefined = 0;
@@ -21182,8 +20899,6 @@ export class FighterStatsListMessage extends DofusMessage {
             return data;
         }
 
-        this.stats = new CharacterCharacteristicsInformations().hydrate(data.stats);
-
         return this;
     }
 }
@@ -23930,7 +23645,7 @@ export interface RawMapFightCountMessage {
 }
 
 export class MapFightCountMessage extends DofusMessage {
-    public static id: number = 3684;
+    public static id: number = 3604;
 
     public fightCount: number | undefined = 0;
 
@@ -25801,7 +25516,7 @@ export interface RawCharacterStatsListMessage {
 }
 
 export class CharacterStatsListMessage extends DofusMessage {
-    public static id: number = 4663;
+    public static id: number = 5364;
 
     public stats: CharacterCharacteristicsInformations | undefined;
 
@@ -25823,8 +25538,6 @@ export class CharacterStatsListMessage extends DofusMessage {
         if (data instanceof CharacterStatsListMessage) {
             return data;
         }
-
-        this.stats = new CharacterCharacteristicsInformations().hydrate(data.stats);
 
         return this;
     }
@@ -26262,7 +25975,6 @@ export class SlaveSwitchContextMessage extends DofusMessage {
                 }
             },
         );
-        this.slaveStats = new CharacterCharacteristicsInformations().hydrate(data.slaveStats);
         this.shortcuts = data.shortcuts.map(
             (dataElement: Shortcut | Record<string, any>): Shortcut => {
                 if (dataElement instanceof Shortcut) {
@@ -26304,7 +26016,7 @@ export interface RawDebugClearHighlightCellsMessage {
 }
 
 export class DebugClearHighlightCellsMessage extends DofusMessage {
-    public static id: number = 2501;
+    public static id: number = 2503;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -26412,7 +26124,7 @@ export interface RawAchievementListMessage {
 }
 
 export class AchievementListMessage extends DofusMessage {
-    public static id: number = 3313;
+    public static id: number = 8158;
 
     public finishedAchievements: AchievementAchieved[] | undefined;
 
@@ -26621,7 +26333,7 @@ export interface RawBasicAckMessage {
 }
 
 export class BasicAckMessage extends DofusMessage {
-    public static id: number = 8259;
+    public static id: number = 9898;
 
     public seq: number | undefined = 0;
     public lastPacketId: number | undefined = 0;
@@ -26659,7 +26371,7 @@ export interface RawBasicNoOperationMessage {
 }
 
 export class BasicNoOperationMessage extends DofusMessage {
-    public static id: number = 8108;
+    public static id: number = 7318;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -27041,7 +26753,7 @@ export interface RawTrustStatusMessage {
 }
 
 export class TrustStatusMessage extends DofusMessage {
-    public static id: number = 6289;
+    public static id: number = 2545;
 
     public trusted: boolean | undefined = false;
     public certified: boolean | undefined = false;
@@ -27359,7 +27071,7 @@ export interface RawQuestListMessage {
 }
 
 export class QuestListMessage extends DofusMessage {
-    public static id: number = 7788;
+    public static id: number = 3230;
 
     public finishedQuestsIds: number[] | undefined;
     public finishedQuestsCounts: number[] | undefined;
@@ -27482,20 +27194,24 @@ export interface RawCharacterCreationResultMessage {
 
 export class CharacterCreationResultMessage extends DofusMessage {
     public static id: number = 1293;
-
+    
     public result: number | undefined = 1;
+    public reason: number | undefined = 1;
 
-    public constructor(result?: number | undefined) {
+    public constructor(result?: number | undefined, reason?: number | undefined) {
         super();
         this.result = result;
+        this.reason = reason;
     }
 
     public serialize(writer: BinaryWriter): void {
         writer.writeByte(this.result!);
+        writer.writeByte(this.reason!);
     }
 
     public deserialize(reader: BinaryReader): void {
         this.result = reader.readByte();
+        this.reason = reader.readByte();
     }
 
     public hydrate(data: CharacterCreationResultMessage | Record<string, any>): CharacterCreationResultMessage {
@@ -27504,6 +27220,7 @@ export class CharacterCreationResultMessage extends DofusMessage {
         }
 
         this.result = data.result;
+        this.reason = data.result;
 
         return this;
     }
@@ -27890,7 +27607,7 @@ export interface RawShortcutBarContentMessage {
 }
 
 export class ShortcutBarContentMessage extends DofusMessage {
-    public static id: number = 276;
+    public static id: number = 4852;
 
     public barType: number | undefined = 0;
     public shortcuts: Shortcut[] | undefined;
@@ -28000,7 +27717,7 @@ export interface RawCharacterSelectedSuccessMessage {
 }
 
 export class CharacterSelectedSuccessMessage extends DofusMessage {
-    public static id: number = 8424;
+    public static id: number = 9868;
 
     public infos: CharacterBaseInformations | undefined;
     public isCollectingStats: boolean | undefined = false;
@@ -28969,7 +28686,7 @@ export interface RawLoginQueueStatusMessage {
 }
 
 export class LoginQueueStatusMessage extends DofusMessage {
-    public static id: number = 507;
+    public static id: number = 6831;
 
     public position: number | undefined = 0;
     public total: number | undefined = 0;
@@ -29353,7 +29070,7 @@ export interface RawQueueStatusMessage {
 }
 
 export class QueueStatusMessage extends DofusMessage {
-    public static id: number = 5179;
+    public static id: number = 3069;
 
     public position: number | undefined = 0;
     public total: number | undefined = 0;
@@ -29856,7 +29573,7 @@ export interface RawForgettableSpellListUpdateMessage {
 }
 
 export class ForgettableSpellListUpdateMessage extends DofusMessage {
-    public static id: number = 3230;
+    public static id: number = 3233;
 
     public action: number | undefined = 0;
     public spells: ForgettableSpellItem[] | undefined;
@@ -29963,24 +29680,33 @@ export interface RawCharactersListMessage extends RawBasicCharactersListMessage 
     hasStartupActions: boolean;
 }
 
-export class CharactersListMessage extends BasicCharactersListMessage {
+export class CharactersListMessage extends DofusMessage {
     public static id = 1165;
 
-    public hasStartupActions: boolean | undefined = false;
+    public characters: CharacterBaseInformations[] | undefined;
 
-    public constructor(characters?: CharacterBaseInformations[] | undefined, hasStartupActions?: boolean | undefined) {
-        super(characters);
-        this.hasStartupActions = hasStartupActions;
+    public constructor(characters?: CharacterBaseInformations[] | undefined) {
+        super();
+        this.characters = characters;
     }
 
     public serialize(writer: BinaryWriter): void {
-        super.serialize(writer);
-        writer.writeBoolean(this.hasStartupActions!);
+      writer.writeShort(this.characters!.length);
+      this.characters!.forEach((current) => {
+          writer.writeShort(current.id);
+          current.serialize(writer);
+      });
     }
 
     public deserialize(reader: BinaryReader): void {
-        super.deserialize(reader);
-        this.hasStartupActions = reader.readBoolean();
+      this.characters = [];
+      const countCharacters = reader.readShort();
+      for (let i: number = 0; i < countCharacters; i++) {
+          const charactersTypeId: number = reader.readShort();
+          const type: CharacterBaseInformations = new types[charactersTypeId]() as CharacterBaseInformations;
+          type.deserialize(reader);
+          this.characters.push(type);
+      }
     }
 
     public hydrate(data: CharactersListMessage | Record<string, any>): CharactersListMessage {
@@ -29988,9 +29714,16 @@ export class CharactersListMessage extends BasicCharactersListMessage {
             return data;
         }
 
-        super.hydrate(data);
+        this.characters = data.characters.map(
+          (dataElement: CharacterBaseInformations | Record<string, any>): CharacterBaseInformations => {
+              if (dataElement instanceof CharacterBaseInformations) {
+                  return dataElement;
+              } else {
+                  return (new types[dataElement.id]() as CharacterBaseInformations).hydrate(dataElement);
+              }
+          },
+      );
 
-        this.hasStartupActions = data.hasStartupActions;
 
         return this;
     }
@@ -30008,10 +29741,9 @@ export class CharactersListWithRemodelingMessage extends CharactersListMessage {
 
     public constructor(
         characters?: CharacterBaseInformations[] | undefined,
-        hasStartupActions?: boolean | undefined,
         charactersToRemodel?: CharacterToRemodelInformations[] | undefined,
     ) {
-        super(characters, hasStartupActions);
+        super(characters);
         this.charactersToRemodel = charactersToRemodel;
     }
 
@@ -31572,7 +31304,7 @@ export interface RawInventoryContentMessage {
 }
 
 export class InventoryContentMessage extends DofusMessage {
-    public static id: number = 7685;
+    public static id: number = 6852;
 
     public objects: ObjectItem[] | undefined;
     public kamas: number | undefined = 0;
@@ -31998,7 +31730,7 @@ export interface RawCharacterLoadingCompleteMessage {
 }
 
 export class CharacterLoadingCompleteMessage extends DofusMessage {
-    public static id: number = 7087;
+    public static id: number = 7308;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -33165,6 +32897,118 @@ export class GuildFightPlayersEnemiesListMessage extends DofusMessage {
 
         return this;
     }
+}
+
+export class AllianceRanksRequestMessage extends DofusMessage {
+  public static id = 8627;
+
+  constructor() {
+    super()
+  }
+
+  public serialize(writer: BinaryWriter): void {
+  }
+
+  public deserialize(reader: BinaryReader): void {
+  }
+}
+
+export class AllianceRanksMessage extends DofusMessage {
+  public static id = 9967;
+
+  public ranks: RankInformation[] | undefined;
+
+  constructor(ranks?: RankInformation[]) {
+    super()
+    this.ranks = ranks
+  }
+
+  public serialize(writer: BinaryWriter): void {
+    writer.writeShort(this.ranks!.length)
+    this.ranks!.forEach((current) => {
+      current.serialize(writer)
+    })
+  }
+
+  public deserialize(reader: BinaryReader): void {
+    this.ranks = [];
+    const countRanks = reader.readShort();
+    for (let i: number = 0; i < countRanks; i++) {
+        const type: RankInformation = new RankInformation();
+        type.deserialize(reader);
+        this.ranks.push(type);
+    }
+  }
+
+}
+
+export class RankMinimalInformation extends DofusMessage {
+  public static id:number = 6102;
+
+  public _id: number | undefined = 0;
+  
+  public name: string | undefined = "";
+
+  constructor(id?: number, name?: string) {
+    super()
+    this._id = id,
+    this.name = name
+  }
+
+  public serialize(writer: BinaryWriter): void {
+    writer.writeVarInt(this.id!)
+    writer.writeUTF(this.name!)
+  }
+
+  public deserialize(reader: BinaryReader): void {
+    this._id = reader.readVarUInt()
+    this.name = reader.readUTF()
+  }
+
+}
+
+export class RankInformation extends RankMinimalInformation {
+  public static id:number = 15;
+
+  public order:number | undefined = 0;
+      
+  public gfxId:number | undefined = 0;
+  
+  public modifiable:boolean | undefined = false;
+  
+  public rights: number[] | undefined
+
+  constructor(id?: number, name?: string, order?: number, gfxId?: number, modifiable?: boolean, rights?: number[]) {
+    super(id, name)
+    this.order = order;
+    this.gfxId = gfxId;
+    this.modifiable = modifiable;
+    this.rights = rights;
+  }
+
+  public serialize(writer: BinaryWriter): void {
+    super.serialize(writer)
+    writer.writeVarInt(this.order!)
+    writer.writeVarInt(this.gfxId!)
+    writer.writeBoolean(this.modifiable!);
+    writer.writeShort(this.rights!.length);
+    this.rights!.forEach((current) => {
+      writer.writeVarInt(current)
+    })
+  }
+
+  public deserialize(reader: BinaryReader): void {
+    super.deserialize(reader)
+    this.order = reader.readVarUInt();
+    this.gfxId = reader.readVarUInt();
+    this.modifiable = reader.readBoolean();
+    this.rights = [];
+    const countRights = reader.readShort();
+    for (let i: number = 0; i < countRights; i++) {
+        const val = reader.readVarUInt();
+        this.rights.push(val);
+    }
+  }
 }
 
 export interface RawGameCautiousMapMovementMessage extends RawGameMapMovementMessage {
@@ -34417,7 +34261,7 @@ export interface RawServerOptionalFeaturesMessage {
 }
 
 export class ServerOptionalFeaturesMessage extends DofusMessage {
-    public static id: number = 2599;
+    public static id: number = 5407;
 
     public features: number[] | undefined;
 
@@ -34428,14 +34272,14 @@ export class ServerOptionalFeaturesMessage extends DofusMessage {
 
     public serialize(writer: BinaryWriter): void {
         writer.writeShort(this.features!.length);
-        this.features!.forEach((current: number) => writer.writeByte(current));
+        this.features!.forEach((current: number) => writer.writeInt(current));
     }
 
     public deserialize(reader: BinaryReader): void {
         this.features = [];
         const countFeatures = reader.readShort();
         for (let i: number = 0; i < countFeatures; i++) {
-            this.features.push(reader.readByte());
+            this.features.push(reader.readInt());
         }
     }
 
@@ -35105,7 +34949,7 @@ export interface RawCharacterCanBeCreatedResultMessage {
 }
 
 export class CharacterCanBeCreatedResultMessage extends DofusMessage {
-    public static id: number = 9261;
+    public static id: number = 3594;
 
     public yesYouCan: boolean | undefined = false;
 
@@ -36535,29 +36379,23 @@ export interface RawAccountCapabilitiesMessage {
 }
 
 export class AccountCapabilitiesMessage extends DofusMessage {
-    public static id: number = 6779;
+    public static id: number = 7413;
 
     public tutorialAvailable: boolean | undefined = false;
     public canCreateNewCharacter: boolean | undefined = false;
     public accountId: number | undefined = 0;
-    public breedsVisible: number | undefined = 0;
-    public breedsAvailable: number | undefined = 0;
     public status: number | undefined = -1;
 
     public constructor(
         tutorialAvailable?: boolean | undefined,
         canCreateNewCharacter?: boolean | undefined,
         accountId?: number | undefined,
-        breedsVisible?: number | undefined,
-        breedsAvailable?: number | undefined,
         status?: number | undefined,
     ) {
         super();
         this.tutorialAvailable = tutorialAvailable;
         this.canCreateNewCharacter = canCreateNewCharacter;
         this.accountId = accountId;
-        this.breedsVisible = breedsVisible;
-        this.breedsAvailable = breedsAvailable;
         this.status = status;
     }
 
@@ -36567,8 +36405,6 @@ export class AccountCapabilitiesMessage extends DofusMessage {
         box0 = setFlag(box0, 1, this.canCreateNewCharacter!);
         writer.writeByte(box0);
         writer.writeInt(this.accountId!);
-        writer.writeVarInt(this.breedsVisible!);
-        writer.writeVarInt(this.breedsAvailable!);
         writer.writeByte(this.status!);
     }
 
@@ -36577,8 +36413,6 @@ export class AccountCapabilitiesMessage extends DofusMessage {
         this.tutorialAvailable = getFlag(box0, 0);
         this.canCreateNewCharacter = getFlag(box0, 1);
         this.accountId = reader.readInt();
-        this.breedsVisible = reader.readVarInt();
-        this.breedsAvailable = reader.readVarInt();
         this.status = reader.readByte();
     }
 
@@ -36590,8 +36424,6 @@ export class AccountCapabilitiesMessage extends DofusMessage {
         this.tutorialAvailable = data.tutorialAvailable;
         this.canCreateNewCharacter = data.canCreateNewCharacter;
         this.accountId = data.accountId;
-        this.breedsVisible = data.breedsVisible;
-        this.breedsAvailable = data.breedsAvailable;
         this.status = data.status;
 
         return this;
@@ -39182,7 +39014,7 @@ export interface RawCharacterDeletionErrorMessage {
 }
 
 export class CharacterDeletionErrorMessage extends DofusMessage {
-    public static id: number = 9769;
+    public static id: number = 9555;
 
     public reason: number | undefined = 1;
 
@@ -39267,7 +39099,7 @@ export interface RawAcquaintancesListMessage {
 }
 
 export class AcquaintancesListMessage extends DofusMessage {
-    public static id: number = 1119;
+    public static id: number = 1493;
 
     public acquaintanceList: AcquaintanceInformation[] | undefined;
 
@@ -40330,7 +40162,7 @@ export interface RawHavenBagRoomUpdateMessage {
 }
 
 export class HavenBagRoomUpdateMessage extends DofusMessage {
-    public static id: number = 1486;
+    public static id: number = 2501;
 
     public action: number | undefined = 0;
     public roomsPreview: HavenBagRoomPreviewInformation[] | undefined;
@@ -40704,7 +40536,7 @@ export interface RawExchangeReplyTaxVendorMessage {
 }
 
 export class ExchangeReplyTaxVendorMessage extends DofusMessage {
-    public static id: number = 2545;
+    public static id: number = 5902;
 
     public objectValue: number | undefined = 0;
     public totalTaxValue: number | undefined = 0;
@@ -40873,7 +40705,7 @@ export interface RawObjectAveragePricesMessage {
 }
 
 export class ObjectAveragePricesMessage extends DofusMessage {
-    public static id: number = 3534;
+    public static id: number = 5500;
 
     public ids: number[] | undefined;
     public avgPrices: number[] | undefined;
@@ -43013,7 +42845,7 @@ export interface RawNotificationListMessage {
 }
 
 export class NotificationListMessage extends DofusMessage {
-    public static id: number = 4711;
+    public static id: number = 7372;
 
     public flags: number[] | undefined;
 
@@ -46232,7 +46064,7 @@ export interface RawCharacterSelectedErrorMessage {
 }
 
 export class CharacterSelectedErrorMessage extends DofusMessage {
-    public static id: number = 8844;
+    public static id: number = 7442;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -46825,7 +46657,7 @@ export interface RawSpouseInformationsMessage {
 }
 
 export class SpouseInformationsMessage extends DofusMessage {
-    public static id: number = 3802;
+    public static id: number = 940;
 
     public spouse: FriendSpouseInformations | undefined;
 
@@ -47715,15 +47547,15 @@ export interface RawServerSettingsMessage {
 }
 
 export class ServerSettingsMessage extends DofusMessage {
-    public static id: number = 6216;
+    public static id: number = 666;
 
-    public isMonoAccount: boolean | undefined = false;
-    public hasFreeAutopilot: boolean | undefined = false;
     public lang: string | undefined;
     public community: number | undefined = 0;
     public gameType: number | undefined = -1;
+    public isMonoAccount: boolean | undefined = false;
     public arenaLeaveBanTime: number | undefined = 0;
     public itemMaxLevel: number | undefined = 0;
+    public hasFreeAutopilot: boolean | undefined = false;
 
     public constructor(
         isMonoAccount?: boolean | undefined,
@@ -48003,7 +47835,7 @@ export interface RawCharacterNameSuggestionSuccessMessage {
 }
 
 export class CharacterNameSuggestionSuccessMessage extends DofusMessage {
-    public static id: number = 3457;
+    public static id: number = 5866;
 
     public suggestion: string | undefined;
 
@@ -49041,7 +48873,7 @@ export interface RawCharacterExperienceGainMessage {
 }
 
 export class CharacterExperienceGainMessage extends DofusMessage {
-    public static id: number = 3122;
+    public static id: number = 9486;
 
     public experienceCharacter: number | undefined = 0;
     public experienceMount: number | undefined = 0;
@@ -49702,7 +49534,7 @@ export interface RawGameContextCreateMessage {
 }
 
 export class GameContextCreateMessage extends DofusMessage {
-    public static id: number = 8097;
+    public static id: number = 1030;
 
     public context: number | undefined = 1;
 
@@ -49759,7 +49591,7 @@ export interface RawGameFightPlacementSwapPositionsCancelledMessage {
 }
 
 export class GameFightPlacementSwapPositionsCancelledMessage extends DofusMessage {
-    public static id: number = 5500;
+    public static id: number = 5555;
 
     public requestId: number | undefined = 0;
     public cancellerId: number | undefined = 0;
@@ -50549,7 +50381,7 @@ export interface RawFriendsListMessage {
 }
 
 export class FriendsListMessage extends DofusMessage {
-    public static id: number = 5813;
+    public static id: number = 8697;
 
     public friendsList: FriendInformations[] | undefined;
 
@@ -51763,7 +51595,7 @@ export interface RawBasicTimeMessage {
 }
 
 export class BasicTimeMessage extends DofusMessage {
-    public static id: number = 9776;
+    public static id: number = 6808;
 
     public timestamp: number | undefined = 0;
     public timezoneOffset: number | undefined = 0;
@@ -52616,7 +52448,7 @@ export interface RawClientKeyMessage {
 }
 
 export class ClientKeyMessage extends DofusMessage {
-    public static id: number = 992;
+    public static id: number = 5072;
 
     public key: string | undefined;
 
@@ -53158,7 +52990,7 @@ export interface RawExchangeObjectMovePricedMessage extends RawExchangeObjectMov
 }
 
 export class ExchangeObjectMovePricedMessage extends ExchangeObjectMoveMessage {
-    public static id = 3594;
+    public static id = 3567;
 
     public price: number | undefined = 0;
 
@@ -53795,7 +53627,7 @@ export interface RawSpouseGetInformationsMessage {
 }
 
 export class SpouseGetInformationsMessage extends DofusMessage {
-    public static id: number = 4243;
+    public static id: number = 3095;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -53919,7 +53751,7 @@ export interface RawIgnoredGetListMessage {
 }
 
 export class IgnoredGetListMessage extends DofusMessage {
-    public static id: number = 4315;
+    public static id: number = 8701;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -54569,7 +54401,7 @@ export interface RawAcquaintancesGetListMessage {
 }
 
 export class AcquaintancesGetListMessage extends DofusMessage {
-    public static id: number = 6257;
+    public static id: number = 9107;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -54647,7 +54479,7 @@ export interface RawFriendsGetListMessage {
 }
 
 export class FriendsGetListMessage extends DofusMessage {
-    public static id: number = 7455;
+    public static id: number = 3897;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -57799,7 +57631,7 @@ export interface RawQuestListRequestMessage {
 }
 
 export class QuestListRequestMessage extends DofusMessage {
-    public static id: number = 3293;
+    public static id: number = 7112;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -58111,7 +57943,7 @@ export interface RawAchievementDetailedListRequestMessage {
 }
 
 export class AchievementDetailedListRequestMessage extends DofusMessage {
-    public static id: number = 8701;
+    public static id: number = 8703;
 
     public categoryId: number | undefined = 0;
 
@@ -58219,7 +58051,7 @@ export interface RawCharacterSelectionMessage {
 }
 
 export class CharacterSelectionMessage extends DofusMessage {
-    public static id: number = 6200;
+    public static id: number = 4312;
 
     public id_: number | undefined = 0;
 
@@ -58291,7 +58123,7 @@ export interface RawCharacterNameSuggestionRequestMessage {
 }
 
 export class CharacterNameSuggestionRequestMessage extends DofusMessage {
-    public static id: number = 2144;
+    public static id: number = 1741;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -58418,7 +58250,7 @@ export interface RawCharacterCanBeCreatedRequestMessage {
 }
 
 export class CharacterCanBeCreatedRequestMessage extends DofusMessage {
-    public static id: number = 709;
+    public static id: number = 2372;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -58576,7 +58408,7 @@ export interface RawCharacterFirstSelectionMessage extends RawCharacterSelection
 }
 
 export class CharacterFirstSelectionMessage extends CharacterSelectionMessage {
-    public static id = 7120;
+    public static id = 1225;
 
     public doTutorial: boolean | undefined = false;
 
@@ -58613,7 +58445,7 @@ export interface RawGameContextCreateRequestMessage {
 }
 
 export class GameContextCreateRequestMessage extends DofusMessage {
-    public static id: number = 8305;
+    public static id: number = 6738;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -58637,7 +58469,7 @@ export interface RawCharacterDeletionRequestMessage {
 }
 
 export class CharacterDeletionRequestMessage extends DofusMessage {
-    public static id: number = 3569;
+    public static id: number = 7199;
 
     public characterId: number | undefined = 0;
     public secretAnswerHash: string | undefined;
@@ -59236,7 +59068,7 @@ export interface RawObjectAveragePricesGetMessage {
 }
 
 export class ObjectAveragePricesGetMessage extends DofusMessage {
-    public static id: number = 809;
+    public static id: number = 9304;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -62825,7 +62657,7 @@ export interface RawHaapiShopApiKeyRequestMessage {
 }
 
 export class HaapiShopApiKeyRequestMessage extends DofusMessage {
-    public static id: number = 6567;
+    public static id: number = 9098;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -63689,12 +63521,44 @@ export class JobCrafterDirectoryEntryRequestMessage extends DofusMessage {
     }
 }
 
+export class PopupWarningCloseRequestMessage extends DofusMessage {
+  public static id: number = 6765;
+
+    public constructor() {
+        super();
+    }
+
+    public serialize(writer: BinaryWriter): void {
+    }
+
+    public deserialize(reader: BinaryReader): void {
+    }
+}
+
+export class PopupWarningClosedMessage extends DofusMessage {
+  public static id: number = 3684;
+
+    public constructor() {
+        super();
+    }
+
+    public serialize(writer: BinaryWriter): void {
+    }
+
+    public deserialize(reader: BinaryReader): void {
+    }
+}
+
+
+
 export const types: { [key: number]: typeof DofusType } = {
     9244: GameContextActorPositionInformations,
+    1094: SpellModifierMessage,
+    9225: CharacterCharacteristic,
     424: GameContextActorInformations,
     2333: GameRolePlayActorInformations,
     4648: GameRolePlayGroupMonsterInformations,
-    7542: HavenBagRoomPreviewInformation,
+    3168: HavenBagRoomPreviewInformation,
     6205: AccountTagInformation,
     2401: InteractiveElement,
     8400: GameFightFighterInformations,
@@ -63761,7 +63625,7 @@ export const types: { [key: number]: typeof DofusType } = {
     4029: IdentifiedEntityDispositionInformations,
     8031: StatedElement,
     4964: ActorRestrictionsInformations,
-    1092: CharacterCharacteristicsInformations,
+    4995: CharacterCharacteristicsInformations,
     2111: AbstractCharacterInformation,
     4297: CharacterBasicMinimalInformations,
     1869: CharacterMinimalInformations,
@@ -63781,15 +63645,15 @@ export const types: { [key: number]: typeof DofusType } = {
     6240: FightResultTaxCollectorListEntry,
     327: TrustCertificate,
     7452: GameFightEffectTriggerCount,
-    9231: AchievementAchieved,
-    2202: Item,
-    5598: ObjectItem,
+    5822: AchievementAchieved,
+    5596: Item,
+    9326: ObjectItem,
     6577: ObjectEffect,
     9369: ObjectEffectInteger,
     9332: CharacterSpellModification,
     1767: CharacterBaseCharacteristic,
     6462: InteractiveElementSkill,
-    2513: QuestActiveInformations,
+    6433: QuestActiveInformations,
     5963: PrismInformation,
     2842: TaxCollectorStaticInformations,
     4405: SkillActionDescription,
@@ -63820,7 +63684,7 @@ export const types: { [key: number]: typeof DofusType } = {
     9466: TaxCollectorMovement,
     6667: HouseInformationsForGuild,
     5170: AbstractContactInformations,
-    3453: FriendInformations,
+    9286: FriendInformations,
     450: FriendOnlineInformations,
     2943: PlayerStatusExtended,
     4492: AcquaintanceInformation,
@@ -63847,7 +63711,7 @@ export const types: { [key: number]: typeof DofusType } = {
     8192: PrismGeolocalizedInformation,
     5100: GuildFactSheetInformations,
     6301: GuildInsiderFactSheetInformations,
-    5506: ActorExtendedAlignmentInformations,
+    8515: ActorExtendedAlignmentInformations,
     3040: FightTriggeredEffect,
     8464: FightTemporarySpellImmunityEffect,
     4451: FightTemporaryBoostWeaponDamagesEffect,
@@ -63882,7 +63746,7 @@ export const types: { [key: number]: typeof DofusType } = {
     1498: IdolsPreset,
     920: AlliancedGuildFactSheetInformations,
     7096: ForgettableSpellsPreset,
-    5811: Shortcut,
+    8239: Shortcut,
     8184: ShortcutSpell,
     3536: StatisticDataByte,
     3298: TreasureHuntStepDig,
@@ -63961,7 +63825,7 @@ export const types: { [key: number]: typeof DofusType } = {
     5320: StartupActionAddObject,
     2924: CharacterRemodelingInformation,
     1292: CharacterToRemodelInformations,
-    6075: RemodelingInformation,
+    7815: RemodelingInformation,
     6752: Version,
     1231: SimpleCharacterCharacteristicForPreset,
     7508: CharacterCharacteristicForPreset,
@@ -64018,6 +63882,8 @@ export const types: { [key: number]: typeof DofusType } = {
 
 export const messages: { [key: number]: typeof DofusMessage } = {
     6075: BasicPingMessage,
+    6765: PopupWarningCloseRequestMessage,
+    3684: PopupWarningClosedMessage,
     2590: WorldRegistrationRequestMessage,
     4824: GameFightSynchronizeMessage,
     8791: AbstractGameActionMessage,
@@ -64033,6 +63899,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6588: GameFightShowFighterRandomStaticPoseMessage,
     6074: GameActionFightReduceDamagesMessage,
     1531: GameActionFightLifePointsGainMessage,
+    9967: AllianceRanksMessage,
     6413: GameActionFightModifyEffectsDurationMessage,
     9063: GameActionFightTeleportOnSameMapMessage,
     4737: GameActionFightInvisibleDetectedMessage,
@@ -64109,7 +63976,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     5822: AnomalyStateMessage,
     9780: MapInformationsRequestMessage,
     9111: InteractiveUsedMessage,
-    3684: MapFightCountMessage,
+    3604: MapFightCountMessage,
     2058: InteractiveMapUpdateMessage,
     6344: GameContextRemoveElementMessage,
     3750: GameFightOptionStateUpdateMessage,
@@ -64147,7 +64014,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6575: GameFightNewWaveMessage,
     6427: GameFightPauseMessage,
     6112: SlaveNoLongerControledMessage,
-    4663: CharacterStatsListMessage,
+    5364: CharacterStatsListMessage,
     7110: GameFightTurnStartMessage,
     3790: GameActionAcknowledgementMessage,
     2330: GameFightTurnResumeMessage,
@@ -64159,14 +64026,14 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     1497: RefreshCharacterStatsMessage,
     5295: SlaveSwitchContextMessage,
     2027: HaapiApiKeyRequestMessage,
-    2501: DebugClearHighlightCellsMessage,
+    2503: DebugClearHighlightCellsMessage,
     7861: DebugHighlightCellsMessage,
     2283: DebugInClientMessage,
-    3313: AchievementListMessage,
+    8158: AchievementListMessage,
     4805: IdentificationMessage,
     4574: IdentificationAccountForceMessage,
-    8259: BasicAckMessage,
-    8108: BasicNoOperationMessage,
+    9898: BasicAckMessage,
+    7318: BasicNoOperationMessage,
     4271: CredentialsAcknowledgementMessage,
     4557: OnConnectionEventMessage,
     5863: ObjectJobAddedMessage,
@@ -64174,7 +64041,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     1693: IdentificationSuccessMessage,
     6945: URLOpenMessage,
     6253: RawDataMessage,
-    6289: TrustStatusMessage,
+    2545: TrustStatusMessage,
     8557: ServersListMessage,
     8522: BasicPongMessage,
     2340: BasicLatencyStatsRequestMessage,
@@ -64182,7 +64049,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     8389: CheckIntegrityMessage,
     2983: AdminCommandMessage,
     2223: ConsoleMessage,
-    7788: QuestListMessage,
+    3230: QuestListMessage,
     7778: QuestValidatedMessage,
     1293: CharacterCreationResultMessage,
     1947: NicknameRefusedMessage,
@@ -64195,9 +64062,9 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     7707: KamasUpdateMessage,
     7292: StorageObjectsUpdateMessage,
     3343: GuildInvitedMessage,
-    276: ShortcutBarContentMessage,
+    4852: ShortcutBarContentMessage,
     1391: ObjectsAddedMessage,
-    8424: CharacterSelectedSuccessMessage,
+    9868: CharacterSelectedSuccessMessage,
     1845: ExchangeCraftResultMessage,
     5780: ExchangeCraftResultWithObjectDescMessage,
     995: AbstractPartyMessage,
@@ -64221,7 +64088,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     288: MimicryObjectAssociatedMessage,
     7584: BasicCharactersListMessage,
     1216: TreasureHuntAvailableRetryCountUpdateMessage,
-    507: LoginQueueStatusMessage,
+    6831: LoginQueueStatusMessage,
     1837: PartyCancelInvitationNotificationMessage,
     8025: DungeonPartyFinderListenErrorMessage,
     3691: ExchangeObjectMessage,
@@ -64230,7 +64097,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     9296: WarnOnPermaDeathStateMessage,
     9786: ExchangeOfflineSoldItemsMessage,
     8726: PartyLeaveMessage,
-    5179: QueueStatusMessage,
+    3069: QueueStatusMessage,
     8187: ExchangeObjectAddedMessage,
     5713: ExchangeShopStockMovementUpdatedMessage,
     1653: AbstractTaxCollectorListMessage,
@@ -64241,7 +64108,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     7338: LifePointsRegenBeginMessage,
     913: BreachBranchesMessage,
     3787: CheckFileRequestMessage,
-    3230: ForgettableSpellListUpdateMessage,
+    3233: ForgettableSpellListUpdateMessage,
     6850: ChatAbstractServerMessage,
     1165: CharactersListMessage,
     1171: CharactersListWithRemodelingMessage,
@@ -64281,7 +64148,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     2752: UpdateLifePointsMessage,
     3729: ReloginTokenStatusMessage,
     6677: TitleGainedMessage,
-    7685: InventoryContentMessage,
+    6852: InventoryContentMessage,
     8231: StorageInventoryContentMessage,
     1264: ExchangeShopStockMultiMovementRemovedMessage,
     1261: TaxCollectorAttackedResultMessage,
@@ -64290,7 +64157,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     7628: LivingObjectMessageMessage,
     1605: PartyInvitationMessage,
     5673: TreasureHuntRequestAnswerMessage,
-    7087: CharacterLoadingCompleteMessage,
+    7308: CharacterLoadingCompleteMessage,
     4075: TreasureHuntFlagRequestAnswerMessage,
     8789: ExchangeIsReadyMessage,
     9299: AllianceFactsErrorMessage,
@@ -64349,7 +64216,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     8589: TaxCollectorStateUpdateMessage,
     636: ExchangeBidHouseGenericItemRemovedMessage,
     2660: QuestStepInfoMessage,
-    2599: ServerOptionalFeaturesMessage,
+    5407: ServerOptionalFeaturesMessage,
     884: BreachRoomUnlockResultMessage,
     9690: DungeonPartyFinderRoomContentUpdateMessage,
     5890: QuestStepValidatedMessage,
@@ -64364,7 +64231,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     5801: JobMultiCraftAvailableSkillsMessage,
     1752: ExchangeMountsStableAddMessage,
     2999: FriendAddedMessage,
-    9261: CharacterCanBeCreatedResultMessage,
+    3594: CharacterCanBeCreatedResultMessage,
     1685: NpcGenericActionFailureMessage,
     6480: AccountHouseMessage,
     2175: AcquaintanceSearchErrorMessage,
@@ -64395,7 +64262,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     230: ExchangeShopStockMultiMovementUpdatedMessage,
     3493: AccountInformationsUpdateMessage,
     7106: TitleSelectErrorMessage,
-    6779: AccountCapabilitiesMessage,
+    7413: AccountCapabilitiesMessage,
     1475: TreasureHuntDigRequestAnswerMessage,
     9892: TreasureHuntDigRequestAnswerFailedMessage,
     7003: GameEntityDispositionErrorMessage,
@@ -64451,9 +64318,9 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     4624: PrismsInfoValidMessage,
     2889: InviteInHavenBagOfferMessage,
     7074: HavenBagPackListMessage,
-    9769: CharacterDeletionErrorMessage,
+    9555: CharacterDeletionErrorMessage,
     162: HavenBagFurnituresMessage,
-    1119: AcquaintancesListMessage,
+    1493: AcquaintancesListMessage,
     2431: ExchangeStartedTaxCollectorShopMessage,
     8731: GuildHouseRemoveMessage,
     2759: TreasureHuntFinishedMessage,
@@ -64471,6 +64338,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     4221: InvalidPresetsMessage,
     810: PresetSaveErrorMessage,
     7131: GuildInformationsMemberUpdateMessage,
+    4833: AllianceGetPlayerApplicationMessage,
     4230: ExchangeStartedWithStorageMessage,
     5505: TeleportToBuddyOfferMessage,
     1951: ExchangeCraftResultWithObjectIdMessage,
@@ -64480,7 +64348,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     4126: ExchangeObjectModifiedMessage,
     9391: AnomalySubareaInformationResponseMessage,
     9558: FriendAddFailureMessage,
-    1486: HavenBagRoomUpdateMessage,
+    2501: HavenBagRoomUpdateMessage,
     6070: BulletinMessage,
     7441: GuildBulletinMessage,
     3044: PartyUpdateLightMessage,
@@ -64489,11 +64357,11 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     2509: GuildMembershipMessage,
     5540: SubscriptionZoneMessage,
     139: GameFightPlacementSwapPositionsErrorMessage,
-    2545: ExchangeReplyTaxVendorMessage,
+    5902: ExchangeReplyTaxVendorMessage,
     2621: PresetUseResultMessage,
     5027: IdentificationFailedBannedMessage,
     5563: BreachRewardsMessage,
-    3534: ObjectAveragePricesMessage,
+    5500: ObjectAveragePricesMessage,
     1180: GuildHousesInformationMessage,
     5004: DisplayNumericalValuePaddockMessage,
     9985: MailStatusMessage,
@@ -64545,7 +64413,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     678: ExchangeSellOkMessage,
     2404: GuildCreationStartedMessage,
     907: MimicryObjectPreviewMessage,
-    4711: NotificationListMessage,
+    7372: NotificationListMessage,
     7486: StorageObjectUpdateMessage,
     6801: CharactersListErrorMessage,
     9887: JobCrafterDirectoryListMessage,
@@ -64621,7 +64489,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     9796: CinematicMessage,
     9846: ExchangeStartOkJobIndexMessage,
     4098: GameFightPlacementPossiblePositionsMessage,
-    8844: CharacterSelectedErrorMessage,
+    7442: CharacterSelectedErrorMessage,
     7982: AccountLinkRequiredMessage,
     5062: AchievementRewardSuccessMessage,
     9270: MigratedServerListMessage,
@@ -64635,7 +64503,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     7522: JobBookSubscriptionMessage,
     6258: PrismSettingsErrorMessage,
     5951: BreachKickResponseMessage,
-    3802: SpouseInformationsMessage,
+    940: SpouseInformationsMessage,
     8752: HaapiBuyValidationMessage,
     7521: TitleLostMessage,
     2420: PresetSavedMessage,
@@ -64657,13 +64525,13 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     2395: PrismFightStateUpdateMessage,
     4993: ExchangeMountSterilizeFromPaddockMessage,
     5749: TaxCollectorAttackedMessage,
-    6216: ServerSettingsMessage,
+    666: ServerSettingsMessage,
     1543: AcquaintanceAddedMessage,
     7419: StorageObjectRemoveMessage,
     3134: FollowedQuestsMessage,
     713: ServerSessionConstantsMessage,
     5177: DungeonPartyFinderAvailableDungeonsMessage,
-    3457: CharacterNameSuggestionSuccessMessage,
+    5866: CharacterNameSuggestionSuccessMessage,
     5382: GameMapNoMovementMessage,
     2786: MountEmoteIconUsedOkMessage,
     5795: QuestStartedMessage,
@@ -64686,7 +64554,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     7251: GuildInformationsMembersMessage,
     9473: SetUpdateMessage,
     7611: ExchangeMountsPaddockAddMessage,
-    3122: CharacterExperienceGainMessage,
+    9486: CharacterExperienceGainMessage,
     4815: PrismsListMessage,
     9870: PrismsListUpdateMessage,
     9744: EntitiesInformationMessage,
@@ -64702,9 +64570,9 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     9619: ShortcutBarRemovedMessage,
     35: ExchangeBuyOkMessage,
     1338: LifePointsRegenEndMessage,
-    8097: GameContextCreateMessage,
+    1030: GameContextCreateMessage,
     9276: PlayerStatusUpdateErrorMessage,
-    5500: GameFightPlacementSwapPositionsCancelledMessage,
+    5555: GameFightPlacementSwapPositionsCancelledMessage,
     7414: ConsoleCommandsListMessage,
     9417: StartupActionsListMessage,
     9648: TaxCollectorMovementRemoveMessage,
@@ -64724,7 +64592,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6085: OrnamentSelectErrorMessage,
     7867: GameContextMoveElementMessage,
     7377: ExchangeTypesItemsExchangerDescriptionForUserMessage,
-    5813: FriendsListMessage,
+    8697: FriendsListMessage,
     6760: PrismInfoCloseMessage,
     3077: PrismFightDefenderLeaveMessage,
     528: GameRolePlayPlayerLifeStatusMessage,
@@ -64753,7 +64621,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     3478: BreachBonusMessage,
     6701: ExchangeStartOkMulticraftCrafterMessage,
     9089: ExchangeShopStockStartedMessage,
-    9776: BasicTimeMessage,
+    6808: BasicTimeMessage,
     8975: ZaapDestinationsMessage,
     2425: GuildInfosUpgradeMessage,
     806: ExchangeBidHouseItemAddOkMessage,
@@ -64773,7 +64641,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     8715: AccessoryPreviewErrorMessage,
     2068: CharacterSelectedForceMessage,
     3153: GuildFactsRequestMessage,
-    992: ClientKeyMessage,
+    5072: ClientKeyMessage,
     4355: NicknameChoiceRequestMessage,
     4229: AllianceFactsRequestMessage,
     5508: TeleportHavenBagRequestMessage,
@@ -64788,7 +64656,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     8087: GameRolePlayPlayerFightRequestMessage,
     8527: ExchangePlayerMultiCraftRequestMessage,
     7963: ExchangeObjectMoveMessage,
-    3594: ExchangeObjectMovePricedMessage,
+    3567: ExchangeObjectMovePricedMessage,
     3439: ExchangeStartAsVendorMessage,
     6789: PortalUseRequestMessage,
     6306: ExchangeSellMessage,
@@ -64808,11 +64676,11 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     9793: GuildBulletinSetRequestMessage,
     7668: GuildSpellUpgradeRequestMessage,
     1666: GuildCharacsUpgradeRequestMessage,
-    4243: SpouseGetInformationsMessage,
+    3095: SpouseGetInformationsMessage,
     8483: WarnOnPermaDeathMessage,
     8887: GuildGetInformationsMessage,
     2659: FriendSetWarnOnConnectionMessage,
-    4315: IgnoredGetListMessage,
+    8701: IgnoredGetListMessage,
     9563: GuildMotdSetRequestMessage,
     3898: GuildMemberSetWarnOnConnectionMessage,
     9881: IgnoredDeleteRequestMessage,
@@ -64830,10 +64698,10 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     5495: FriendGuildSetWarnOnAchievementCompleteMessage,
     8404: GuildInvitationMessage,
     1328: GuildFightLeaveRequestMessage,
-    6257: AcquaintancesGetListMessage,
+    9107: AcquaintancesGetListMessage,
     3828: FriendSpouseJoinRequestMessage,
     429: FriendSetWarnOnLevelGainMessage,
-    7455: FriendsGetListMessage,
+    3897: FriendsGetListMessage,
     5265: GuildInvitationByNameMessage,
     1111: GuildFightTakePlaceRequestMessage,
     7045: ChatAbstractClientMessage,
@@ -64925,7 +64793,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     7662: TreasureHuntLegendaryRequestMessage,
     5740: GuidedModeQuitRequestMessage,
     1622: TreasureHuntGiveUpRequestMessage,
-    3293: QuestListRequestMessage,
+    7112: QuestListRequestMessage,
     2214: QuestStepInfoRequestMessage,
     2378: FollowQuestObjectiveRequestMessage,
     4816: AchievementRewardRequestMessage,
@@ -64934,23 +64802,23 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     2811: AchievementDetailsRequestMessage,
     1822: RefreshFollowedQuestsOrderRequestMessage,
     6179: QuestStartRequestMessage,
-    8701: AchievementDetailedListRequestMessage,
+    8703: AchievementDetailedListRequestMessage,
     2632: TreasureHuntDigRequestMessage,
     3503: AuthenticationTicketMessage,
-    6200: CharacterSelectionMessage,
+    4312: CharacterSelectionMessage,
     3592: CharacterSelectionWithRemodelMessage,
-    2144: CharacterNameSuggestionRequestMessage,
+    1741: CharacterNameSuggestionRequestMessage,
     5754: CharacterSelectedForceReadyMessage,
     5450: CharactersListRequestMessage,
     774: CharacterCreationRequestMessage,
-    709: CharacterCanBeCreatedRequestMessage,
+    2372: CharacterCanBeCreatedRequestMessage,
     9005: CharacterReplayRequestMessage,
     8678: CharacterReplayWithRemodelRequestMessage,
     9830: StartupActionsObjetAttributionMessage,
     5775: StartupActionsExecuteMessage,
-    7120: CharacterFirstSelectionMessage,
-    8305: GameContextCreateRequestMessage,
-    3569: CharacterDeletionRequestMessage,
+    1225: CharacterFirstSelectionMessage,
+    6738: GameContextCreateRequestMessage,
+    7199: CharacterDeletionRequestMessage,
     4981: AcquaintanceSearchMessage,
     6291: ServerSelectionMessage,
     2262: CheckFileMessage,
@@ -64966,7 +64834,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6202: CharacterAlignmentWarEffortProgressionRequestMessage,
     8514: AlignmentWarEffortDonateRequestMessage,
     8769: AlignmentWarEffortProgressionRequestMessage,
-    809: ObjectAveragePricesGetMessage,
+    9304: ObjectAveragePricesGetMessage,
     567: ReloginTokenRequestMessage,
     2320: AnomalySubareaInformationRequestMessage,
     8078: ZaapRespawnSaveRequestMessage,
@@ -65068,7 +64936,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     8126: HaapiBufferListRequestMessage,
     7918: HaapiConfirmationRequestMessage,
     512: HaapiCancelBidRequestMessage,
-    6567: HaapiShopApiKeyRequestMessage,
+    9098: HaapiShopApiKeyRequestMessage,
     3277: HaapiValidationRequestMessage,
     3174: HaapiTokenRequestMessage,
     7398: HaapiConsumeBufferRequestMessage,

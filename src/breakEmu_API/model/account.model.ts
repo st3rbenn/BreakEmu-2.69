@@ -1,3 +1,5 @@
+import Character from "./character.model"
+
 class Account {
 	private _id: number
 	private _username: string
@@ -18,6 +20,10 @@ class Account {
 	private _role: number
 	private _is_banned: boolean
   private _tagNumber: number
+
+	// private _characters: Character[] = []
+
+  private _characters: Map<number, Character> = new Map();
 
 	constructor(
 		id: number,
@@ -148,6 +154,14 @@ class Account {
 	public setPseudo(pseudo: string): void {
 		this._pseudo = pseudo
 	}
+
+  public get characters(): Map<number, Character> {
+    return this._characters
+  }
+
+  public set characters(characters: Map<number, Character>) {
+    this._characters = characters
+  }
 
 	public toString(): string {
 		return JSON.stringify(this)

@@ -1,7 +1,7 @@
 import Logger from "../../breakEmu_Core/Logger"
 import Database from "../Database"
 import BaseController from "./base.controller"
-import { AuthClient } from "../../breakEmu_Auth/AuthClient"
+import AuthClient from "../../breakEmu_Auth/AuthClient"
 import {
 	IdentificationFailedMessage,
 	IdentificationFailureReasonEnum,
@@ -77,7 +77,7 @@ class AuthController extends BaseController {
 				await this.AuthClient.Send(
 					this.AuthClient.serialize(new NicknameRegistrationMessage())
 				)
-				return user
+				return user;
 			}
 
 			if (user.is_banned) {
@@ -95,72 +95,6 @@ class AuthController extends BaseController {
 			return user
 		} catch (error) {
 			this._logger.write(`Error logging in: ${error}`)
-		}
-	}
-
-	async setNickname(nickname: string): Promise<boolean> {
-		try {
-			const user = await this._database.prisma.user.findMany({
-				where: {
-					pseudo: nickname,
-				},
-			})
-
-			if (user?.length > 0) {
-				await this.AuthClient.Send(
-					this.AuthClient.serialize(
-						new NicknameRefusedMessage(NicknameErrorEnum.ALREADY_USED)
-					)
-				)
-				return false
-			}
-
-			if (nickname.length < 2) {
-				await this.AuthClient.Send(
-					this.AuthClient.serialize(
-						new NicknameRefusedMessage(NicknameErrorEnum.INVALID_NICK)
-					)
-				)
-				return false
-			}
-
-			if (nickname === this.AuthClient.account?.username) {
-				await this.AuthClient.Send(
-					this.AuthClient.serialize(
-						new NicknameRefusedMessage(NicknameErrorEnum.SAME_AS_LOGIN)
-					)
-				)
-				return false
-			}
-
-			if (nickname.includes(this.AuthClient.account?.username as string)) {
-				await this.AuthClient.Send(
-					this.AuthClient.serialize(
-						new NicknameRefusedMessage(NicknameErrorEnum.TOO_SIMILAR_TO_LOGIN)
-					)
-				)
-				return false
-			}
-
-			await this._database.prisma.user.update({
-				where: {
-					username: this.AuthClient.account?.username,
-				},
-				data: {
-					pseudo: nickname,
-				},
-			})
-
-			this.AuthClient?.account?.setPseudo(nickname as string)
-
-			await this.AuthClient.Send(
-				this.AuthClient.serialize(new NicknameAcceptedMessage())
-			)
-
-			return true
-		} catch (error) {
-			this._logger.write(`Error setting nickname: ${error}`)
-			return false
 		}
 	}
 }

@@ -24,7 +24,7 @@
 		"src/breakEmu_ServerSync/**/*.ts",
 		"src/AuthMain.ts",
     "src/WorldMain.ts"
-	],
+, "src/breakEmu_Server/TransitionServer.ts"	],
 	"exclude": [
 		"node_modules", // Exclut 'node_modules'
 		"**/*.test.ts" // Exclut les fichiers de test

@@ -2,11 +2,11 @@ import { createServer } from "net"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
-import { AuthClient } from "./AuthClient"
+import AuthClient from "./AuthClient"
 import ConnectionQueue from "./ConnectionQueue"
 import ServerStatus from "./enum/ServerStatus"
 
-export class AuthServer {
+class AuthServer {
 	public logger: Logger = new Logger("AuthServer")
 
 	private SERVER_STATE: number = ServerStatus.Offline
@@ -61,22 +61,17 @@ export class AuthServer {
 	}
 
 	public async AddClient(client: AuthClient): Promise<void> {
-		// Log de la nouvelle connexion
-		return new Promise(async (resolve) => {
-			this.clients.push(client)
-			await this.logger.writeAsync(
-				`New client connected: ${client.Socket.remoteAddress}:${client.Socket.remotePort}`,
-				ansiColorCodes.magenta
-			)
+		this.clients.push(client)
+		await this.logger.writeAsync(
+			`New client connected: ${client.Socket.remoteAddress}:${client.Socket.remotePort}`,
+			ansiColorCodes.magenta
+		)
 
-			await this.logger.writeAsync(
-				`Total clients: ${
-					this.clients.filter((c) => c.Socket.writable).length
-				} | Total clients connected: ${this.TotalConnectedClients()}`
-			)
-
-			resolve()
-		})
+		await this.logger.writeAsync(
+			`Total clients: ${
+				this.clients.filter((c) => c.Socket.writable).length
+			} | Total clients connected: ${this.TotalConnectedClients()}`
+		)
 	}
 
 	public RemoveClient(client: AuthClient): void {
@@ -92,3 +87,5 @@ export class AuthServer {
 		return this.clients
 	}
 }
+
+export default AuthServer

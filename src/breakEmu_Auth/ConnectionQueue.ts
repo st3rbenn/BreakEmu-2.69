@@ -1,9 +1,9 @@
+import { PromisePool } from "@supercharge/promise-pool"
 import { Socket } from "net"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
-import { PromisePool } from "@supercharge/promise-pool"
-import { AuthClient } from "./AuthClient"
-import { AuthServer } from "./AuthServer"
+import AuthClient from "./AuthClient"
+import AuthServer from "./AuthServer"
 
 interface IQueue {
 	position: number
@@ -12,20 +12,19 @@ interface IQueue {
 
 class ConnectionQueue {
 	private logger: Logger = new Logger("ConnectionQueue")
-	private static instance: ConnectionQueue
+	private static _instance: ConnectionQueue
 
 	private queue: IQueue[] = []
 
 	private isProcessing = false
-	public MAX_DOFUS_MESSAGE_HEADER_SIZE: number = 10
 
 	private constructor() {}
 
 	public static getInstance(): ConnectionQueue {
-		if (!ConnectionQueue.instance) {
-			ConnectionQueue.instance = new ConnectionQueue()
+		if (!ConnectionQueue._instance) {
+			ConnectionQueue._instance = new ConnectionQueue()
 		}
-		return ConnectionQueue.instance
+		return ConnectionQueue._instance
 	}
 
 	public async enqueue(socket: Socket): Promise<void> {
@@ -58,21 +57,31 @@ class ConnectionQueue {
 					(queue) => queue.position === socket.position
 				)
 				if (res) {
-          const index = this.queue.indexOf(res)
+					const index = this.queue.indexOf(res)
 
-          if (index > -1) {
-            this.queue.splice(index, 1)
-          }
+					if (index > -1) {
+						this.queue.splice(index, 1)
+					}
 
 					await this.logger.writeAsync(
 						`Client ${socket.position} processed | ${this.queue.length} in queue`,
 						ansiColorCodes.bgMagenta
 					)
 					await this.logger.writeAsync(
-						`Client ${res.position} removed from queue`
+						`Client ${res.position} processed and removed from queue`,
+						ansiColorCodes.bgGreen
 					)
 				}
 				this.isProcessing = false
+
+				if (this.queue.length > 0) {
+					await this.processQueue()
+				} else {
+					await this.logger.writeAsync(
+						`Queue is empty`,
+						ansiColorCodes.bgYellow
+					)
+				}
 			})
 			.process(async (socket) => {
 				await this.processConnection(socket)
@@ -84,44 +93,12 @@ class ConnectionQueue {
 	}
 
 	private async processConnection(socket: IQueue): Promise<void> {
-		await this.logger.writeAsync(
-			`Client ${socket.position} processing connection`
-		)
-
 		const client = new AuthClient(socket.socket)
 		await AuthServer.getInstance().AddClient(client)
 		await client.setupEventHandlers()
 
 		await client.initialize()
-		// await new Promise((resolve) => setTimeout(resolve, 5000))
-
-		await this.logger.writeAsync(
-			`Client ${socket.position} processed connection`,
-			ansiColorCodes.bgGreen
-		)
 	}
 }
 
 export default ConnectionQueue
-
-// public serialize(message: DofusMessage): Buffer {
-//   const headerWriter = new BinaryBigEndianWriter({
-//     maxBufferLength: this.MAX_DOFUS_MESSAGE_HEADER_SIZE,
-//   })
-//   const messageWriter = new BinaryBigEndianWriter({
-//     maxBufferLength: 10240,
-//   })
-
-//   if (!(message?.id in messages)) {
-//     throw `Undefined message (id: ${message.id})`
-//   }
-
-//   // @ts-ignore
-//   message.serialize(messageWriter)
-
-//   DofusNetworkMessage.writeHeader(headerWriter, message.id, messageWriter)
-
-//   this.logger.writeAsync(`Serialized dofus message '${message.id}'`)
-
-//   return Buffer.concat([headerWriter.getBuffer(), messageWriter.getBuffer()])
-// }

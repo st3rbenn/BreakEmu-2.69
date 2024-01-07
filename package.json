@@ -6,9 +6,10 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "babel src --out-dir dist --extensions \".ts\" --source-maps inline",
+    "build": "tsc --noEmit && babel src --out-dir dist --extensions \".ts\" && terser -c -m -o dist -- dist/*.js",
     "auth": "nodemon -q --exec babel-node src/AuthMain.ts --extensions \".ts\" --source-maps inline",
     "world": "nodemon -q --exec babel-node src/WorldMain.ts --extensions \".ts\" --source-maps inline",
+    "auth:build": "nodemon -q dist/AuthMain.js",
     "playground": "babel-node src/Playground.ts --extensions \".ts\" --source-maps inline"
   },
   "nodemonConfig": {
@@ -23,6 +24,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/blessed": "^0.1.25",
     "@types/js-yaml": "^4.0.9",
+    "@types/terser": "^3.12.0",
     "@types/utf8": "^3.0.3",
     "amf0-ts": "^1.3.9",
     "amf3-ts": "^1.1.0",
@@ -36,6 +38,7 @@
     "module-alias": "^2.2.3",
     "pino": "^8.16.2",
     "pino-pretty": "^10.2.3",
+    "terser": "^5.26.0",
     "utf8": "^3.0.0",
     "yaml": "^2.3.4"
   },

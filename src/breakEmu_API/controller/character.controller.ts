@@ -1,20 +1,19 @@
-import WorldClient from "../../breakEmu_World/WorldClient"
+import Account from "../../breakEmu_API/model/account.model"
+import Breed from "../../breakEmu_API/model/breed.model"
+import Experience from "../../breakEmu_API/model/experience.model"
 import { ansiColorCodes } from "../../breakEmu_Core/Colors"
 import Logger from "../../breakEmu_Core/Logger"
-import {
-	CharacterCreationRequestMessage,
-	CharacterCreationResultMessage,
-	EntityLook,
-} from "../../breakEmu_Server/IO"
+import { CharacterCreationRequestMessage } from "../../breakEmu_Server/IO"
+import CharacterCreationResultEnum from "../../breakEmu_World/enum/CharacterCreationResultEnum"
+import ContextEntityLook from "../../breakEmu_World/model/entities/look/ContextEntityLook"
 import Database from "../Database"
 import Character from "../model/character.model"
-import CharacterCreationResultEnum from "../../breakEmu_World/enum/CharacterCreationResultEnum"
 
 class CharacterController {
 	public _logger: Logger = new Logger("CharacterController")
 	public _database: Database = Database.getInstance()
 
-  private static _instance: CharacterController
+	private static _instance: CharacterController
 
 	private NAME_REGEX: RegExp = /^[A-Z][a-z]{2,9}(?:-[A-Za-z][a-z]{2,9}|[a-z]{1,10})$/
 
@@ -22,13 +21,13 @@ class CharacterController {
 
 	constructor() {}
 
-  public static getInstance(): CharacterController {
-    if (!CharacterController._instance) {
-      CharacterController._instance = new CharacterController()
-    }
+	public static getInstance(): CharacterController {
+		if (!CharacterController._instance) {
+			CharacterController._instance = new CharacterController()
+		}
 
-    return CharacterController._instance
-  }
+		return CharacterController._instance
+	}
 
 	public async getCharactersByAccountId(
 		accountId: number
@@ -43,27 +42,40 @@ class CharacterController {
 			let charactersList: Character[] = []
 
 			for (const c of characters) {
+				const look: ContextEntityLook = ContextEntityLook.parseFromString(
+					c.look as string
+				)
+
 				charactersList.push(
 					new Character(
 						c.id,
+						c.userId,
 						c.breed_id,
 						c.sex,
 						c.cosmeticId,
 						c.name,
-						this.parseColors(c.colors)
+						Number(c.experience),
+						look,
+						Number(c.mapId),
+						c.cellId,
+						c.direction,
+						c.kamas,
+						c.alignementSide,
+						c.alignementValue,
+						c.alignementGrade,
+						c.characterPower,
+						c.honor,
+						c.dishonor,
+						c.energy,
+						c.aggressable ? 1 : 0
 					)
-				)
-
-				await this._logger.writeAsync(
-					`Character ${c.name} found`,
-					ansiColorCodes.bgGreen
 				)
 			}
 
 			return charactersList
 		} catch (error) {
 			await this._logger.writeAsync(
-				`Error while getting characters for account ${accountId}`
+				`Error while getting characters for account ${accountId} \n ${error}`
 			)
 		}
 	}
@@ -72,51 +84,20 @@ class CharacterController {
 
 	public async createCharacter(
 		message: CharacterCreationRequestMessage,
-		client: WorldClient
-	): Promise<Character | undefined> {
+		account: Account,
+		failureCallback: (reason: CharacterCreationResultEnum) => void,
+		successCallback: (character: Character) => void
+	): Promise<any> {
 		try {
-			if (!message) {
-				await this._logger.writeAsync(
-					`Error while creating character: no message`
-				)
-				await client.Send(
-					client.serialize(
-						new CharacterCreationResultMessage(
-							CharacterCreationResultEnum.ERR_NO_REASON
-						)
-					)
-				)
-				return undefined
-			}
+			const characters = account.characters
 
-			if (!client.account) {
-				await this._logger.writeAsync(
-					`Error while creating character: no account`
-				)
-				await client.Send(
-					client.serialize(
-						new CharacterCreationResultMessage(
-							CharacterCreationResultEnum.ERR_NO_REASON
-						)
-					)
-				)
-				return undefined
-			}
-
-			const characters = await this.getCharactersByAccountId(client.account.id)
-
-			if (characters && characters.length >= this.MaxCharacterSlots) {
+			if (characters && characters.size >= this.MaxCharacterSlots) {
 				await this._logger.writeAsync(
 					`Error while creating character: too many characters`
 				)
-				await client.Send(
-					client.serialize(
-						new CharacterCreationResultMessage(
-							CharacterCreationResultEnum.ERR_TOO_MANY_CHARACTERS
-						)
-					)
+				return failureCallback(
+					CharacterCreationResultEnum.ERR_TOO_MANY_CHARACTERS
 				)
-				return undefined
 			}
 
 			const characterWithSameName = await this._database.prisma.character.findFirst(
@@ -131,29 +112,28 @@ class CharacterController {
 				await this._logger.writeAsync(
 					`Error while creating character: character with same name already exists: ${message.name}`
 				)
-				await client.Send(
-					client.serialize(
-						new CharacterCreationResultMessage(
-							CharacterCreationResultEnum.ERR_INVALID_NAME
-						)
-					)
-				)
-				return undefined
+				return failureCallback(CharacterCreationResultEnum.ERR_INVALID_NAME)
 			}
 
 			if (!this.NAME_REGEX.test(message.name as string)) {
 				await this._logger.writeAsync(
 					`Error while creating character: invalid name: ${message.name}`
 				)
-				await client.Send(
-					client.serialize(
-						new CharacterCreationResultMessage(
-							CharacterCreationResultEnum.ERR_INVALID_NAME
-						)
-					)
-				)
-				return undefined
+				return failureCallback(CharacterCreationResultEnum.ERR_INVALID_NAME)
 			}
+
+			const verifiedColors = ContextEntityLook.verifyColors(
+				message.colors as number[],
+				message.sex as boolean,
+				Breed.getBreedById(message.breed as number)
+			)
+
+			const look: ContextEntityLook = Breed.getBreedLook(
+				message.breed as number,
+				message.sex as boolean,
+				message.cosmeticId as number,
+				verifiedColors
+			)
 
 			const newCharacter = await this._database.prisma.character.create({
 				data: {
@@ -162,71 +142,65 @@ class CharacterController {
 					cosmeticId: message.cosmeticId as number,
 					name: message.name as string,
 					colors: this.serializeColors(message.colors as number[]),
-					created_at: new Date(),
-					userId: client.account.id as number,
+					look: ContextEntityLook.convertToString(look),
+					userId: account.id as number,
+					experience: 0,
 				},
 			})
 
-			await this._logger.writeAsync(
-				`Character ${newCharacter.name} created`,
-				ansiColorCodes.bgGreen
-			)
-
 			const character = new Character(
 				newCharacter.id,
+				account.id,
 				newCharacter.breed_id,
 				newCharacter.sex,
 				newCharacter.cosmeticId,
 				newCharacter.name,
-				this.parseColors(newCharacter.colors)
+				Experience.getCharacterLevel(Number(newCharacter.experience)),
+				look,
+				Number(newCharacter.mapId),
+				newCharacter.cellId,
+				newCharacter.direction,
+				newCharacter.kamas,
+				newCharacter.alignementSide,
+				newCharacter.alignementValue,
+				newCharacter.alignementGrade,
+				newCharacter.characterPower,
+				newCharacter.honor,
+				newCharacter.dishonor,
+				newCharacter.energy,
+				newCharacter.aggressable ? 1 : 0
 			)
 
-			return character
+			return successCallback(character)
 		} catch (error) {
-			await this._logger.writeAsync(`Error while creating character: ${error}`)
-			await client.Send(
-				client.serialize(
-					new CharacterCreationResultMessage(
-						CharacterCreationResultEnum.ERR_NO_REASON
-					)
-				)
-			)
-			return undefined
+			this._logger.write(`Error while creating character: ${error}`)
+			return failureCallback(CharacterCreationResultEnum.ERR_NO_REASON)
 		}
 	}
 
-	async getCharacterByAccountId(
-		accountId: number
-	): Promise<Character[] | undefined> {
+	public async deleteCharacter(characterId: number, accountId: number) {
 		try {
-			const characters = await this._database.prisma.character.findMany({
+			const character = await this._database.prisma.character.findFirst({
 				where: {
+					id: characterId,
 					userId: accountId,
 				},
 			})
 
-			if (!characters) return undefined
-
-			let charactersList: Character[] = []
-
-			for (const c of characters) {
-				const character = new Character(
-					c.id,
-					c.breed_id,
-					c.sex,
-					c.cosmeticId,
-					c.name,
-					this.parseColors(c.colors)
-				)
-				charactersList.push(character)
+			if (!character) {
+				return false
 			}
 
-			return charactersList
+			await this._database.prisma.character.delete({
+				where: {
+					id: characterId,
+				},
+			})
+
+			return true
 		} catch (error) {
-			await this._logger.writeAsync(
-				`Error while getting characters for account ${accountId}`
-			)
-			return undefined
+			console.log(error)
+			return false
 		}
 	}
 

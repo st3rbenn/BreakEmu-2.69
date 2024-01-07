@@ -1,17 +1,19 @@
 import { Server, Socket, createServer } from "net"
+import WorldTransition from "../breakEmu_World/WorldTransition"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
+import WorldClient from "./WorldClient"
 import WorldServerData from "./WorldServerData"
 import ServerStatusEnum from "./enum/ServerStatusEnum"
-import TransitionServer from "../breakEmu_Auth/TransitionServer"
-import WorldClient from "./WorldClient"
 class WorldServer {
 	public logger: Logger = new Logger("WorldServer")
 	public SERVER_STATE: number = ServerStatusEnum.OFFLINE
 
 	public worldServerData: WorldServerData
 
-	public clients: WorldClient[] = []
+  private static _instance: WorldServer
+
+	public clients: Map<string, WorldClient> = new Map<string, WorldClient>()
 
 	private _server: Server | undefined
 
@@ -19,33 +21,34 @@ class WorldServer {
 		this.worldServerData = worldServerData
 	}
 
+  public static getInstance(worldServerData?: WorldServerData): WorldServer {
+    if (!WorldServer._instance) {
+      WorldServer._instance = new WorldServer(worldServerData as WorldServerData)
+    }
+
+    return WorldServer._instance
+  }
+
 	public async Start(): Promise<void> {
 		this.logger.write(`Starting server ${this.worldServerData.Name}`)
 		this.SERVER_STATE = ServerStatusEnum.STARTING
-		await TransitionServer.getInstance().send(
-			"ServerStatusUpdateMessage",
-			JSON.stringify({
-				serverId: this.worldServerData.Id,
-				status: this.SERVER_STATE.toString(),
-			})
-		)
 
 		this._server = createServer((socket) => this.handleConnection(socket))
 		this._server.listen(
 			{ port: this.worldServerData.Port, host: this.worldServerData.Address },
-			async () => {
-				await this.logger.writeAsync(
+			() => {
+				this.SERVER_STATE = ServerStatusEnum.ONLINE
+				this.logger.write(
 					`Server listening on ${this.worldServerData.Address}:${this.worldServerData.Port}`
 				)
 			}
 		)
 
-		this.SERVER_STATE = ServerStatusEnum.ONLINE
-		await TransitionServer.getInstance().send(
+		WorldTransition.getInstance().send(
 			"ServerStatusUpdateMessage",
 			JSON.stringify({
 				serverId: this.worldServerData.Id,
-				status: this.SERVER_STATE.toString(),
+				status: ServerStatusEnum.ONLINE.toString(),
 			})
 		)
 
@@ -60,52 +63,35 @@ class WorldServer {
 	public async Stop(): Promise<void> {
 		this.logger.write(`Stoping server ${this.worldServerData.Name}`)
 		this.SERVER_STATE = ServerStatusEnum.STOPING
-		await TransitionServer.getInstance().send(
+		await WorldTransition.getInstance().send(
 			"ServerStatusUpdateMessage",
 			JSON.stringify({
 				serverId: this.worldServerData.Id,
 				status: this.SERVER_STATE.toString(),
 			})
 		)
-		this.SERVER_STATE = ServerStatusEnum.OFFLINE
-
 		this._server?.close(() => {
-			TransitionServer.getInstance().send(
-				"ServerStatusUpdateMessage",
-				JSON.stringify({
-					serverId: this.worldServerData.Id,
-					status: this.SERVER_STATE.toString(),
-				})
-			)
+			this.SERVER_STATE = ServerStatusEnum.OFFLINE
 		})
+		await WorldTransition.getInstance().send(
+			"ServerStatusUpdateMessage",
+			JSON.stringify({
+				serverId: this.worldServerData.Id,
+				status: this.SERVER_STATE.toString(),
+			})
+		)
 	}
 
 	private async handleConnection(socket: Socket): Promise<void> {
 		await this.logger.writeAsync(`New connection from ${socket.remoteAddress}`)
-		const worldClient = new WorldClient(socket, this)
+		const worldClient = new WorldClient(socket)
 		this.AddClient(worldClient)
-		await worldClient.setupEventHandlers()
-
-		await worldClient.initialize()
+		worldClient.setupEventHandlers()
+		worldClient.initialize()
 	}
 
 	public async AddClient(client: WorldClient): Promise<void> {
-		// Log de la nouvelle connexion
-		return new Promise(async (resolve) => {
-			this.clients.push(client)
-			await this.logger.writeAsync(
-				`New client connected: ${client.Socket.remoteAddress}:${client.Socket.remotePort}`,
-				ansiColorCodes.magenta
-			)
-
-			await this.logger.writeAsync(
-				`Total clients: ${
-					this.clients.filter((c) => c.Socket.writable).length
-				} | Total clients connected: ${this.TotalConnectedClients()}`
-			)
-
-			resolve()
-		})
+		this.clients.set(client.Socket.remoteAddress as string, client)
 	}
 
 	public RemoveClient(client: WorldClient): void {
@@ -114,11 +100,11 @@ class WorldServer {
 			`Client ${client.Socket.remoteAddress}:${client.Socket.remotePort} disconnected`,
 			ansiColorCodes.red
 		)
-		this.clients.splice(this.clients.indexOf(client), 1)
+		this.clients.delete(client.Socket.remoteAddress as string)
 	}
 
 	public TotalConnectedClients(): number {
-		return this.clients.filter((c) => c.Socket.writable).length
+		return this.clients.size
 	}
 }
 

@@ -45,6 +45,20 @@ interface DungeonsFile {
 	optimalPlayerLevel: number
 }
 
+interface exp {
+	level: number
+	experiencePoints: number
+}
+
+interface Head {
+  skins: string
+  assetId: string
+  breed: number
+  gender: number
+  label: string
+  order: number
+}
+
 class Playground {
 	public logger: Logger = new Logger("Playground")
 	public database: Database = Database.getInstance()
@@ -84,30 +98,29 @@ class Playground {
 
 		await this.database.initialize()
 
-		const jsonFile = this.readJsonFile("dungeons")
-		const dungeons = JSON.parse(jsonFile) as DungeonsFile[]
+		const jsonFile = this.readJsonFile("heads")
+		const heads = JSON.parse(jsonFile) as Head[]
 
-		// dungeons.map((d) => {
-		// 	this.logger.write(`Parsed File ${d.name}`)
-		// })
-		for (const d of dungeons) {
+		for (const h of heads) {
 			await this.logger.writeAsync(
-				`Inserting dungeon ${d.name}`,
+				`Inserting head ${h.skins}`,
 				ansiColorCodes.bgMagenta
 			)
 
-			await this.database.prisma.dungeon.create({
+			await this.database.prisma.head.create({
 				data: {
-					id: d.id,
-					name: d.name,
-					optimalPlayerLevel: d.optimalPlayerLevel,
-					mapId: d.mapIds.join(","),
-					entranceMapId: d.entranceMapId,
-					exitMapId: d.exitMapId,
+          skins: h.skins,
+          assetId: h.assetId,
+          breed: {
+            connect: {
+              id: h.breed
+            }
+          },
+          gender: h.gender == 1,
+          label: h.label,
+          order: h.order
 				},
 			})
-
-			await this.logger.writeAsync(`${d.name} DONE`, ansiColorCodes.bgBlue)
 		}
 	}
 
@@ -117,7 +130,7 @@ class Playground {
 	): Promise<void> {
 		for (let i = 0; i < data.length; i++) {
 			await new Promise((resolve) => setTimeout(resolve, startDelay))
-			ConnectionQueue.getInstance().enqueue(data[i] as Socket)
+			await ConnectionQueue.getInstance().enqueue(data[i] as Socket)
 		}
 	}
 

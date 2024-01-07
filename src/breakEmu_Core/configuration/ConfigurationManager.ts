@@ -33,7 +33,7 @@ class ConfigurationManager extends ServerConfiguration {
 	}
 
 	public async Load(): Promise<void> {
-		return await new Promise<void>(async (resolve, reject) => {
+		try {
 			const fileExists = existsSync(this.CONFIG_NAME)
 
 			if (fileExists) {
@@ -43,7 +43,7 @@ class ConfigurationManager extends ServerConfiguration {
 				await this.logger.writeAsync(
 					"Loading configuration file...",
 					ansiColorCodes.green
-				) // Initial log
+				)
 
 				for (const category in this.configResult) {
 					const categoryConfig = this.configResult[
@@ -56,8 +56,6 @@ class ConfigurationManager extends ServerConfiguration {
 					"Configuration loaded successfully. \n",
 					ansiColorCodes.green
 				)
-
-				resolve()
 			} else {
 				await this.logger.writeAsync(
 					"No configuration file found, creating one...",
@@ -65,9 +63,12 @@ class ConfigurationManager extends ServerConfiguration {
 				)
 				this.Default()
 				await this.Save()
-				resolve()
 			}
-		})
+		} catch (error) {
+			// Handle any errors that might occur
+			console.error(error)
+			// Optionally, rethrow the error or handle it as needed
+		}
 	}
 
 	// Fonction pour calculer le nombre total de paramètres
