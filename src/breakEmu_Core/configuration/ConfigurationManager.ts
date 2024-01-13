@@ -4,9 +4,9 @@ import * as YML from "yaml"
 import { ansiColorCodes } from "../Colors"
 import Logger from "../Logger"
 import { IAuthConfiguration } from "../types/fileType"
-import { ServerConfiguration } from "./ServerConfiguration"
+import DofusConfiguration from "./DofusConfiguration"
 
-class ConfigurationManager extends ServerConfiguration {
+class ConfigurationManager extends DofusConfiguration {
 	public logger: Logger = new Logger("ConfigurationManager")
 
 	public CONFIG_NAME: string = "config.yml"
@@ -15,10 +15,6 @@ class ConfigurationManager extends ServerConfiguration {
 	private totalParameters: number = 0
 	private loadedParameters: number = 0
 	private configResult: IAuthConfiguration | null = null
-
-	public dofusProtocolVersion: string = ""
-	public versionMajor: number = 0
-	public versionMinor: number = 0
 
 	constructor() {
 		super()
@@ -99,7 +95,7 @@ class ConfigurationManager extends ServerConfiguration {
 		category: string,
 		categoryConfig: any
 	): Promise<void> {
-		const isSpecialCategory = this.isSpecialCategory(category)
+		const isSpecialCategory = this.isCategory(category)
 		for (const key in categoryConfig) {
 			this.totalParameters++
 			const value = categoryConfig[key]
@@ -118,9 +114,8 @@ class ConfigurationManager extends ServerConfiguration {
 		}
 	}
 
-	private isSpecialCategory(category: string): boolean {
-		const specialCategories = new Set(["database", "authServer", "worldServer"])
-		return specialCategories.has(category)
+	private isCategory(category: string): boolean {
+		return new Set(["database", "authServer", "worldServer"]).has(category)
 	}
 
 	private capitalizeFirstLetter(string: string): string {
@@ -144,15 +139,25 @@ class ConfigurationManager extends ServerConfiguration {
 				host: this.worldServerHost,
 				port: this.worldServerPort,
 			},
-			debug: {
-				showDebugMessages: this.showDebugMessages,
-				showProtocolMessage: this.showProtocolMessage,
-				showDatabaseLogs: this.showDatabaseLogs,
-			},
 			dofus: {
 				dofusProtocolVersion: this.dofusProtocolVersion,
 				versionMajor: this.versionMajor,
 				versionMinor: this.versionMinor,
+				apLimit: this.apLimit,
+				startAp: this.startAp,
+				startMp: this.startMp,
+				mpLimit: this.mpLimit,
+				startMapId: this.startMapId,
+				startCellId: this.startCellId,
+				startLevel: this.startLevel,
+				startKamas: this.startKamas,
+				startStatsPoints: this.startStatsPoints,
+				XpRate: this.XpRate,
+			},
+			debug: {
+				showDebugMessages: this.showDebugMessages,
+				showProtocolMessage: this.showProtocolMessage,
+				showDatabaseLogs: this.showDatabaseLogs,
 			},
 		}
 
@@ -179,13 +184,23 @@ class ConfigurationManager extends ServerConfiguration {
 		this.worldServerHost = "127.0.0.1"
 		this.worldServerPort = 5555
 
-		this.showDebugMessages = false
-		this.showProtocolMessage = false
-		this.showDatabaseLogs = false
-
 		this.dofusProtocolVersion = "1.0.3+7dfcc24"
 		this.versionMajor = 2
 		this.versionMinor = 69
+		this.apLimit = 12
+		this.startAp = 6
+		this.startMp = 3
+		this.mpLimit = 6
+		this.startLevel = 1
+		this.startMapId = 7411
+		this.startCellId = 311
+		this.startKamas = 0
+		this.startStatsPoints = 0
+		this.XpRate = 1
+
+		this.showDebugMessages = false
+		this.showProtocolMessage = false
+		this.showDatabaseLogs = false
 	}
 }
 

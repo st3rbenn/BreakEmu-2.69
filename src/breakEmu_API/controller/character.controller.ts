@@ -1,13 +1,15 @@
+import ConfigurationManager from "../../breakEmu_Core/configuration/ConfigurationManager"
 import Account from "../../breakEmu_API/model/account.model"
-import Breed from "../../breakEmu_API/model/breed.model"
 import Experience from "../../breakEmu_API/model/experience.model"
-import { ansiColorCodes } from "../../breakEmu_Core/Colors"
 import Logger from "../../breakEmu_Core/Logger"
 import { CharacterCreationRequestMessage } from "../../breakEmu_Server/IO"
 import CharacterCreationResultEnum from "../../breakEmu_World/enum/CharacterCreationResultEnum"
-import ContextEntityLook from "../../breakEmu_World/model/entities/look/ContextEntityLook"
+import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
+import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
+import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
 import Database from "../Database"
 import Character from "../model/character.model"
+import { PrismaClient } from "@prisma/client"
 
 class CharacterController {
 	public _logger: Logger = new Logger("CharacterController")
@@ -46,30 +48,28 @@ class CharacterController {
 					c.look as string
 				)
 
-				charactersList.push(
-					new Character(
-						c.id,
-						c.userId,
-						c.breed_id,
-						c.sex,
-						c.cosmeticId,
-						c.name,
-						Number(c.experience),
-						look,
-						Number(c.mapId),
-						c.cellId,
-						c.direction,
-						c.kamas,
-						c.alignementSide,
-						c.alignementValue,
-						c.alignementGrade,
-						c.characterPower,
-						c.honor,
-						c.dishonor,
-						c.energy,
-						c.aggressable ? 1 : 0
-					)
+        const character = new Character(
+					c.id,
+					c.userId,
+					BreedManager.getInstance().getBreedById(c.breed_id),
+					c.sex,
+					c.cosmeticId,
+					c.name,
+					Number(c.experience),
+					look,
+					Number(c.mapId),
+					Number(c.cellId),
+					c.direction,
+					c.kamas,
+					c.statsPoints,
+					[],
+					[],
+					[],
+					0,
+          EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string))
 				)
+
+        charactersList.push(character)
 			}
 
 			return charactersList
@@ -125,50 +125,52 @@ class CharacterController {
 			const verifiedColors = ContextEntityLook.verifyColors(
 				message.colors as number[],
 				message.sex as boolean,
-				Breed.getBreedById(message.breed as number)
+				BreedManager.getInstance().getBreedById(message.breed as number)
 			)
 
-			const look: ContextEntityLook = Breed.getBreedLook(
+			const look: ContextEntityLook = BreedManager.getInstance().getBreedLook(
 				message.breed as number,
 				message.sex as boolean,
 				message.cosmeticId as number,
 				verifiedColors
 			)
 
+			const startLevel = ConfigurationManager.getInstance().startLevel
+			const startLevelExp = Experience.getCharacterExperienceLevelFloor(
+				startLevel - 1
+			)
+
 			const newCharacter = await this._database.prisma.character.create({
 				data: {
-					breed_id: message.breed as number,
-					sex: message.sex as boolean,
-					cosmeticId: message.cosmeticId as number,
-					name: message.name as string,
-					colors: this.serializeColors(message.colors as number[]),
-					look: ContextEntityLook.convertToString(look),
 					userId: account.id as number,
-					experience: 0,
+					name: message.name as string,
+					breed_id: message.breed as number,
+					colors: this.serializeColors(message.colors as number[]),
+					cosmeticId: message.cosmeticId as number,
+					sex: message.sex as boolean,
+					experience: startLevelExp,
+					look: ContextEntityLook.convertToString(look),
+					cellId: ConfigurationManager.getInstance().startCellId.toString(),
+					mapId: ConfigurationManager.getInstance().startMapId.toString(),
+					direction: 1,
+					kamas: ConfigurationManager.getInstance().startKamas,
+					statsPoints: ConfigurationManager.getInstance().startStatsPoints,
+					stats: JSON.stringify(EntityStats.new(startLevel).saveAsJSON()),
 				},
 			})
 
-			const character = new Character(
+			const character = Character.create(
 				newCharacter.id,
 				account.id,
 				newCharacter.breed_id,
 				newCharacter.sex,
 				newCharacter.cosmeticId,
 				newCharacter.name,
-				Experience.getCharacterLevel(Number(newCharacter.experience)),
 				look,
-				Number(newCharacter.mapId),
-				newCharacter.cellId,
+				ConfigurationManager.getInstance().startMapId,
+				ConfigurationManager.getInstance().startCellId,
 				newCharacter.direction,
-				newCharacter.kamas,
-				newCharacter.alignementSide,
-				newCharacter.alignementValue,
-				newCharacter.alignementGrade,
-				newCharacter.characterPower,
-				newCharacter.honor,
-				newCharacter.dishonor,
-				newCharacter.energy,
-				newCharacter.aggressable ? 1 : 0
+				newCharacter.kamas
 			)
 
 			return successCallback(character)

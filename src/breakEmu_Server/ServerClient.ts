@@ -50,7 +50,7 @@ abstract class ServerClient {
 	}
 
 	public async setupEventHandlers(): Promise<void> {
-		return await new Promise<void>((resolve, reject) => {
+		await new Promise<void>((resolve, reject) => {
 			this.Socket.on("end", () => this.OnClose())
 			this.Socket.on("error", (error) => {
 				this.logger.write(`Error: ${error.message}`, ansiColorCodes.red)
@@ -86,32 +86,44 @@ abstract class ServerClient {
 		return Buffer.concat([headerWriter.getBuffer(), messageWriter.getBuffer()])
 	}
 
-	public deserialize(data: Buffer): DofusMessage {
-		const reader = new BinaryBigEndianReader({
-			maxBufferLength: data.length,
-		}).writeBuffer(data)
-
-		const {
-			messageId,
-			instanceId,
-			payloadSize,
-		} = DofusNetworkMessage.readHeader(reader)
-
-		if (
-			!(messageId in messages) &&
-			ConfigurationManager.getInstance().showProtocolMessage
-		) {
-			this.logger.writeAsync(
-				`Undefined message (id: ${messageId})`,
-				ansiColorCodes.red
-			)
-		}
-
-		const message = new messages[messageId]()
-		message.deserialize(reader)
-
-		return message
-	}
+	public deserialize(data: Buffer): DofusMessage | null {
+    let messageId;  // Déclarer messageId en dehors du bloc try
+  
+    try {
+      const reader = new BinaryBigEndianReader({
+        maxBufferLength: data.length,
+      }).writeBuffer(data);
+  
+      const header = DofusNetworkMessage.readHeader(reader);
+      messageId = header.messageId;  // Affecter la valeur à messageId
+      const instanceId = header.instanceId;
+      const payloadSize = header.payloadSize;
+  
+      if (
+        !(messageId in messages) &&
+        ConfigurationManager.getInstance().showProtocolMessage
+      ) {
+        this.logger.writeAsync(
+          `Undefined message (id: ${messageId})`,
+          ansiColorCodes.red
+        );
+      }
+  
+      const message = new messages[messageId]();
+      message.deserialize(reader);
+  
+      return message;
+    } catch (error) {
+      // Utiliser messageId ici
+      this.logger.writeAsync(
+        `Error while deserializing message with ID ${messageId}: ${error}`,
+        ansiColorCodes.red
+      );
+  
+      return null;
+    }
+  }
+  
 }
 
 export default ServerClient

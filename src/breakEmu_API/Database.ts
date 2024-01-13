@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client"
 import Logger from "../breakEmu_Core/Logger"
 import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
-import ContextEntityLook from "../breakEmu_World/model/entities/look/ContextEntityLook"
+import BreedManager from "../breakEmu_World/manager/breed/BreedManager"
+import ContextEntityLook from "../breakEmu_World/manager/entities/look/ContextEntityLook"
 import Breed from "./model/breed.model"
 import Character from "./model/character.model"
 import Experience from "./model/experience.model"
@@ -112,9 +113,9 @@ class Database {
 				breed.startLifePoints
 			)
 
-			Breed.breeds.push(breedRecord)
+			BreedManager.getInstance().breeds.push(breedRecord)
 		}
-		this._logger.writeAsync(`Loaded ${Breed.breeds.length} breeds`)
+		this._logger.writeAsync(`Loaded ${BreedManager.getInstance().breeds.length} breeds`)
 
 		/* Load all experiences/Levels */
 		const experiences = await this.prisma.experience.findMany()
@@ -126,55 +127,6 @@ class Database {
 		this._logger.writeAsync(
 			`Loaded ${Experience.experienceLevels.length} levels`
 		)
-
-		/* Load all characters */
-		const characters = await this.prisma.character.findMany()
-		for (const c of characters) {
-			const validateColor = ContextEntityLook.verifyColors(
-				c.colors.split(",").map(Number),
-				c.sex,
-				Breed.getBreedById(c.breed_id)
-			)
-
-			const look: ContextEntityLook = Breed.getBreedLook(
-				c.breed_id,
-				c.sex,
-				c.cosmeticId,
-				validateColor
-			)
-
-			const character = new Character(
-        c.id,
-        c.userId,
-        c.breed_id,
-        c.sex,
-        c.cosmeticId,
-        c.name,
-        Number(c.experience),
-        look,
-        Number(c.mapId),
-        c.cellId,
-        c.direction,
-        c.kamas,
-        c.strength,
-        c.vitality,
-        c.wisdom,
-        c.chance,
-        c.agility,
-        c.intelligence,
-        c.alignementSide,
-        c.alignementValue,
-        c.alignementGrade,
-        c.characterPower,
-        c.honor,
-        c.dishonor,
-        c.energy,
-        c.aggressable ? 1 : 0
-      )
-
-			Character.characters.push(character)
-		}
-		this._logger.writeAsync(`Loaded ${Character.characters.length} characters`)
 	}
 }
 

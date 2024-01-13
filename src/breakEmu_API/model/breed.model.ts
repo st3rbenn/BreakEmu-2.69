@@ -1,4 +1,4 @@
-import ContextEntityLook from "../../breakEmu_World/model/entities/look/ContextEntityLook"
+import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
 import Head from "./head.model"
 
 class Breed {
@@ -106,28 +106,6 @@ class Breed {
 
 	public static set breeds(breeds: Breed[]) {
 		Breed._Breeds = breeds
-	}
-
-	public static getBreedById(id: number): Breed {
-		return Breed.breeds.find((b) => b.id === id) as Breed
-	}
-
-	public static getBreedLook(
-		breedId: number,
-		sex: boolean,
-		cosmeticId: number,
-		colors: number[]
-	): ContextEntityLook {
-		const breed = Breed.getBreedById(breedId)
-		const look = sex
-			? ContextEntityLook.parseFromString(breed.femaleLook)
-			: ContextEntityLook.parseFromString(breed.maleLook)
-
-		look.skins.push(parseInt(Head.getSkinById(cosmeticId)))
-
-		look.indexedColors.push(...colors)
-
-		return look
 	}
 }
 

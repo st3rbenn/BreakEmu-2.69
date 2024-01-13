@@ -18,3 +18,13 @@ dofus:
   dofusProtocolVersion: 1.0.3+7dfcc24
   versionMajor: 2
   versionMinor: 69
+  apLimit: 12
+  startAp: 6
+  mpLimit: 6
+  startMp: 3
+  startMapId: 7411
+  startCellId: 311
+  startLevel: 1
+  startKamas: 1000000
+  startStatsPoints: 0
+  XpRate: 1

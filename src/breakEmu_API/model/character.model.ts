@@ -1,11 +1,34 @@
+import ConfigurationManager from "../../breakEmu_Core/configuration/ConfigurationManager"
 import {
 	ActorExtendedAlignmentInformations,
+	AlmanachCalendarDateMessage,
 	CharacterBaseInformations,
 	CharacterCharacteristicsInformations,
-	CharacterCharacteristic,
-	SpellModifierMessage,
+	CharacterLoadingCompleteMessage,
+	CharacterStatsListMessage,
+	CurrentMapMessage,
+	EmoteListMessage,
+	EntityDispositionInformations,
+	GameContextCreateMessage,
+	GameContextDestroyMessage,
+	GameContextEnum,
+	GameRolePlayActorInformations,
+	InventoryContentMessage,
+	InventoryWeightMessage,
+	JobCrafterDirectorySettingsMessage,
+	JobDescriptionMessage,
+	JobExperienceMultiUpdateMessage,
+	ServerExperienceModificatorMessage,
+	ShortcutBarContentMessage,
+	SpellListMessage,
+	TextInformationMessage,
+	TextInformationTypeEnum,
 } from "../../breakEmu_Server/IO"
-import ContextEntityLook from "../../breakEmu_World/model/entities/look/ContextEntityLook"
+import WorldClient from "../../breakEmu_World/WorldClient"
+import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
+import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
+import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
+import CharacterShortcut from "../../breakEmu_World/manager/shortcut/characterShortcut"
 import Breed from "./breed.model"
 import Experience from "./experience.model"
 class Character {
@@ -22,21 +45,22 @@ class Character {
 	private _cellId: number
 	private _direction: number
 	private _kamas: number
-	private _alignementSide: number
-	private _alignementValue: number
-	private _alignementGrade: number
-	private _characterPower: number
-	private _honor: number
-	private _dishonor: number
-	private _energy: number
-	private _aggressable: number
 
-	private static _characters: Character[] = []
+	private _stats?: EntityStats
+	private _statsPoints: number
+	private _knownEmotes: number[]
+	private _shortcuts: CharacterShortcut[]
+	private _knownOrnaments: number[]
+	private _activeOrnament: number
+	// private _spells: CharacterSpell[]
+
+	private _characters: Character[] = []
+	private _context: GameContextEnum | undefined
 
 	constructor(
 		id: number,
-		_accountId: number,
-		breed: number,
+		accountId: number,
+		breed: Breed,
 		sex: boolean,
 		cosmeticId: number,
 		name: string,
@@ -46,18 +70,17 @@ class Character {
 		cellId: number,
 		direction: number,
 		kamas: number,
-		alignmentSide: number,
-		alignementValue: number,
-		alignementGrade: number,
-		characterPower: number,
-		honor: number,
-		dishonor: number,
-		energy: number,
-		aggressable: number
+		statsPoints: number,
+		knownEmotes: number[],
+		shortcuts: CharacterShortcut[],
+		knownOrnaments: number[],
+		activeOrnament: number,
+		stats?: EntityStats
+		// spells: CharacterSpell[]
 	) {
 		this._id = id
-		this._accountId = _accountId
-		this._breed = Breed.breeds.find((b) => b.id === breed) as Breed
+		this._accountId = accountId
+		this._breed = breed
 		this._sex = sex
 		this._cosmeticId = cosmeticId
 		this._name = name
@@ -68,14 +91,55 @@ class Character {
 		this._cellId = cellId
 		this._direction = direction
 		this._kamas = kamas
-		this._alignementSide = alignmentSide
-		this._alignementValue = alignementValue
-		this._alignementGrade = alignementGrade
-		this._characterPower = characterPower
-		this._honor = honor
-		this._dishonor = dishonor
-		this._energy = energy
-		this._aggressable = aggressable
+		this._stats = stats
+		this._statsPoints = statsPoints
+		this._knownEmotes = knownEmotes
+		this._shortcuts = shortcuts
+		this._knownOrnaments = knownOrnaments
+		this._activeOrnament = activeOrnament
+		// this._spells = spells
+	}
+
+	public static create(
+		id: number,
+		accountId: number,
+		breed: number,
+		sex: boolean,
+		cosmeticId: number,
+		name: string,
+		look: ContextEntityLook,
+		mapId: number,
+		cellId: number,
+		direction: number,
+		kamas: number
+	) {
+		const startLevel = ConfigurationManager.getInstance().startLevel
+		const bree = BreedManager.getInstance().breeds.find(
+			(b) => b.id === breed
+		) as Breed
+
+		const character = new Character(
+			id,
+			accountId,
+			bree,
+			sex,
+			cosmeticId,
+			name,
+			Experience.getCharacterExperienceLevelFloor(startLevel),
+			look,
+			mapId,
+			cellId,
+			direction,
+			kamas,
+			0,
+			[1],
+			[] as CharacterShortcut[],
+			[],
+			0,
+			EntityStats.new(startLevel)
+		)
+
+		return character
 	}
 
 	//#region Getters & Setters
@@ -128,11 +192,11 @@ class Character {
 		this._experience = experience
 	}
 
-	public static get characters(): Character[] {
+	public get characters(): Character[] {
 		return this._characters
 	}
 
-	public static set characters(characters: Character[]) {
+	public set characters(characters: Character[]) {
 		this._characters = characters
 	}
 
@@ -176,68 +240,12 @@ class Character {
 		this._kamas = kamas
 	}
 
-	public get honor(): number {
-		return this._honor
+	public get stats(): EntityStats | undefined {
+		return this._stats
 	}
 
-	public set honor(honor: number) {
-		this._honor = honor
-	}
-
-	public get dishonor(): number {
-		return this._dishonor
-	}
-
-	public set dishonor(dishonor: number) {
-		this._dishonor = dishonor
-	}
-
-	public get energy(): number {
-		return this._energy
-	}
-
-	public set energy(energy: number) {
-		this._energy = energy
-	}
-
-	public get aggressable(): number {
-		return this._aggressable
-	}
-
-	public set aggressable(aggressable: number) {
-		this._aggressable = aggressable
-	}
-
-	public get alignementSide(): number {
-		return this._alignementSide
-	}
-
-	public set alignementSide(alignementSide: number) {
-		this._alignementSide = alignementSide
-	}
-
-	public get alignementValue(): number {
-		return this._alignementValue
-	}
-
-	public set alignementValue(alignementValue: number) {
-		this._alignementValue = alignementValue
-	}
-
-	public get alignementGrade(): number {
-		return this._alignementGrade
-	}
-
-	public set alignementGrade(alignementGrade: number) {
-		this._alignementGrade = alignementGrade
-	}
-
-	public get characterPower(): number {
-		return this._characterPower
-	}
-
-	public set characterPower(characterPower: number) {
-		this._characterPower = characterPower
+	public set stats(stats: EntityStats | undefined) {
+		this._stats = stats
 	}
 
 	public toCharacterBaseInformations(): CharacterBaseInformations {
@@ -251,25 +259,18 @@ class Character {
 		)
 	}
 
-	public ActorExtendedAlignmentInformations() {
-		const alignementInfos: ActorExtendedAlignmentInformations = new ActorExtendedAlignmentInformations(
-			this.alignementSide,
-			this.alignementValue,
-			this.alignementGrade,
-			this.characterPower,
-			this.honor,
-			0,
-			0,
-			this.aggressable
-		)
-
-		return alignementInfos
-	}
-
 	public characterCharacteristicsInformations() {
+		const alignementInfos: ActorExtendedAlignmentInformations = new ActorExtendedAlignmentInformations(
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		)
 		// const charac = new CharacterCharacteristic(1)
-
-		// const spell = new SpellModifierMessage()
 
 		const stats = new CharacterCharacteristicsInformations(
 			this.experience,
@@ -277,7 +278,7 @@ class Character {
 			Experience.getCharacterExperienceNextLevelFloor(this._level),
 			0,
 			this.kamas,
-			this.ActorExtendedAlignmentInformations(),
+			alignementInfos,
 			[],
 			0,
 			[],
@@ -285,6 +286,171 @@ class Character {
 		)
 
 		return stats
+	}
+
+  public toGameRolePlayActorInformations(): GameRolePlayActorInformations {
+    const entityDisposition = new EntityDispositionInformations(
+      this.cellId,
+      this.direction
+    );
+
+    return new GameRolePlayActorInformations(
+      this.id,
+      entityDisposition,
+      this.look.toEntityLook()
+    );
+  }
+
+	public refreshJobs(client: WorldClient) {
+		client.Send(
+			client.serialize(
+				new JobCrafterDirectorySettingsMessage(
+					[]
+					// Record.Jobs.Select((x) => x.GetDirectorySettings()).ToArray()
+				)
+			)
+		)
+		client.Send(
+			client.serialize(
+				new JobDescriptionMessage(
+					[]
+					// Record.Jobs.Select((x) => x.GetJobDescription()).ToArray()
+				)
+			)
+		)
+		client.Send(
+			client.serialize(
+				new JobExperienceMultiUpdateMessage(
+					[]
+					// Record.Jobs.Select((x) => x.GetJobExperience()).ToArray()
+				)
+			)
+		)
+	}
+
+	public refreshSpells(client: WorldClient) {
+		client.Send(
+			client.serialize(
+				new SpellListMessage(
+					false,
+					[]
+					// Record.Spells.Select((x) => x.GetSpellItem(this)).ToArray()
+				)
+			)
+		)
+	}
+
+	// public refreshGuild(client: WorldClient) {
+	//   if(this._guildId === 0) return
+
+	// }
+
+	public onCharacterLoadingComplete(client: WorldClient) {
+		this.onConnected(client)
+		this.reply(client, "Bienvenue sur BreakEmu !", "DarkGreen", true, true)
+		client.Send(client.serialize(new CharacterLoadingCompleteMessage()))
+	}
+
+	public onConnected(client: WorldClient) {
+		this.textInformation(
+			client,
+			TextInformationTypeEnum.TEXT_INFORMATION_ERROR,
+			89,
+			[]
+		)
+		client.Send(client.serialize(new AlmanachCalendarDateMessage(1)))
+	}
+
+	public destroyContext(client: WorldClient) {
+		client.Send(client.serialize(new GameContextDestroyMessage()))
+		this._context = undefined
+	}
+
+	public sendServerExperienceModificator(client: WorldClient) {
+		client.Send(
+			client.serialize(
+				new ServerExperienceModificatorMessage(
+					ConfigurationManager.getInstance().XpRate * 100
+				)
+			)
+		)
+	}
+
+  public teleport(client: WorldClient, mapId: number, cellId: number) {
+    client.Send(client.serialize(new CurrentMapMessage(mapId)));
+  }
+
+	public createContext(client: WorldClient, context: number) {
+		client.Send(client.serialize(new GameContextCreateMessage(context)))
+		this._context = context
+	}
+
+	public refreshEmotes(client: WorldClient) {
+		client.Send(client.serialize(new EmoteListMessage([])))
+	}
+
+	public applyPolice(value: any, bold: boolean, underline: boolean): string {
+		if (bold) {
+			value = `<b>${value}</b>`
+		}
+		if (underline) {
+			value = `<u>${value}</u>`
+		}
+		return value
+	}
+
+	public replyWarning(client: WorldClient, value: any): void {
+		this.reply(client, value, "DarkOrange", false, false)
+	}
+
+	public replyError(client: WorldClient, value: any): void {
+		this.reply(client, value, "DarkRed", false, false)
+	}
+
+	public reply(
+		client: WorldClient,
+		value: any,
+		color: string,
+		bold: boolean = false,
+		underline: boolean = false
+	): void {
+		value = this.applyPolice(value, bold, underline)
+		// Remplacez la ligne suivante par votre propre logique d'envoi
+		client.Send(
+			client.serialize(
+				new TextInformationMessage(0, 0, [
+					`<font color="#${color}">${value}</font>`,
+				])
+			)
+		)
+	}
+
+  public refreshStats(client: WorldClient) {
+    client.Send(client.serialize(new CharacterStatsListMessage(this.characterCharacteristicsInformations())));
+  }
+
+	public textInformation(
+		client: WorldClient,
+		msgType: TextInformationTypeEnum,
+		msgId: number,
+		parameters: string[]
+	) {
+		client.Send(
+			client.serialize(new TextInformationMessage(msgType, msgId, parameters))
+		)
+	}
+
+	public refreshInventory(client: WorldClient) {
+		client.Send(client.serialize(new InventoryContentMessage([], this.kamas)))
+		// this.refreshWeight(client)
+	}
+
+	public refreshWeight(client: WorldClient) {
+		client.Send(client.serialize(new InventoryWeightMessage(0, 0, 1000)))
+	}
+
+	public refreshShortcuts(client: WorldClient) {
+		client.Send(client.serialize(new ShortcutBarContentMessage(1, [])))
 	}
 }
 

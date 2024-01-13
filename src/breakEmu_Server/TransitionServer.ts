@@ -60,15 +60,15 @@ abstract class TransitionServer {
 			throw new Error("Cannot receive message: Channel is not created")
 		}
 		await this.channel.assertQueue(queueName, { durable: true })
-		this.channel.consume(
+		await this.channel.consume(
 			queueName,
 			(msg) => {
-				onMessage(msg)
+        onMessage(msg)
 
-				if (msg) {
-					this.channel?.ack(msg)
-				}
-			},
+        if (msg) {
+          this.channel?.ack(msg)
+        }
+      },
 			{ noAck: false }
 		)
 	}

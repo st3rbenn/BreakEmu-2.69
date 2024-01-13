@@ -17,6 +17,16 @@ interface IDofusInfo {
 	dofusProtocolVersion: string
 	versionMajor: number
 	versionMinor: number
+  apLimit: number
+  startAp: number
+  mpLimit: number
+  startMp: number
+  startLevel: number
+  startMapId: number
+  startCellId: number
+  startKamas: number
+  startStatsPoints: number
+  XpRate: number
 }
 
 interface IDatabaseCredentials {

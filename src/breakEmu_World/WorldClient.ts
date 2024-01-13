@@ -1,57 +1,60 @@
 import { Socket } from "net"
-import CharacterController from "../breakEmu_API/controller/character.controller"
 import Account from "../breakEmu_API/model/account.model"
+import Character from "../breakEmu_API/model/character.model"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
 import {
-	AcquaintancesGetListMessage,
-	AcquaintancesListMessage,
-	AllianceGetPlayerApplicationMessage,
-	AllianceRanksMessage,
-	AllianceRanksRequestMessage,
-	AuthenticationTicketMessage,
-	BasicPingMessage,
-	BasicPongMessage,
-	CharacterCanBeCreatedRequestMessage,
-	CharacterCanBeCreatedResultMessage,
-	CharacterCreationRequestMessage,
-	CharacterDeletionPrepareRequestMessage,
-	CharacterDeletionRequestMessage,
-	CharacterFirstSelectionMessage,
-	CharacterNameSuggestionRequestMessage,
-	CharacterSelectionMessage,
-	CharactersListRequestMessage,
-	FriendsGetListMessage,
-	FriendsListMessage,
-	HelloGameMessage,
-	PopupWarningClosedMessage,
-	ProtocolRequired,
-	ReloginTokenRequestMessage,
-	ServerSelectionMessage,
-	SpouseGetInformationsMessage,
-	SpouseInformationsMessage,
-	messages,
+  AllianceGetPlayerApplicationMessage,
+  AllianceRanksMessage,
+  AllianceRanksRequestMessage,
+  AuthenticationTicketMessage,
+  BasicPingMessage,
+  BasicPongMessage,
+  CharacterCanBeCreatedRequestMessage,
+  CharacterCanBeCreatedResultMessage,
+  CharacterCreationRequestMessage,
+  CharacterDeletionPrepareRequestMessage,
+  CharacterDeletionRequestMessage,
+  CharacterFirstSelectionMessage,
+  CharacterNameSuggestionRequestMessage,
+  CharacterSelectionMessage,
+  CharactersListRequestMessage,
+  FriendsGetListMessage,
+  FriendsListMessage,
+  GameContextCreateRequestMessage,
+  HelloGameMessage,
+  IgnoredGetListMessage,
+  MapInformationsRequestMessage,
+  PopupWarningClosedMessage,
+  ProtocolRequired,
+  ReloginTokenRequestMessage,
+  ServerSelectionMessage,
+  messages
 } from "../breakEmu_Server/IO"
 import ServerClient from "../breakEmu_Server/ServerClient"
-import WorldTransition from "../breakEmu_World/WorldTransition"
 import WorldServer from "./WorldServer"
+import ContextHandler from "./handlers/ContextHandler"
 import AuthentificationHandler from "./handlers/authentification/AuthentificationHandler"
-import CharacterListHandler from "./handlers/character/CharacterListHandler"
-import RandomCharacterNameHandler from "./handlers/character/RandomCharacterNameHandler"
-import CharacterDeletionHandler from "./handlers/character/CharacterDeletionHandler"
 import CharacterCreationHandler from "./handlers/character/CharacterCreationHandler"
+import CharacterDeletionHandler from "./handlers/character/CharacterDeletionHandler"
+import CharacterListHandler from "./handlers/character/CharacterListHandler"
 import CharacterSelectionHandler from "./handlers/character/CharacterSelectionHandler"
+import RandomCharacterNameHandler from "./handlers/character/RandomCharacterNameHandler"
 import ServerListHandler from "./handlers/server/ServerListHandler"
+import MapHandler from "./handlers/map/MapHandler"
 
 class WorldClient extends ServerClient {
 	public logger: Logger = new Logger("WorldClient")
 
-	private _account: Account | null = null
+	private _account: Account
 
-	public constructor(socket: Socket) {
+	private _selectedCharacter: Character | null = null
+
+	constructor(socket: Socket, account: Account) {
 		super(socket)
-		WorldTransition.getInstance().handleAccountTransition(this)
+		console.log("WorldClient", account)
+		this._account = account
 	}
 
 	public async initialize(): Promise<void> {
@@ -63,11 +66,10 @@ class WorldClient extends ServerClient {
 			)
 		)
 		await this.Send(this.serialize(new HelloGameMessage()))
-		this.Socket.on("data", (data) => this.handleData(this.Socket, data))
-	}
-
-	public OnClose(): void {
-		WorldServer.getInstance().RemoveClient(this)
+		this.Socket.on(
+			"data",
+			async (data) => await this.handleData(this.Socket, data)
+		)
 	}
 
 	public async handleData(socket: Socket, data: Buffer): Promise<void> {
@@ -78,98 +80,111 @@ class WorldClient extends ServerClient {
 			)
 		}
 
-		const message = this.deserialize(data)
+		try {
+			const message = this.deserialize(data)
 
-		if (ConfigurationManager.getInstance().showProtocolMessage) {
-			await this.logger.writeAsync(
-				`Deserialized dofus message '${
-					messages[message.id].name
-				}' from account: ${this.account?.pseudo}`,
-				ansiColorCodes.lightGray
-			)
-		}
-
-		switch (message.id) {
-			case AuthenticationTicketMessage.id:
-				await AuthentificationHandler.handleAuthenticationTicketMessage(this)
-				break
-			case CharactersListRequestMessage.id:
-				await CharacterListHandler.handleCharactersListMessage(this)
-				break
-			case CharacterCanBeCreatedRequestMessage.id:
-				await this.Send(
-					this.serialize(new CharacterCanBeCreatedResultMessage(true))
-				)
-				await this.Send(this.serialize(new PopupWarningClosedMessage()))
-				break
-			case CharacterNameSuggestionRequestMessage.id:
-				await RandomCharacterNameHandler.handleCharacterNameSuggestionRequestMessage(
-					this
-				)
-				break
-			case CharacterDeletionPrepareRequestMessage.id:
-				await CharacterDeletionHandler.handleCharacterDeletionPrepareRequest(
-					message as CharacterDeletionPrepareRequestMessage,
-					this
-				)
-				break
-			case CharacterDeletionRequestMessage.id:
-				await CharacterDeletionHandler.handleCharacterDeletionMessage(
-					this,
-					message as CharacterDeletionRequestMessage
-				)
-				break
-			case CharacterCreationRequestMessage.id:
-				await CharacterCreationHandler.handleCharacterCreationRequestMessage(
-					message as CharacterCreationRequestMessage,
-					this
-				)
-				break
-			case CharacterFirstSelectionMessage.id:
-				console.log("CharacterFirstSelectionMessage", message)
-				await CharacterSelectionHandler.handleCharacterSelectionMessage(
-					message as CharacterSelectionMessage,
-					this
-				)
-				break
-			case CharacterSelectionMessage.id:
-				await CharacterSelectionHandler.handleCharacterSelectionMessage(
-					message as CharacterSelectionMessage,
-					this
-				)
-				break
-			case ReloginTokenRequestMessage.id:
-				await ServerListHandler.handleServerListRequestMessage(this)
-				break
-			case ServerSelectionMessage.id:
-				await ServerListHandler.handleServerSelectionMessage(this)
-				await CharacterListHandler.handleCharactersListMessage(this)
-				break
-			case BasicPingMessage.id:
-				await this.Send(this.serialize(new BasicPongMessage(true)))
-				break
-			case FriendsGetListMessage.id:
-				await this.Send(this.serialize(new FriendsListMessage([])))
-				break
-			case AcquaintancesGetListMessage.id:
-				await this.Send(this.serialize(new AcquaintancesListMessage([])))
-				break
-      case AllianceRanksRequestMessage.id: 
-        await this.Send(this.serialize(new AllianceRanksMessage([])))
-        break
-      case SpouseGetInformationsMessage.id:
-        // await this.Send(this.serialize(new SpouseInformationsMessage()))
-        break
-      case AllianceGetPlayerApplicationMessage.id:
-        // await this.Send(this.serialize(new AlliancePlayerApplicationMessage()))
-        break
-
-			default:
+			if (ConfigurationManager.getInstance().showProtocolMessage && message) {
 				await this.logger.writeAsync(
-					`Received unknown message: ${message.id}`,
-					ansiColorCodes.red
+					`Deserialized dofus message '${
+						messages[message?.id as number].name
+					}' from account: ${this.account?.pseudo}`,
+					ansiColorCodes.lightGray
 				)
-				break
+			}
+
+			switch (message?.id) {
+				case AuthenticationTicketMessage.id:
+					await AuthentificationHandler.handleAuthenticationTicketMessage(this)
+					break
+				case CharactersListRequestMessage.id:
+					console.log("Characters List size", this.account?.pseudo)
+					await CharacterListHandler.handleCharactersListMessage(this)
+					break
+				case CharacterCanBeCreatedRequestMessage.id:
+					await this.Send(
+						this.serialize(new CharacterCanBeCreatedResultMessage(true))
+					)
+					await this.Send(this.serialize(new PopupWarningClosedMessage()))
+					break
+				case CharacterNameSuggestionRequestMessage.id:
+					await RandomCharacterNameHandler.handleCharacterNameSuggestionRequestMessage(
+						this
+					)
+					break
+				case CharacterDeletionPrepareRequestMessage.id:
+					await CharacterDeletionHandler.handleCharacterDeletionPrepareRequest(
+						message as CharacterDeletionPrepareRequestMessage,
+						this
+					)
+					break
+				case CharacterDeletionRequestMessage.id:
+					await CharacterDeletionHandler.handleCharacterDeletionMessage(
+						this,
+						message as CharacterDeletionRequestMessage
+					)
+					break
+				case CharacterCreationRequestMessage.id:
+					await CharacterCreationHandler.handleCharacterCreationRequestMessage(
+						message as CharacterCreationRequestMessage,
+						this
+					)
+					break
+				case CharacterFirstSelectionMessage.id:
+					console.log("CharacterFirstSelectionMessage", message)
+					await CharacterSelectionHandler.handleCharacterSelectionMessage(
+						message as CharacterSelectionMessage,
+						this
+					)
+					break
+				case CharacterSelectionMessage.id:
+					await CharacterSelectionHandler.handleCharacterSelectionMessage(
+						message as CharacterSelectionMessage,
+						this
+					)
+					break
+				case ReloginTokenRequestMessage.id:
+					await ServerListHandler.handleServerListRequestMessage(this)
+					break
+				case ServerSelectionMessage.id:
+					await ServerListHandler.handleServerSelectionMessage(this)
+					await CharacterListHandler.handleCharactersListMessage(this)
+					break
+				case BasicPingMessage.id:
+					await this.Send(this.serialize(new BasicPongMessage(true)))
+					break
+				case AllianceRanksRequestMessage.id:
+					// await this.Send(this.serialize(new AllianceRanksMessage([])))
+					break
+				case AllianceGetPlayerApplicationMessage.id:
+					// await this.Send(this.serialize(new AlliancePlayerApplicationMessage()))
+					break
+				case IgnoredGetListMessage.id:
+					console.log("IgnoredGetListMessage", message)
+					break
+				case GameContextCreateRequestMessage.id:
+					await ContextHandler.handleGameContextCreateMessage(
+						this,
+						this.selectedCharacter as Character
+					)
+					break
+        case FriendsGetListMessage.id:
+          await this.Send(this.serialize(new FriendsListMessage([])))
+          break
+        case MapInformationsRequestMessage.id:
+          MapHandler.handleMapInformationsRequestMessage(this, message as MapInformationsRequestMessage)
+          break
+				default:
+					await this.logger.writeAsync(
+						`${messages[message?.id as number].name} is not handled`,
+						ansiColorCodes.red
+					)
+					break
+			}
+		} catch (error: any) {
+			await this.logger.writeAsync(
+				`Error while handling data: ${error.message}`,
+				ansiColorCodes.red
+			)
 		}
 	}
 
@@ -177,8 +192,21 @@ class WorldClient extends ServerClient {
 		return this._account
 	}
 
-	public set account(account: Account | null) {
+	public set account(account: Account) {
 		this._account = account
+	}
+
+	public get selectedCharacter(): Character | null {
+		return this._selectedCharacter
+	}
+
+	public set selectedCharacter(character: Character | null) {
+		this._selectedCharacter = character
+	}
+
+	public OnClose(): void {
+		this.Socket.destroy()
+		WorldServer.getInstance().RemoveClient(this)
 	}
 }
 

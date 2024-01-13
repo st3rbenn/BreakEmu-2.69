@@ -46,6 +46,10 @@ class Experience {
 		return level
 	}
 
+  public static getExactExperienceFromLevel(level: number): number {
+    return this.experienceLevels[level].experience
+  }
+
   public static getCharacterExperienceLevelFloor(level: number): number {
     return this.experienceLevels[level].experience
   }

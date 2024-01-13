@@ -1,12 +1,15 @@
-import Breed from "../../breakEmu_API/model/breed.model"
+import WorldClient from "../../breakEmu_World/WorldClient"
 import Character from "../../breakEmu_API/model/character.model"
 import AuthClient from "../../breakEmu_Auth/AuthClient"
 import { ansiColorCodes } from "../../breakEmu_Core/Colors"
 import Logger from "../../breakEmu_Core/Logger"
-import ContextEntityLook from "../../breakEmu_World/model/entities/look/ContextEntityLook"
+import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
+import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
+import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
 import Database from "../Database"
 import Account from "../model/account.model"
 import BaseController from "./base.controller"
+import { Prisma } from "@prisma/client"
 
 class UserController extends BaseController {
 	public _logger: Logger = new Logger("UserController")
@@ -44,57 +47,59 @@ class UserController extends BaseController {
 		}
 	}
 
-	async getAccountByNickname(nickname: string): Promise<Account | null> {
+	async getAccountByNickname(nickname: string): Promise<Account | undefined> {
 		try {
-			const user = await this._database.prisma.user.findUnique({
+			const acc = (await this._database.prisma.user.findUnique({
 				where: {
 					pseudo: nickname,
 				},
-			})
+			})) as Prisma.PromiseReturnType<
+				typeof this._database.prisma.user.findUnique
+			>
 
-			if (!user) {
+			if (!acc) {
 				await this._logger.writeAsync(`User ${nickname} not found`)
-				return null
+				return
 			}
 
-			this._logger.writeAsync(`User ${nickname} found`, ansiColorCodes.bgGreen)
+			this._logger.writeAsync(`User ${acc.id} found`, ansiColorCodes.bgGreen)
+
+			const account = new Account(
+				acc.id,
+				acc.username,
+				acc.password,
+				acc.pseudo as string,
+				acc.email,
+				acc.is_verified,
+				acc.firstname,
+				acc.lastname,
+				acc.birthdate,
+				acc.secretQuestion as string,
+				acc.login_at as Date,
+				acc.logout_at as Date,
+				acc.created_at as Date,
+				acc.updated_at as Date,
+				acc.deleted_at as Date,
+				acc.ip,
+				acc.role,
+				acc.is_banned,
+				acc.tagNumber as number
+			)
 
 			const characters = await this._database.prisma.character.findMany({
 				where: {
-					userId: user.id,
+					userId: acc.id,
 				},
 			})
-
-			const account = new Account(
-				user.id,
-				user.username,
-				user.password,
-				user.pseudo as string,
-				user.email,
-				user.is_verified,
-				user.firstname,
-				user.lastname,
-				user.birthdate,
-				user.secretQuestion as string,
-				user.login_at as Date,
-				user.logout_at as Date,
-				user.created_at as Date,
-				user.updated_at as Date,
-				user.deleted_at as Date,
-				user.ip,
-				user.role,
-				user.is_banned,
-				user.tagNumber as number
-			)
 
 			for (const c of characters) {
 				const validateColor = ContextEntityLook.verifyColors(
 					c.colors.split(",").map(Number),
 					c.sex,
-					Breed.getBreedById(c.breed_id)
+					BreedManager.getInstance().getBreedById(c.breed_id)
 				)
 
-				const look: ContextEntityLook = Breed.getBreedLook(
+				const look: ContextEntityLook = BreedManager.getInstance().getBreedLook(
 					c.breed_id,
 					c.sex,
 					c.cosmeticId,
@@ -104,39 +109,36 @@ class UserController extends BaseController {
 				const character = new Character(
 					c.id,
 					c.userId,
-					c.breed_id,
+					BreedManager.getInstance().getBreedById(c.breed_id),
 					c.sex,
 					c.cosmeticId,
 					c.name,
 					Number(c.experience),
 					look,
 					Number(c.mapId),
-					c.cellId,
+					Number(c.cellId),
 					c.direction,
 					c.kamas,
-					c.strength,
-					c.vitality,
-					c.wisdom,
-					c.chance,
-					c.agility,
-					c.intelligence,
-					c.alignementSide,
-					c.alignementValue,
-					c.alignementGrade,
-					c.characterPower,
-					c.honor,
-					c.dishonor,
-					c.energy,
-					c.aggressable ? 1 : 0
+					c.statsPoints,
+					[],
+					[],
+					[],
+					0,
+					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string))
 				)
 
 				account.characters.set(character.id, character)
 			}
 
+			this._logger.writeAsync(
+				`Account ${account.pseudo} has ${account.characters.size} characters`,
+				ansiColorCodes.bgCyan
+			)
+
 			return account
 		} catch (error) {
 			await this._logger.writeAsync(`Error while getting account ${nickname}`)
-			return null
+			return
 		}
 	}
 }

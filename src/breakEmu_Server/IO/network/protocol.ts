@@ -1170,7 +1170,7 @@ export interface RawGameContextActorPositionInformations {
 }
 
 export class GameContextActorPositionInformations extends DofusType {
-    public static id: number = 9244;
+    public static id: number = 7500;
 
     public contextualId: number | undefined = 0;
     public disposition: EntityDispositionInformations | undefined;
@@ -1211,7 +1211,7 @@ export interface RawGameContextActorInformations extends RawGameContextActorPosi
 }
 
 export class GameContextActorInformations extends GameContextActorPositionInformations {
-    public static id: number = 424;
+    public static id: number = 6639;
 
     public look: EntityLook | undefined;
 
@@ -1249,7 +1249,7 @@ export interface RawGameRolePlayActorInformations extends RawGameContextActorInf
 }
 
 export class GameRolePlayActorInformations extends GameContextActorInformations {
-    public static id: number = 2333;
+    public static id: number = 9377;
 
     public constructor(contextualId?: number | undefined, disposition?: EntityDispositionInformations | undefined, look?: EntityLook | undefined) {
         super(contextualId, disposition, look);
@@ -1408,7 +1408,7 @@ export interface RawInteractiveElement {
 }
 
 export class InteractiveElement extends DofusType {
-    public static id: number = 2401;
+    public static id: number = 6168;
 
     public elementId: number | undefined = 0;
     public elementTypeId: number | undefined = 0;
@@ -3269,7 +3269,7 @@ export interface RawEntityDispositionInformations {
 }
 
 export class EntityDispositionInformations extends DofusType {
-    public static id: number = 7114;
+    public static id: number = 9940;
 
     public cellId: number | undefined = 0;
     public direction: number | undefined = 1;
@@ -3590,7 +3590,7 @@ export interface RawFightTeamMemberInformations {
 }
 
 export class FightTeamMemberInformations extends DofusType {
-    public static id: number = 5931;
+    public static id: number = 6629;
 
     public id_: number | undefined = 0;
 
@@ -3625,7 +3625,7 @@ export interface RawHouseInformations {
 }
 
 export class HouseInformations extends DofusType {
-    public static id: number = 5826;
+    public static id: number = 5066;
 
     public houseId: number | undefined = 0;
     public modelId: number | undefined = 0;
@@ -4031,7 +4031,7 @@ export interface RawFightTeamInformations extends RawAbstractFightTeamInformatio
 }
 
 export class FightTeamInformations extends AbstractFightTeamInformations {
-    public static id: number = 4426;
+    public static id: number = 563;
 
     public teamMembers: FightTeamMemberInformations[] | undefined;
 
@@ -4245,7 +4245,7 @@ export interface RawFightCommonInformations {
 }
 
 export class FightCommonInformations extends DofusType {
-    public static id: number = 3668;
+    public static id: number = 2177;
 
     public fightId: number | undefined = 0;
     public fightType: number | undefined = 0;
@@ -4432,7 +4432,7 @@ export interface RawMapObstacle {
 }
 
 export class MapObstacle extends DofusType {
-    public static id: number = 2651;
+    public static id: number = 7674;
 
     public obstacleCellId: number | undefined = 0;
     public state: number | undefined = 0;
@@ -5178,7 +5178,7 @@ export interface RawStatedElement {
 }
 
 export class StatedElement extends DofusType {
-    public static id: number = 8031;
+    public static id: number = 335;
 
     public elementId: number | undefined = 0;
     public elementCellId: number | undefined = 0;
@@ -5656,7 +5656,7 @@ export class CharacterCharacteristicsInformations extends DofusType {
         this.spellModifiers!.forEach((current) => {
             current.serialize(writer);
         });
-        writer.writeInt(this.probationTime!);
+        writer.writeDouble(this.probationTime!);
     }
 
     public deserialize(reader: BinaryReader): void {
@@ -5684,7 +5684,7 @@ export class CharacterCharacteristicsInformations extends DofusType {
             type.deserialize(reader);
             this.spellModifiers.push(type);
         }
-        this.probationTime = reader.readInt();
+        this.probationTime = reader.readDouble();
     }
 }
 
@@ -6990,7 +6990,7 @@ export interface RawInteractiveElementSkill {
 }
 
 export class InteractiveElementSkill extends DofusType {
-    public static id: number = 6462;
+    public static id: number = 6762;
 
     public skillId: number | undefined = 0;
     public skillInstanceUid: number | undefined = 0;
@@ -8428,7 +8428,7 @@ export interface RawPlayerStatus {
 }
 
 export class PlayerStatus extends DofusType {
-    public static id: number = 6513;
+    public static id: number = 1443;
 
     public statusId: number | undefined = 1;
 
@@ -10815,7 +10815,7 @@ export interface RawFightStartingPositions {
 }
 
 export class FightStartingPositions extends DofusType {
-    public static id: number = 9262;
+    public static id: number = 956;
 
     public positionsForChallengers: number[] | undefined;
     public positionsForDefenders: number[] | undefined;
@@ -11221,7 +11221,7 @@ export interface RawFightOptionsInformations {
 }
 
 export class FightOptionsInformations extends DofusType {
-    public static id: number = 7650;
+    public static id: number = 1420;
 
     public isSecret: boolean | undefined = false;
     public isRestrictedToPartyOnly: boolean | undefined = false;
@@ -12254,7 +12254,7 @@ export interface RawShortcutSpell extends RawShortcut {
 }
 
 export class ShortcutSpell extends Shortcut {
-    public static id: number = 8184;
+    public static id: number = 3691;
 
     public spellId: number | undefined = 0;
 
@@ -12869,7 +12869,7 @@ export interface RawShortcutObjectItem extends RawShortcutObject {
 }
 
 export class ShortcutObjectItem extends ShortcutObject {
-    public static id: number = 2604;
+    public static id: number = 8932;
 
     public itemUID: number | undefined = 0;
     public itemGID: number | undefined = 0;
@@ -13334,7 +13334,7 @@ export interface RawShortcutEmote extends RawShortcut {
 }
 
 export class ShortcutEmote extends Shortcut {
-    public static id: number = 702;
+    public static id: number = 9088;
 
     public emoteId: number | undefined = 0;
 
@@ -13896,7 +13896,7 @@ export interface RawShortcutEntitiesPreset extends RawShortcut {
 }
 
 export class ShortcutEntitiesPreset extends Shortcut {
-    public static id: number = 6762;
+    public static id: number = 6700;
 
     public presetId: number | undefined = 0;
 
@@ -15152,7 +15152,7 @@ export interface RawShortcutSmiley extends RawShortcut {
 }
 
 export class ShortcutSmiley extends Shortcut {
-    public static id: number = 8182;
+    public static id: number = 2344;
 
     public smileyId: number | undefined = 0;
 
@@ -21672,7 +21672,7 @@ export interface RawMapComplementaryInformationsDataMessage {
 }
 
 export class MapComplementaryInformationsDataMessage extends DofusMessage {
-    public static id: number = 5176;
+    public static id: number = 7827;
 
     public subAreaId: number | undefined = 0;
     public mapId: number | undefined = 0;
@@ -22733,7 +22733,7 @@ export interface RawGameRolePlayShowActorMessage {
 }
 
 export class GameRolePlayShowActorMessage extends DofusMessage {
-    public static id: number = 3267;
+    public static id: number = 6727;
 
     public informations: GameRolePlayActorInformations | undefined;
 
@@ -23553,7 +23553,7 @@ export interface RawMapInformationsRequestMessage {
 }
 
 export class MapInformationsRequestMessage extends DofusMessage {
-    public static id: number = 9780;
+    public static id: number = 231;
 
     public mapId: number | undefined = 0;
 
@@ -23645,7 +23645,7 @@ export interface RawMapFightCountMessage {
 }
 
 export class MapFightCountMessage extends DofusMessage {
-    public static id: number = 3604;
+    public static id: number = 1874;
 
     public fightCount: number | undefined = 0;
 
@@ -24145,7 +24145,7 @@ export interface RawPlayerStatusUpdateMessage {
 }
 
 export class PlayerStatusUpdateMessage extends DofusMessage {
-    public static id: number = 9099;
+    public static id: number = 4865;
 
     public accountId: number | undefined = 0;
     public playerId: number | undefined = 0;
@@ -24693,25 +24693,21 @@ export interface RawCurrentMapMessage {
 }
 
 export class CurrentMapMessage extends DofusMessage {
-    public static id: number = 7796;
+    public static id: number = 6179;
 
     public mapId: number | undefined = 0;
-    public mapKey: string | undefined;
 
-    public constructor(mapId?: number | undefined, mapKey?: string | undefined) {
+    public constructor(mapId?: number | undefined) {
         super();
         this.mapId = mapId;
-        this.mapKey = mapKey;
     }
 
     public serialize(writer: BinaryWriter): void {
         writer.writeDouble(this.mapId!);
-        writer.writeUTF(this.mapKey!);
     }
 
     public deserialize(reader: BinaryReader): void {
         this.mapId = reader.readDouble();
-        this.mapKey = reader.readUTF();
     }
 
     public hydrate(data: CurrentMapMessage | Record<string, any>): CurrentMapMessage {
@@ -24720,7 +24716,6 @@ export class CurrentMapMessage extends DofusMessage {
         }
 
         this.mapId = data.mapId;
-        this.mapKey = data.mapKey;
 
         return this;
     }
@@ -24736,8 +24731,8 @@ export class CurrentMapInstanceMessage extends CurrentMapMessage {
 
     public instantiatedMapId: number | undefined = 0;
 
-    public constructor(mapId?: number | undefined, mapKey?: string | undefined, instantiatedMapId?: number | undefined) {
-        super(mapId, mapKey);
+    public constructor(mapId?: number | undefined, instantiatedMapId?: number | undefined) {
+        super(mapId);
         this.instantiatedMapId = instantiatedMapId;
     }
 
@@ -25026,7 +25021,7 @@ export interface RawGameContextDestroyMessage {
 }
 
 export class GameContextDestroyMessage extends DofusMessage {
-    public static id: number = 1226;
+    public static id: number = 7633;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -28882,7 +28877,7 @@ export interface RawTextInformationMessage {
 }
 
 export class TextInformationMessage extends DofusMessage {
-    public static id: number = 8868;
+    public static id: number = 8680;
 
     public msgType: number | undefined = 0;
     public msgId: number | undefined = 0;
@@ -31390,7 +31385,7 @@ export interface RawExchangeShopStockMultiMovementRemovedMessage {
 }
 
 export class ExchangeShopStockMultiMovementRemovedMessage extends DofusMessage {
-    public static id: number = 1264;
+    public static id: number = 1200;
 
     public objectIdList: number[] | undefined;
 
@@ -33489,7 +33484,7 @@ export interface RawSpellListMessage {
 }
 
 export class SpellListMessage extends DofusMessage {
-    public static id: number = 3553;
+    public static id: number = 7309;
 
     public spellPrevisualization: boolean | undefined = false;
     public spells: SpellItem[] | undefined;
@@ -35055,6 +35050,20 @@ export interface RawAcquaintanceSearchErrorMessage {
     reason: number;
 }
 
+export class GuildRanksRequestMessage extends DofusMessage {
+  public static id: number = 4543;
+
+  public constructor() {
+      super();
+  }
+
+  public serialize(writer: BinaryWriter): void {
+  }
+
+  public deserialize(reader: BinaryReader): void {
+  }
+}
+
 export class AcquaintanceSearchErrorMessage extends DofusMessage {
     public static id: number = 2175;
 
@@ -35220,7 +35229,7 @@ export interface RawSequenceNumberRequestMessage {
 }
 
 export class SequenceNumberRequestMessage extends DofusMessage {
-    public static id: number = 5238;
+    public static id: number = 1620;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -35467,7 +35476,7 @@ export interface RawJobCrafterDirectorySettingsMessage {
 }
 
 export class JobCrafterDirectorySettingsMessage extends DofusMessage {
-    public static id: number = 799;
+    public static id: number = 809;
 
     public craftersSettings: JobCrafterDirectorySettings[] | undefined;
 
@@ -35911,7 +35920,7 @@ export interface RawJobDescriptionMessage {
 }
 
 export class JobDescriptionMessage extends DofusMessage {
-    public static id: number = 3919;
+    public static id: number = 3482;
 
     public jobsDescription: JobDescription[] | undefined;
 
@@ -38724,7 +38733,7 @@ export interface RawEmoteListMessage {
 }
 
 export class EmoteListMessage extends DofusMessage {
-    public static id: number = 6335;
+    public static id: number = 8072;
 
     public emoteIds: number[] | undefined;
 
@@ -39505,7 +39514,7 @@ export interface RawInventoryWeightMessage {
 }
 
 export class InventoryWeightMessage extends DofusMessage {
-    public static id: number = 8104;
+    public static id: number = 1264;
 
     public inventoryWeight: number | undefined = 0;
     public shopWeight: number | undefined = 0;
@@ -44207,7 +44216,7 @@ export interface RawServerExperienceModificatorMessage {
 }
 
 export class ServerExperienceModificatorMessage extends DofusMessage {
-    public static id: number = 4222;
+    public static id: number = 1898;
 
     public experiencePercent: number | undefined = 0;
 
@@ -44382,7 +44391,7 @@ export interface RawCharacterCapabilitiesMessage {
 }
 
 export class CharacterCapabilitiesMessage extends DofusMessage {
-    public static id: number = 9322;
+    public static id: number = 7400;
 
     public guildEmblemSymbolCategories: number | undefined = 0;
 
@@ -45004,7 +45013,7 @@ export interface RawJobExperienceMultiUpdateMessage {
 }
 
 export class JobExperienceMultiUpdateMessage extends DofusMessage {
-    public static id: number = 8538;
+    public static id: number = 1449;
 
     public experiencesUpdate: JobExperience[] | undefined;
 
@@ -45055,7 +45064,7 @@ export interface RawAlmanachCalendarDateMessage {
 }
 
 export class AlmanachCalendarDateMessage extends DofusMessage {
-    public static id: number = 5290;
+    public static id: number = 1985;
 
     public date: number | undefined = 0;
 
@@ -49932,7 +49941,7 @@ export interface RawDebtsDeleteMessage {
 }
 
 export class DebtsDeleteMessage extends DofusMessage {
-    public static id: number = 5452;
+    public static id: number = 5410;
 
     public reason: number | undefined = 0;
     public debts: number[] | undefined;
@@ -53684,7 +53693,7 @@ export interface RawGuildGetInformationsMessage {
 }
 
 export class GuildGetInformationsMessage extends DofusMessage {
-    public static id: number = 8887;
+    public static id: number = 5452;
 
     public infoType: number | undefined = 0;
 
@@ -57909,7 +57918,7 @@ export interface RawQuestStartRequestMessage {
 }
 
 export class QuestStartRequestMessage extends DofusMessage {
-    public static id: number = 6179;
+    public static id: number = 6177;
 
     public questId: number | undefined = 0;
 
@@ -59196,7 +59205,7 @@ export interface RawAnomalySubareaInformationRequestMessage {
 }
 
 export class AnomalySubareaInformationRequestMessage extends DofusMessage {
-    public static id: number = 2320;
+    public static id: number = 4375;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -62758,7 +62767,7 @@ export interface RawSequenceNumberMessage {
 }
 
 export class SequenceNumberMessage extends DofusMessage {
-    public static id: number = 5131;
+    public static id: number = 278;
 
     public number: number | undefined = 0;
 
@@ -62784,6 +62793,20 @@ export class SequenceNumberMessage extends DofusMessage {
 
         return this;
     }
+}
+
+export class GuildGetPlayerApplicationMessage extends DofusMessage {
+  public static id: number = 2495;
+
+  public constructor() {
+      super();
+  }
+
+  public serialize(writer: BinaryWriter): void {
+  }
+
+  public deserialize(reader: BinaryReader): void {
+  }
 }
 
 export interface RawForgettableSpellClientActionMessage {
@@ -63552,15 +63575,15 @@ export class PopupWarningClosedMessage extends DofusMessage {
 
 
 export const types: { [key: number]: typeof DofusType } = {
-    9244: GameContextActorPositionInformations,
+    7500: GameContextActorPositionInformations,
     1094: SpellModifierMessage,
     9225: CharacterCharacteristic,
-    424: GameContextActorInformations,
-    2333: GameRolePlayActorInformations,
+    6639: GameContextActorInformations,
+    9377: GameRolePlayActorInformations,
     4648: GameRolePlayGroupMonsterInformations,
     3168: HavenBagRoomPreviewInformation,
     6205: AccountTagInformation,
-    2401: InteractiveElement,
+    6168: InteractiveElement,
     8400: GameFightFighterInformations,
     9631: GameFightEntityInformation,
     7: GameRolePlayPrismInformations,
@@ -63593,15 +63616,15 @@ export const types: { [key: number]: typeof DofusType } = {
     2668: FightTemporaryBoostEffect,
     1888: SpawnCharacterInformation,
     3264: SpawnMonsterInformation,
-    7114: EntityDispositionInformations,
+    9940: EntityDispositionInformations,
     6272: HumanOption,
     374: HumanOptionAlliance,
     2856: HumanOptionFollowers,
     3924: ActorOrientation,
     4311: GroupMonsterStaticInformations,
     5831: HumanInformations,
-    5931: FightTeamMemberInformations,
-    5826: HouseInformations,
+    6629: FightTeamMemberInformations,
+    5066: HouseInformations,
     8830: HouseOnMapInformations,
     2440: HumanOptionObjectUse,
     9271: HouseInstanceInformations,
@@ -63609,21 +63632,21 @@ export const types: { [key: number]: typeof DofusType } = {
     9311: ObjectItemInRolePlay,
     5602: PaddockItem,
     5839: AbstractFightTeamInformations,
-    4426: FightTeamInformations,
+    563: FightTeamInformations,
     2950: IndexedEntityLook,
     4888: HumanOptionSkillUse,
     1267: AlternativeMonstersInGroupLightInformations,
-    3668: FightCommonInformations,
+    2177: FightCommonInformations,
     7146: MonsterInGroupLightInformations,
     3232: MonsterInGroupInformations,
-    2651: MapObstacle,
+    7674: MapObstacle,
     8629: GroupMonsterStaticInformationsWithAlternatives,
     4954: FightEntityDispositionInformations,
     4379: BreachBranch,
     8253: GameFightMinimalStats,
     9464: GameFightMinimalStatsPreparation,
     4029: IdentifiedEntityDispositionInformations,
-    8031: StatedElement,
+    335: StatedElement,
     4964: ActorRestrictionsInformations,
     4995: CharacterCharacteristicsInformations,
     2111: AbstractCharacterInformation,
@@ -63652,7 +63675,7 @@ export const types: { [key: number]: typeof DofusType } = {
     9369: ObjectEffectInteger,
     9332: CharacterSpellModification,
     1767: CharacterBaseCharacteristic,
-    6462: InteractiveElementSkill,
+    6762: InteractiveElementSkill,
     6433: QuestActiveInformations,
     5963: PrismInformation,
     2842: TaxCollectorStaticInformations,
@@ -63679,7 +63702,7 @@ export const types: { [key: number]: typeof DofusType } = {
     8512: GuildMember,
     1759: SpellItem,
     6454: ForgettableSpellItem,
-    6513: PlayerStatus,
+    1443: PlayerStatus,
     7229: HumanOptionGuild,
     9466: TaxCollectorMovement,
     6667: HouseInformationsForGuild,
@@ -63718,7 +63741,7 @@ export const types: { [key: number]: typeof DofusType } = {
     7115: FightTemporaryBoostStateEffect,
     5674: FightTemporarySpellBoostEffect,
     7837: FinishMoveInformations,
-    9262: FightStartingPositions,
+    956: FightStartingPositions,
     5935: BasicNamedAllianceInformations,
     2484: AllianceInformations,
     9851: FightTeamMemberCharacterInformations,
@@ -63726,7 +63749,7 @@ export const types: { [key: number]: typeof DofusType } = {
     4962: ExtendedBreachBranch,
     5533: BreachReward,
     2823: HouseGuildedInformations,
-    7650: FightOptionsInformations,
+    1420: FightOptionsInformations,
     431: FightTeamMemberTaxCollectorInformations,
     6436: TaxCollectorStaticExtendedInformations,
     5073: GameRolePlayTreasureHintInformations,
@@ -63747,7 +63770,7 @@ export const types: { [key: number]: typeof DofusType } = {
     920: AlliancedGuildFactSheetInformations,
     7096: ForgettableSpellsPreset,
     8239: Shortcut,
-    8184: ShortcutSpell,
+    3691: ShortcutSpell,
     3536: StatisticDataByte,
     3298: TreasureHuntStepDig,
     7986: FullStatsPreset,
@@ -63761,7 +63784,7 @@ export const types: { [key: number]: typeof DofusType } = {
     2036: ObjectEffectDate,
     3205: UpdateMountCharacteristic,
     4162: UpdateMountIntegerCharacteristic,
-    2604: ShortcutObjectItem,
+    8932: ShortcutObjectItem,
     8695: QuestObjectiveInformations,
     5778: QuestObjectiveInformationsWithCompletion,
     6288: FightTeamMemberEntityInformation,
@@ -63771,7 +63794,7 @@ export const types: { [key: number]: typeof DofusType } = {
     870: ItemsPreset,
     9452: ServerSessionConstant,
     292: ServerSessionConstantInteger,
-    702: ShortcutEmote,
+    9088: ShortcutEmote,
     1561: TaxCollectorComplementaryInformations,
     4070: TaxCollectorLootInformations,
     5358: MapCoordinatesAndId,
@@ -63784,7 +63807,7 @@ export const types: { [key: number]: typeof DofusType } = {
     3146: IconNamedPreset,
     133: ServerSessionConstantString,
     3438: QuestActiveDetailedInformations,
-    6762: ShortcutEntitiesPreset,
+    6700: ShortcutEntitiesPreset,
     9295: ObjectEffectCreature,
     6916: ObjectEffectLadder,
     8081: FightTeamMemberMonsterInformations,
@@ -63812,7 +63835,7 @@ export const types: { [key: number]: typeof DofusType } = {
     1318: GameFightMonsterWithAlignmentInformations,
     1591: MapCoordinatesExtended,
     1881: TreasureHuntStepFollowDirection,
-    8182: ShortcutSmiley,
+    2344: ShortcutSmiley,
     9076: ObjectEffectMinMax,
     3404: SpellsPreset,
     8688: ObjectEffectMount,
@@ -63935,7 +63958,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     4963: GameActionFightUnmarkCellsMessage,
     7605: GameActionFightReflectDamagesMessage,
     640: GameActionFightExchangePositionsMessage,
-    5176: MapComplementaryInformationsDataMessage,
+    7827: MapComplementaryInformationsDataMessage,
     8604: MapComplementaryInformationsAnomalyMessage,
     8038: MapNpcsQuestStatusUpdateMessage,
     9746: GameFightUpdateTeamMessage,
@@ -63955,7 +63978,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     5147: GameMapChangeOrientationMessage,
     3539: ObjectGroundAddedMessage,
     9979: BreachEnterMessage,
-    3267: GameRolePlayShowActorMessage,
+    6727: GameRolePlayShowActorMessage,
     8442: GameDataPlayFarmObjectAnimationMessage,
     6006: GameRolePlayShowChallengeMessage,
     9279: GameRolePlayRemoveChallengeMessage,
@@ -63974,9 +63997,9 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     5737: ObjectGroundRemovedMessage,
     8033: GameDataPaddockObjectListAddMessage,
     5822: AnomalyStateMessage,
-    9780: MapInformationsRequestMessage,
+    231: MapInformationsRequestMessage,
     9111: InteractiveUsedMessage,
-    3604: MapFightCountMessage,
+    1874: MapFightCountMessage,
     2058: InteractiveMapUpdateMessage,
     6344: GameContextRemoveElementMessage,
     3750: GameFightOptionStateUpdateMessage,
@@ -63987,7 +64010,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     866: GameFightPlacementSwapPositionsMessage,
     3636: GameEntityDispositionMessage,
     5755: GameFightHumanReadyStateMessage,
-    9099: PlayerStatusUpdateMessage,
+    4865: PlayerStatusUpdateMessage,
     6612: GameFightEndMessage,
     6696: BreachGameFightEndMessage,
     4069: ChallengeTargetUpdateMessage,
@@ -63995,14 +64018,14 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     9624: GameFightSpectateMessage,
     8007: GameFightResumeMessage,
     3940: GameFightResumeWithSlavesMessage,
-    7796: CurrentMapMessage,
+    6179: CurrentMapMessage,
     3125: CurrentMapInstanceMessage,
     3960: GameFightStartingMessage,
     685: GameFightJoinMessage,
     2250: ChallengeTargetsListRequestMessage,
     5363: GameFightStartMessage,
     2159: GameActionFightNoSpellCastMessage,
-    1226: GameContextDestroyMessage,
+    7633: GameContextDestroyMessage,
     6930: GameFightSpectatorJoinMessage,
     9675: ChallengeInfoMessage,
     2009: ChallengeTargetsListMessage,
@@ -64093,7 +64116,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     8025: DungeonPartyFinderListenErrorMessage,
     3691: ExchangeObjectMessage,
     2876: ExchangeObjectsRemovedMessage,
-    8868: TextInformationMessage,
+    8680: TextInformationMessage,
     9296: WarnOnPermaDeathStateMessage,
     9786: ExchangeOfflineSoldItemsMessage,
     8726: PartyLeaveMessage,
@@ -64150,7 +64173,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6677: TitleGainedMessage,
     6852: InventoryContentMessage,
     8231: StorageInventoryContentMessage,
-    1264: ExchangeShopStockMultiMovementRemovedMessage,
+    1200: ExchangeShopStockMultiMovementRemovedMessage,
     1261: TaxCollectorAttackedResultMessage,
     7088: ExchangeObjectRemovedMessage,
     1719: PrismFightAttackerAddMessage,
@@ -64166,6 +64189,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     7527: ExchangeStartOkCraftMessage,
     7607: PartyLocateMembersMessage,
     2210: ObjectsDeletedMessage,
+    2495: GuildGetPlayerApplicationMessage,
     2259: PaddockPropertiesMessage,
     9998: GameContextRemoveMultipleElementsWithEventsMessage,
     5660: ExchangeStartOkMulticraftCustomerMessage,
@@ -64197,7 +64221,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     3830: JobCrafterDirectoryEntryMessage,
     198: ObtainedItemMessage,
     5610: ObtainedItemWithBonusMessage,
-    3553: SpellListMessage,
+    7309: SpellListMessage,
     369: GuildPaddockRemovedMessage,
     6740: BreachInvitationResponseMessage,
     105: GuildLeftMessage,
@@ -64238,11 +64262,11 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     255: ExchangeStartOkRecycleTradeMessage,
     929: StatsUpgradeResultMessage,
     2666: MapRunningFightListMessage,
-    5238: SequenceNumberRequestMessage,
+    1620: SequenceNumberRequestMessage,
     3818: PartyInvitationDetailsMessage,
     1024: PartyInvitationDungeonDetailsMessage,
     2868: ExchangeTypesExchangerDescriptionForUserMessage,
-    799: JobCrafterDirectorySettingsMessage,
+    809: JobCrafterDirectorySettingsMessage,
     4794: MoodSmileyUpdateMessage,
     6496: EmotePlayMessage,
     2882: SelectedServerDataMessage,
@@ -64251,7 +64275,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     3771: DungeonPartyFinderRoomContentMessage,
     7123: BasicDateMessage,
     839: ExchangeMountsStableBornAddMessage,
-    3919: JobDescriptionMessage,
+    3482: JobDescriptionMessage,
     2150: AccountLoggingKickedMessage,
     1372: ExchangeObjectModifiedInBagMessage,
     9975: DebtsUpdateMessage,
@@ -64312,7 +64336,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     3172: MapRunningFightDetailsExtendedMessage,
     1800: AcquaintanceServerListMessage,
     8304: DungeonPartyFinderRegisterErrorMessage,
-    6335: EmoteListMessage,
+    8072: EmoteListMessage,
     1979: TitlesAndOrnamentsListMessage,
     2667: HaapiConfirmationMessage,
     4624: PrismsInfoValidMessage,
@@ -64330,7 +64354,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     7887: PartyMemberEjectedMessage,
     2552: ExchangeMountsStableRemoveMessage,
     4020: AllianceCreationStartedMessage,
-    8104: InventoryWeightMessage,
+    1264: InventoryWeightMessage,
     5783: MountDataErrorMessage,
     4402: ExchangeMoneyMovementInformationMessage,
     7539: ZaapRespawnUpdatedMessage,
@@ -64446,11 +64470,11 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     3180: HaapiSessionMessage,
     1843: ExchangeStartOkMountMessage,
     6648: DocumentReadingBeginMessage,
-    4222: ServerExperienceModificatorMessage,
+    1898: ServerExperienceModificatorMessage,
     4917: ExchangeKamaModifiedMessage,
     6160: IdentificationSuccessWithLoginTokenMessage,
     748: GameRolePlayDelayedObjectUseMessage,
-    9322: CharacterCapabilitiesMessage,
+    7400: CharacterCapabilitiesMessage,
     6312: PaddockBuyResultMessage,
     1594: AllianceCreationResultMessage,
     3413: PartyMemberInBreachFightMessage,
@@ -64466,8 +64490,8 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     7801: ExchangeStartOkCraftWithInformationMessage,
     1968: MountUnSetMessage,
     5404: MountXpRatioMessage,
-    8538: JobExperienceMultiUpdateMessage,
-    5290: AlmanachCalendarDateMessage,
+    1449: JobExperienceMultiUpdateMessage,
+    1985: AlmanachCalendarDateMessage,
     7031: ContactLookErrorMessage,
     9694: ObjectModifiedMessage,
     989: ExchangeWeightMessage,
@@ -64580,7 +64604,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     1444: ExchangeBidHouseInListRemovedMessage,
     3716: AllianceBulletinSetErrorMessage,
     1920: ForgettableSpellDeleteMessage,
-    5452: DebtsDeleteMessage,
+    5410: DebtsDeleteMessage,
     4882: ExchangeCraftResultMagicWithObjectDescMessage,
     9932: TitleSelectedMessage,
     7030: AbstractGameActionWithAckMessage,
@@ -64678,7 +64702,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     1666: GuildCharacsUpgradeRequestMessage,
     3095: SpouseGetInformationsMessage,
     8483: WarnOnPermaDeathMessage,
-    8887: GuildGetInformationsMessage,
+    5452: GuildGetInformationsMessage,
     2659: FriendSetWarnOnConnectionMessage,
     8701: IgnoredGetListMessage,
     9563: GuildMotdSetRequestMessage,
@@ -64801,10 +64825,11 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6610: QuestObjectiveValidationMessage,
     2811: AchievementDetailsRequestMessage,
     1822: RefreshFollowedQuestsOrderRequestMessage,
-    6179: QuestStartRequestMessage,
+    6177: QuestStartRequestMessage,
     8703: AchievementDetailedListRequestMessage,
     2632: TreasureHuntDigRequestMessage,
     3503: AuthenticationTicketMessage,
+    4543: GuildRanksRequestMessage,
     4312: CharacterSelectionMessage,
     3592: CharacterSelectionWithRemodelMessage,
     1741: CharacterNameSuggestionRequestMessage,
@@ -64836,7 +64861,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     8769: AlignmentWarEffortProgressionRequestMessage,
     9304: ObjectAveragePricesGetMessage,
     567: ReloginTokenRequestMessage,
-    2320: AnomalySubareaInformationRequestMessage,
+    4375: AnomalySubareaInformationRequestMessage,
     8078: ZaapRespawnSaveRequestMessage,
     657: TeleportRequestMessage,
     3428: JobCrafterDirectoryDefineSettingsMessage,
@@ -64863,6 +64888,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     581: MountToggleRidingRequestMessage,
     5528: MountSterilizeRequestMessage,
     5396: HouseGuildShareRequestMessage,
+    8627: AllianceRanksRequestMessage,
     3694: HouseKickRequestMessage,
     1525: HouseSellRequestMessage,
     2066: LockableChangeCodeMessage,
@@ -64940,7 +64966,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     3277: HaapiValidationRequestMessage,
     3174: HaapiTokenRequestMessage,
     7398: HaapiConsumeBufferRequestMessage,
-    5131: SequenceNumberMessage,
+    278: SequenceNumberMessage,
     8669: ForgettableSpellClientActionMessage,
     5753: LivingObjectChangeSkinRequestMessage,
     5881: SymbioticObjectAssociateRequestMessage,

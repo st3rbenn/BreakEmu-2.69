@@ -21,8 +21,6 @@ class Account {
 	private _is_banned: boolean
   private _tagNumber: number
 
-	// private _characters: Character[] = []
-
   private _characters: Map<number, Character> = new Map();
 
 	constructor(

@@ -11,29 +11,31 @@ class WorldServer {
 
 	public worldServerData: WorldServerData
 
-  private static _instance: WorldServer
+	private static _instance: WorldServer
 
-	public clients: Map<string, WorldClient> = new Map<string, WorldClient>()
+	public clients: WorldClient[] = []
 
 	private _server: Server | undefined
 
-	public constructor(worldServerData: WorldServerData) {
+	constructor(worldServerData: WorldServerData) {
 		this.worldServerData = worldServerData
 	}
 
-  public static getInstance(worldServerData?: WorldServerData): WorldServer {
-    if (!WorldServer._instance) {
-      WorldServer._instance = new WorldServer(worldServerData as WorldServerData)
-    }
+	public static getInstance(worldServerData?: WorldServerData): WorldServer {
+		if (!WorldServer._instance) {
+			WorldServer._instance = new WorldServer(
+				worldServerData as WorldServerData
+			)
+		}
 
-    return WorldServer._instance
-  }
+		return WorldServer._instance
+	}
 
 	public async Start(): Promise<void> {
 		this.logger.write(`Starting server ${this.worldServerData.Name}`)
 		this.SERVER_STATE = ServerStatusEnum.STARTING
 
-		this._server = createServer((socket) => this.handleConnection(socket))
+		this._server = createServer(async(socket) => await this.handleConnection(socket))
 		this._server.listen(
 			{ port: this.worldServerData.Port, host: this.worldServerData.Address },
 			() => {
@@ -84,27 +86,36 @@ class WorldServer {
 
 	private async handleConnection(socket: Socket): Promise<void> {
 		await this.logger.writeAsync(`New connection from ${socket.remoteAddress}`)
-		const worldClient = new WorldClient(socket)
+		const worldClient = await WorldTransition.getInstance().handleAccountTransition(socket)
+		if (!worldClient) {
+			await this.logger.writeAsync(`Account not found`, ansiColorCodes.red)
+			return
+		}
 		this.AddClient(worldClient)
-		worldClient.setupEventHandlers()
-		worldClient.initialize()
+
+    this.logger.write(`Client ${worldClient.Socket.remoteAddress}:${worldClient.Socket.remotePort} connected`)
+
+		await worldClient.setupEventHandlers()
+		await worldClient.initialize()
 	}
 
 	public async AddClient(client: WorldClient): Promise<void> {
-		this.clients.set(client.Socket.remoteAddress as string, client)
+		this.clients.push(client)
 	}
 
 	public RemoveClient(client: WorldClient): void {
-		client.Socket.destroy()
 		this.logger.write(
 			`Client ${client.Socket.remoteAddress}:${client.Socket.remotePort} disconnected`,
 			ansiColorCodes.red
 		)
-		this.clients.delete(client.Socket.remoteAddress as string)
+		this.clients.splice(this.clients.indexOf(client), 1)
+		this.logger.write(
+			`Total connected clients: ${this.TotalConnectedClients()}`
+		)
 	}
 
 	public TotalConnectedClients(): number {
-		return this.clients.size
+		return this.clients.length
 	}
 }
 
