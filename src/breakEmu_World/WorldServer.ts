@@ -35,7 +35,9 @@ class WorldServer {
 		this.logger.write(`Starting server ${this.worldServerData.Name}`)
 		this.SERVER_STATE = ServerStatusEnum.STARTING
 
-		this._server = createServer(async(socket) => await this.handleConnection(socket))
+		this._server = createServer(
+			async (socket) => await this.handleConnection(socket)
+		)
 		this._server.listen(
 			{ port: this.worldServerData.Port, host: this.worldServerData.Address },
 			() => {
@@ -85,18 +87,26 @@ class WorldServer {
 	}
 
 	private async handleConnection(socket: Socket): Promise<void> {
-		await this.logger.writeAsync(`New connection from ${socket.remoteAddress}`)
-		const worldClient = await WorldTransition.getInstance().handleAccountTransition(socket)
-		if (!worldClient) {
-			await this.logger.writeAsync(`Account not found`, ansiColorCodes.red)
-			return
+		try {
+			await this.logger.writeAsync(
+				`New connection from ${socket.remoteAddress}`
+			)
+			const worldClient = await WorldTransition.getInstance().handleAccountTransition(
+				socket
+			)
+			if (!worldClient) {
+				await this.logger.writeAsync(`Account not found`, ansiColorCodes.red)
+				return
+			}
+			this.logger.write(
+				`Client ${worldClient.Socket.remoteAddress}:${worldClient.Socket.remotePort} connected`
+			)
+		} catch (error) {
+			await this.logger.writeAsync(
+				`Error handling connection: ${error}`,
+				ansiColorCodes.red
+			)
 		}
-		this.AddClient(worldClient)
-
-    this.logger.write(`Client ${worldClient.Socket.remoteAddress}:${worldClient.Socket.remotePort} connected`)
-
-		await worldClient.setupEventHandlers()
-		await worldClient.initialize()
 	}
 
 	public async AddClient(client: WorldClient): Promise<void> {

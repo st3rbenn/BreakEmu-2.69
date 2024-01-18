@@ -10,6 +10,8 @@ import Database from "../Database"
 import Account from "../model/account.model"
 import BaseController from "./base.controller"
 import { Prisma } from "@prisma/client"
+import Job from "../../breakEmu_API/model/job.model"
+import Spell from "../../breakEmu_API/model/spell.model"
 
 class UserController extends BaseController {
 	public _logger: Logger = new Logger("UserController")
@@ -121,9 +123,10 @@ class UserController extends BaseController {
 					c.kamas,
 					c.statsPoints,
 					[],
-					[],
+					Character.loadShortcutsFromJson(JSON.parse(c.shortcuts?.toString() as string)),
 					[],
 					0,
+          Job.loadFromJson(JSON.parse(c.jobs?.toString() as string)),
 					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string))
 				)
 

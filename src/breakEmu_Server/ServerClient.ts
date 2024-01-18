@@ -49,14 +49,10 @@ abstract class ServerClient {
 		// })
 	}
 
-	public async setupEventHandlers(): Promise<void> {
-		await new Promise<void>((resolve, reject) => {
-			this.Socket.on("end", () => this.OnClose())
-			this.Socket.on("error", (error) => {
-				this.logger.write(`Error: ${error.message}`, ansiColorCodes.red)
-			})
-
-			resolve()
+	public setupEventHandlers() {
+		this.Socket.on("end", () => this.OnClose())
+		this.Socket.on("error", (error) => {
+			this.logger.write(`Error: ${error.message}`, ansiColorCodes.red)
 		})
 	}
 
@@ -87,43 +83,42 @@ abstract class ServerClient {
 	}
 
 	public deserialize(data: Buffer): DofusMessage | null {
-    let messageId;  // Déclarer messageId en dehors du bloc try
-  
-    try {
-      const reader = new BinaryBigEndianReader({
-        maxBufferLength: data.length,
-      }).writeBuffer(data);
-  
-      const header = DofusNetworkMessage.readHeader(reader);
-      messageId = header.messageId;  // Affecter la valeur à messageId
-      const instanceId = header.instanceId;
-      const payloadSize = header.payloadSize;
-  
-      if (
-        !(messageId in messages) &&
-        ConfigurationManager.getInstance().showProtocolMessage
-      ) {
-        this.logger.writeAsync(
-          `Undefined message (id: ${messageId})`,
-          ansiColorCodes.red
-        );
-      }
-  
-      const message = new messages[messageId]();
-      message.deserialize(reader);
-  
-      return message;
-    } catch (error) {
-      // Utiliser messageId ici
-      this.logger.writeAsync(
-        `Error while deserializing message with ID ${messageId}: ${error}`,
-        ansiColorCodes.red
-      );
-  
-      return null;
-    }
-  }
-  
+		let messageId // Déclarer messageId en dehors du bloc try
+
+		try {
+			const reader = new BinaryBigEndianReader({
+				maxBufferLength: data.length,
+			}).writeBuffer(data)
+
+			const header = DofusNetworkMessage.readHeader(reader)
+			messageId = header.messageId // Affecter la valeur à messageId
+			const instanceId = header.instanceId
+			const payloadSize = header.payloadSize
+
+			if (
+				!(messageId in messages) &&
+				ConfigurationManager.getInstance().showProtocolMessage
+			) {
+				this.logger.writeAsync(
+					`Undefined message (id: ${messageId})`,
+					ansiColorCodes.red
+				)
+			}
+
+			const message = new messages[messageId]()
+			message.deserialize(reader)
+
+			return message
+		} catch (error) {
+			// Utiliser messageId ici
+			this.logger.writeAsync(
+				`Error while deserializing message with ID ${messageId}: ${error}`,
+				ansiColorCodes.red
+			)
+
+			return null
+		}
+	}
 }
 
 export default ServerClient

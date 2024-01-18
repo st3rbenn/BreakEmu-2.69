@@ -14,7 +14,7 @@ interface BreedRoles {
 	order: number
 }
 
-interface BreedFile {
+interface Breed {
 	id: number
 	maleLook: string
 	femaleLook: string
@@ -51,12 +51,95 @@ interface exp {
 }
 
 interface Head {
-  skins: string
-  assetId: string
-  breed: number
-  gender: number
-  label: string
-  order: number
+	skins: string
+	assetId: string
+	breed: number
+	gender: number
+	label: string
+	order: number
+}
+
+interface skills {
+	id: number
+	name: string
+	parentJobId: number
+	gatheredRessourceItem: number
+	interactiveId: number
+	levelMin: number
+}
+
+interface spell {
+	id: number
+	name: string | number
+	description: string | number
+	spellLevels: number[],
+  verboseCast: boolean
+}
+
+interface effects {
+	targetMask: string
+	diceNum: number
+	visibleInBuffUi: boolean
+	baseEffectId: number
+	visibleInFightLog: boolean
+	targetId: number
+	effectElement: number
+	effectUid: number
+	dispellable: number
+	triggers: string
+	spellId: number
+	duration: number
+	random: number
+	effectId: number
+	delay: number
+	diceSide: number
+	visibleOnTerrain: boolean
+	visibleInTooltip: boolean
+	rawZone: string
+	forClientOnly: boolean
+	value: number
+	order: number
+	group: number
+}
+
+interface spellLevel {
+	id: number
+	spellId: number
+	grade: number
+	spellBreed: number
+	apCost: number
+	minRange: number
+	range: number
+	castInLine: boolean
+	castInDiagonal: boolean
+	castTestLos: boolean
+	criticalHitProbability: number
+	needFreeCell: boolean
+	needTakenCell: boolean
+	needVisibleEntity: boolean
+	needCellWithoutPortal: boolean
+	portalProjectionForbidden: boolean
+	needFreeTrapCell: boolean
+	rangeCanBeBoosted: boolean
+	maxStack: number
+	maxCastPerTurn: number
+	maxCastPerTarget: number
+	minCastInterval: number
+	initialCooldown: number
+	globalCooldown: number
+	minPlayerLevel: number
+	hideEffects: boolean
+	hidden: boolean
+	playAnimation: boolean
+	statesCriterion: string
+	effects: effects[]
+	criticalEffect: effects[]
+}
+
+interface SpellVariant {
+  id: number
+  breedId: number
+  spellIds: number[]
 }
 
 class Playground {
@@ -72,7 +155,6 @@ class Playground {
 		 * const hash = hashSync("admin", salt)
 		 * this.logger.write(hash)
 		 */
-
 		/**
 		 * Test the queueing system
 		 * need to create a new socket for each connection
@@ -98,30 +180,27 @@ class Playground {
 
 		await this.database.initialize()
 
-		const jsonFile = this.readJsonFile("heads")
-		const heads = JSON.parse(jsonFile) as Head[]
+		const jsonFileName = "spells"
+		const jsonFile = this.readJsonFile(jsonFileName)
+		const data = JSON.parse(jsonFile) as spell[]
 
-		for (const h of heads) {
+		for (const d of data) {
 			await this.logger.writeAsync(
-				`Inserting head ${h.skins}`,
+				`Update ${jsonFileName} -> ${d.name}`,
 				ansiColorCodes.bgMagenta
 			)
 
-			await this.database.prisma.head.create({
-				data: {
-          skins: h.skins,
-          assetId: h.assetId,
-          breed: {
-            connect: {
-              id: h.breed
-            }
-          },
-          gender: h.gender == 1,
-          label: h.label,
-          order: h.order
-				},
+			await this.database.prisma.spell.update({
+        data: {
+          verbose: d.verboseCast
+        },
+        where: {
+          id: d.id
+        }
 			})
 		}
+
+		console.log("Done")
 	}
 
 	async sendDataWithVariableDelay<D>(

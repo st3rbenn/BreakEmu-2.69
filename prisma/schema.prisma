@@ -35,28 +35,31 @@ model user {
 }
 
 model character {
-  id              Int       @id @default(autoincrement())
-  breed_id        Int
-  breed           breed     @relation(fields: [breed_id], references: [id])
-  sex             Boolean
-  cosmeticId      Int
-  name            String
-  colors          String
-  look            String?
-  experience      BigInt    @default(0)
-  stats           Json?
-  mapId           String?
-  cellId          String?
-  direction       Int       @default(1)
-  kamas           Int       @default(0)
-  statsPoints     Int       @default(0)
-  created_at      DateTime  @default(now())
-  updated_at      DateTime  @updatedAt
-  deleted_at      DateTime?
-  user            user      @relation(fields: [userId], references: [id])
-  userId          Int
-  guild           guild?    @relation(fields: [guildId], references: [id])
-  guildId         Int?
+  id          Int       @id @default(autoincrement())
+  breed_id    Int
+  breed       breed     @relation(fields: [breed_id], references: [id])
+  sex         Boolean
+  cosmeticId  Int
+  name        String
+  colors      String
+  look        String?
+  experience  BigInt    @default(0)
+  stats       Json?
+  jobs        Json?
+  mapId       String?
+  cellId      String?
+  direction   Int       @default(1)
+  kamas       Int       @default(0)
+  statsPoints Int       @default(0)
+  shortcuts   Json?
+  spells      Json?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+  user        user      @relation(fields: [userId], references: [id])
+  userId      Int
+  guild       guild?    @relation(fields: [guildId], references: [id])
+  guildId     Int?
 }
 
 model guild {
@@ -100,6 +103,7 @@ model breed {
   spforWisdom       String
   spForChance       String
   startLifePoints   Int
+  breedSpellsId     String?
   created_at        DateTime    @default(now())
   updated_at        DateTime    @updatedAt
   deleted_at        DateTime?
@@ -117,12 +121,63 @@ model dungeon {
 }
 
 model experience {
-  id         Int       @id @default(autoincrement())
-  level      BigInt    @unique
-  experience BigInt    @unique
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  deleted_at DateTime?
+  id                  Int    @id @default(autoincrement())
+  level               BigInt @unique
+  characterExperience BigInt
+  jobExperience       BigInt
+  guildExperience     BigInt
+  mountExperience     BigInt @default(0)
+}
+
+model skill {
+  id                    Int    @id @default(autoincrement())
+  name                  String
+  parentJobId           Int
+  gatheredRessourceItem Int
+  interactiveId         Int
+  levelMin              Int
+}
+
+model spell {
+  id          Int     @id
+  name        String  @db.Text
+  description String  @db.Text
+  spellLevels String  @db.Text
+  verbose     Boolean?
+}
+
+model spellLevel {
+  id               Int     @id
+  spellId          Int
+  spellBreed       Int
+  grade            Int
+  minPlayerLevel   Int
+  apCost           Int
+  minRange         Int
+  maxRange         Int
+  castInLine       Boolean
+  castInDiag       Boolean
+  castTestLos      Boolean
+  criticalHitProb  Int
+  needFreeCell     Boolean
+  needTakenCell    Boolean
+  needFreeTrapCell Boolean
+  maxStack         Int
+  maxCastPerTurn   Int
+  maxCastPerTarget Int
+  minCastInterval  Int
+  initialCooldown  Int
+  globalCooldown   Int
+  hideEffects      Boolean
+  hidden           Boolean
+  effects          Json
+  criticalEffects  Json
+}
+
+model spellVariant {
+  id       Int    @id
+  breedId  Int
+  spellIds String
 }
 
 model head {

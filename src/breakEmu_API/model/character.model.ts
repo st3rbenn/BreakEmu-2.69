@@ -1,9 +1,7 @@
 import ConfigurationManager from "../../breakEmu_Core/configuration/ConfigurationManager"
 import {
-	ActorExtendedAlignmentInformations,
 	AlmanachCalendarDateMessage,
 	CharacterBaseInformations,
-	CharacterCharacteristicsInformations,
 	CharacterLoadingCompleteMessage,
 	CharacterStatsListMessage,
 	CurrentMapMessage,
@@ -13,13 +11,17 @@ import {
 	GameContextDestroyMessage,
 	GameContextEnum,
 	GameRolePlayActorInformations,
+	GameRolePlayShowActorMessage,
 	InventoryContentMessage,
 	InventoryWeightMessage,
 	JobCrafterDirectorySettingsMessage,
 	JobDescriptionMessage,
 	JobExperienceMultiUpdateMessage,
 	ServerExperienceModificatorMessage,
+	Shortcut,
 	ShortcutBarContentMessage,
+	ShortcutBarEnum,
+	SpellItem,
 	SpellListMessage,
 	TextInformationMessage,
 	TextInformationTypeEnum,
@@ -28,9 +30,16 @@ import WorldClient from "../../breakEmu_World/WorldClient"
 import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
 import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
 import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
-import CharacterShortcut from "../../breakEmu_World/manager/shortcut/characterShortcut"
+import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
 import Breed from "./breed.model"
 import Experience from "./experience.model"
+import Job from "./job.model"
+import CharacterSpell from "../../breakEmu_World/manager/entities/spell/characterSpell"
+import SpellShortcutBar from "../../breakEmu_World/manager/shortcut/SpellShortcutBar"
+import GeneralShortcutBar from "../../breakEmu_World/manager/shortcut/GeneralShortcutBar"
+import CharacterSpellShortcut from "../../breakEmu_World/manager/shortcut/character/characterSpellShortcut"
+import CharacterItemShortcut from "../../breakEmu_World/manager/shortcut/character/characterItemShortcut"
+
 class Character {
 	private _id: number
 	private _accountId: number
@@ -49,13 +58,18 @@ class Character {
 	private _stats?: EntityStats
 	private _statsPoints: number
 	private _knownEmotes: number[]
-	private _shortcuts: CharacterShortcut[]
+	private _shortcuts: Map<number, CharacterShortcut>
 	private _knownOrnaments: number[]
 	private _activeOrnament: number
-	// private _spells: CharacterSpell[]
+	private _jobs: Job[]
+	private _spells: Map<number, CharacterSpell>
+	private _spellShortcutBar: SpellShortcutBar
+	private _generalShortcutBar: GeneralShortcutBar
 
 	private _characters: Character[] = []
 	private _context: GameContextEnum | undefined
+
+	private _client: WorldClient | undefined
 
 	constructor(
 		id: number,
@@ -72,11 +86,12 @@ class Character {
 		kamas: number,
 		statsPoints: number,
 		knownEmotes: number[],
-		shortcuts: CharacterShortcut[],
+		shortcuts: Map<number, CharacterShortcut>,
 		knownOrnaments: number[],
 		activeOrnament: number,
+		jobs: Job[],
+		// spells: Map<number, CharacterSpell>,
 		stats?: EntityStats
-		// spells: CharacterSpell[]
 	) {
 		this._id = id
 		this._accountId = accountId
@@ -95,9 +110,12 @@ class Character {
 		this._statsPoints = statsPoints
 		this._knownEmotes = knownEmotes
 		this._shortcuts = shortcuts
+		this._spellShortcutBar = new SpellShortcutBar(this)
+		this._generalShortcutBar = new GeneralShortcutBar(this)
 		this._knownOrnaments = knownOrnaments
 		this._activeOrnament = activeOrnament
-		// this._spells = spells
+		this._jobs = jobs
+		this._spells = new Map<number, CharacterSpell>()
 	}
 
 	public static create(
@@ -112,7 +130,7 @@ class Character {
 		cellId: number,
 		direction: number,
 		kamas: number
-	) {
+	): Character {
 		const startLevel = ConfigurationManager.getInstance().startLevel
 		const bree = BreedManager.getInstance().breeds.find(
 			(b) => b.id === breed
@@ -133,9 +151,10 @@ class Character {
 			kamas,
 			0,
 			[1],
-			[] as CharacterShortcut[],
+			new Map<number, CharacterShortcut>(),
 			[],
 			0,
+			Job.new(),
 			EntityStats.new(startLevel)
 		)
 
@@ -146,6 +165,14 @@ class Character {
 
 	public get id(): number {
 		return this._id
+	}
+
+	public get client(): WorldClient | undefined {
+		return this._client
+	}
+
+	public set client(client: WorldClient | undefined) {
+		this._client = client
 	}
 
 	public get accountId(): number {
@@ -248,6 +275,50 @@ class Character {
 		this._stats = stats
 	}
 
+	public get level(): number {
+		return this._level
+	}
+
+	public set level(level: number) {
+		this._level = level
+	}
+
+	public get statsPoints(): number {
+		return this._statsPoints
+	}
+
+	public set statsPoints(statsPoints: number) {
+		this._statsPoints = statsPoints
+	}
+
+	public get jobs(): Job[] {
+		return this._jobs
+	}
+
+	public get shortcuts(): Map<number, CharacterShortcut> {
+		return this._shortcuts
+	}
+
+	public set shortcuts(shortcuts: Map<number, CharacterShortcut>) {
+		this._shortcuts = shortcuts
+	}
+
+	public get spellShortcutBar(): SpellShortcutBar {
+		return this._spellShortcutBar
+	}
+
+	public get generalShortcutBar(): GeneralShortcutBar {
+		return this._generalShortcutBar
+	}
+
+	public get spells(): Map<number, CharacterSpell> {
+		return this._spells
+	}
+
+	public set spells(spells: Map<number, CharacterSpell>) {
+		this._spells = spells
+	}
+
 	public toCharacterBaseInformations(): CharacterBaseInformations {
 		return new CharacterBaseInformations(
 			this.id,
@@ -259,116 +330,108 @@ class Character {
 		)
 	}
 
-	public characterCharacteristicsInformations() {
-		const alignementInfos: ActorExtendedAlignmentInformations = new ActorExtendedAlignmentInformations(
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0
-		)
-		// const charac = new CharacterCharacteristic(1)
-
-		const stats = new CharacterCharacteristicsInformations(
-			this.experience,
-			Experience.getCharacterExperienceLevelFloor(this._level),
-			Experience.getCharacterExperienceNextLevelFloor(this._level),
-			0,
-			this.kamas,
-			alignementInfos,
-			[],
-			0,
-			[],
-			0
+	public toGameRolePlayActorInformations(): GameRolePlayActorInformations {
+		const entityDisposition = new EntityDispositionInformations(
+			this.cellId,
+			this.direction
 		)
 
-		return stats
+		return new GameRolePlayActorInformations(
+			this.id,
+			entityDisposition,
+			this.look.toEntityLook()
+		)
 	}
 
-  public toGameRolePlayActorInformations(): GameRolePlayActorInformations {
-    const entityDisposition = new EntityDispositionInformations(
-      this.cellId,
-      this.direction
-    );
-
-    return new GameRolePlayActorInformations(
-      this.id,
-      entityDisposition,
-      this.look.toEntityLook()
-    );
-  }
-
-	public refreshJobs(client: WorldClient) {
-		client.Send(
-			client.serialize(
+	public async refreshJobs() {
+		await this?.client?.Send(
+			this?.client?.serialize(
 				new JobCrafterDirectorySettingsMessage(
-					[]
-					// Record.Jobs.Select((x) => x.GetDirectorySettings()).ToArray()
+					this.jobs.map((x) => x.getDirectorySettings())
 				)
 			)
 		)
-		client.Send(
-			client.serialize(
-				new JobDescriptionMessage(
-					[]
-					// Record.Jobs.Select((x) => x.GetJobDescription()).ToArray()
-				)
+		await this?.client?.Send(
+			this?.client?.serialize(
+				new JobDescriptionMessage(this.jobs.map((x) => x.getJobDescription()))
 			)
 		)
-		client.Send(
-			client.serialize(
+		await this?.client?.Send(
+			this?.client?.serialize(
 				new JobExperienceMultiUpdateMessage(
-					[]
-					// Record.Jobs.Select((x) => x.GetJobExperience()).ToArray()
+					this.jobs.map((x) => x.getJobExperience())
 				)
 			)
 		)
 	}
 
-	public refreshSpells(client: WorldClient) {
-		client.Send(
-			client.serialize(
-				new SpellListMessage(
-					false,
-					[]
-					// Record.Spells.Select((x) => x.GetSpellItem(this)).ToArray()
-				)
+	public async sendGameRolePlayActorInformations() {
+		const entityDisposition = new EntityDispositionInformations(
+			this.cellId as number,
+			this.direction as number
+		)
+		const gameRolePlayShowActorMessage = new GameRolePlayActorInformations(
+			this.id,
+			entityDisposition,
+			this.look.toEntityLook()
+		)
+
+		await this?.client?.Send(
+			this?.client?.serialize(
+				new GameRolePlayShowActorMessage(gameRolePlayShowActorMessage)
 			)
 		)
 	}
 
-	// public refreshGuild(client: WorldClient) {
+	public async refreshSpells() {
+
+    const spellItems: SpellItem[] = []
+
+    for (const spell of this.spells.values()) {
+      spellItems.push(spell.getSpellItem(this))
+    }
+
+		await this?.client?.Send(
+			this?.client?.serialize(
+        new SpellListMessage(false, spellItems)
+        )
+		)
+	}
+
+	// public refreshGuild() {
 	//   if(this._guildId === 0) return
 
 	// }
 
-	public onCharacterLoadingComplete(client: WorldClient) {
-		this.onConnected(client)
-		this.reply(client, "Bienvenue sur BreakEmu !", "DarkGreen", true, true)
-		client.Send(client.serialize(new CharacterLoadingCompleteMessage()))
+	public async onCharacterLoadingComplete() {
+		await this.onConnected()
+		this.reply("Bienvenue sur BreakEmu !", "DarkGreen", true, true)
+		await this?.client?.Send(
+			this?.client?.serialize(new CharacterLoadingCompleteMessage())
+		)
 	}
 
-	public onConnected(client: WorldClient) {
-		this.textInformation(
-			client,
+	public async onConnected() {
+		await this.textInformation(
 			TextInformationTypeEnum.TEXT_INFORMATION_ERROR,
 			89,
 			[]
 		)
-		client.Send(client.serialize(new AlmanachCalendarDateMessage(1)))
+		await this?.client?.Send(
+			this?.client?.serialize(new AlmanachCalendarDateMessage(1))
+		)
 	}
 
-	public destroyContext(client: WorldClient) {
-		client.Send(client.serialize(new GameContextDestroyMessage()))
+	public async destroyContext() {
+		await this?.client?.Send(
+			this?.client?.serialize(new GameContextDestroyMessage())
+		)
 		this._context = undefined
 	}
 
-	public sendServerExperienceModificator(client: WorldClient) {
-		client.Send(
-			client.serialize(
+	public async sendServerExperienceModificator() {
+		await this?.client?.Send(
+			this?.client?.serialize(
 				new ServerExperienceModificatorMessage(
 					ConfigurationManager.getInstance().XpRate * 100
 				)
@@ -376,17 +439,21 @@ class Character {
 		)
 	}
 
-  public teleport(client: WorldClient, mapId: number, cellId: number) {
-    client.Send(client.serialize(new CurrentMapMessage(mapId)));
-  }
+	public async teleport(mapId: number, cellId: number) {
+		await this?.client?.Send(
+			this?.client?.serialize(new CurrentMapMessage(mapId))
+		)
+	}
 
-	public createContext(client: WorldClient, context: number) {
-		client.Send(client.serialize(new GameContextCreateMessage(context)))
+	public async createContext(context: number) {
+		await this?.client?.Send(
+			this?.client?.serialize(new GameContextCreateMessage(context))
+		)
 		this._context = context
 	}
 
-	public refreshEmotes(client: WorldClient) {
-		client.Send(client.serialize(new EmoteListMessage([])))
+	public async refreshEmotes() {
+		await this?.client?.Send(this?.client?.serialize(new EmoteListMessage([])))
 	}
 
 	public applyPolice(value: any, bold: boolean, underline: boolean): string {
@@ -399,16 +466,15 @@ class Character {
 		return value
 	}
 
-	public replyWarning(client: WorldClient, value: any): void {
-		this.reply(client, value, "DarkOrange", false, false)
+	public replyWarning(value: any): void {
+		this.reply(value, "DarkOrange", false, false)
 	}
 
-	public replyError(client: WorldClient, value: any): void {
-		this.reply(client, value, "DarkRed", false, false)
+	public replyError(value: any): void {
+		this.reply(value, "DarkRed", false, false)
 	}
 
 	public reply(
-		client: WorldClient,
 		value: any,
 		color: string,
 		bold: boolean = false,
@@ -416,8 +482,8 @@ class Character {
 	): void {
 		value = this.applyPolice(value, bold, underline)
 		// Remplacez la ligne suivante par votre propre logique d'envoi
-		client.Send(
-			client.serialize(
+		this?.client?.Send(
+			this?.client?.serialize(
 				new TextInformationMessage(0, 0, [
 					`<font color="#${color}">${value}</font>`,
 				])
@@ -425,32 +491,109 @@ class Character {
 		)
 	}
 
-  public refreshStats(client: WorldClient) {
-    client.Send(client.serialize(new CharacterStatsListMessage(this.characterCharacteristicsInformations())));
-  }
+	public async refreshStats() {
+		await this?.client?.Send(
+			this?.client?.serialize(
+				new CharacterStatsListMessage(
+					this?.stats?.getCharacterCharacteristicInformations(this)
+				)
+			)
+		)
+	}
 
-	public textInformation(
-		client: WorldClient,
+	public async textInformation(
 		msgType: TextInformationTypeEnum,
 		msgId: number,
 		parameters: string[]
 	) {
-		client.Send(
-			client.serialize(new TextInformationMessage(msgType, msgId, parameters))
+		await this?.client?.Send(
+			this?.client?.serialize(
+				new TextInformationMessage(msgType, msgId, parameters)
+			)
 		)
 	}
 
-	public refreshInventory(client: WorldClient) {
-		client.Send(client.serialize(new InventoryContentMessage([], this.kamas)))
+	public async refreshInventory() {
+		await this?.client?.Send(
+			this?.client?.serialize(new InventoryContentMessage([], this.kamas))
+		)
 		// this.refreshWeight(client)
 	}
 
-	public refreshWeight(client: WorldClient) {
-		client.Send(client.serialize(new InventoryWeightMessage(0, 0, 1000)))
+	public refreshWeight() {
+		this?.client?.Send(
+			this?.client?.serialize(new InventoryWeightMessage(0, 0, 1000))
+		)
 	}
 
-	public refreshShortcuts(client: WorldClient) {
-		client.Send(client.serialize(new ShortcutBarContentMessage(1, [])))
+	public async refreshShortcuts() {
+		await this.spellShortcutBar.refresh()
+		await this.generalShortcutBar.refresh()
+	}
+
+	public hasSpell(spellId: number): boolean {
+		return this._spells.has(spellId)
+	}
+
+	public learnSpell(spellId: number, notify: boolean) {
+		if (this.hasSpell(spellId)) return
+
+		let spell = new CharacterSpell(spellId)
+		this.spells.set(spellId, spell)
+
+		if (spell.learned(this) && this.spellShortcutBar.canAdd()) {
+			this.spellShortcutBar.add(spellId)
+
+			if (notify) {
+				this.refreshShortcuts()
+			}
+		}
+	}
+
+	public saveShortcutsAsJson(): string {
+		let shortcuts = []
+		for (const shortcut of this.shortcuts.values()) {
+			shortcuts.push({
+				barType: shortcut.barType,
+				slotId: shortcut.slotId,
+				spellId:
+					shortcut instanceof CharacterSpellShortcut ? shortcut.spellId : null,
+				itemUid:
+					shortcut instanceof CharacterItemShortcut ? shortcut.itemUid : null,
+				itemGid:
+					shortcut instanceof CharacterItemShortcut ? shortcut.itemGid : null,
+			})
+		}
+		return JSON.stringify(shortcuts)
+	}
+
+	public static loadShortcutsFromJson(
+		json: any
+	): Map<number, CharacterShortcut> {
+		const shortcuts = new Map<number, CharacterShortcut>()
+		for (const shortcut of json) {
+			if (shortcut.barType === ShortcutBarEnum.GENERAL_SHORTCUT_BAR) {
+				shortcuts.set(
+					shortcut.slotId,
+					new CharacterItemShortcut(
+						shortcut.slotId,
+						shortcut.itemUid,
+						shortcut.itemGid,
+						shortcut.barType
+					)
+				)
+			} else if (shortcut.barType === ShortcutBarEnum.SPELL_SHORTCUT_BAR) {
+				shortcuts.set(
+					shortcut.slotId,
+					new CharacterSpellShortcut(
+						shortcut.slotId,
+						shortcut.spellId,
+						shortcut.barType
+					)
+				)
+			}
+		}
+		return shortcuts
 	}
 }
 

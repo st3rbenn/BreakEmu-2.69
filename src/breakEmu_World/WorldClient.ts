@@ -5,32 +5,32 @@ import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
 import {
-  AllianceGetPlayerApplicationMessage,
-  AllianceRanksMessage,
-  AllianceRanksRequestMessage,
-  AuthenticationTicketMessage,
-  BasicPingMessage,
-  BasicPongMessage,
-  CharacterCanBeCreatedRequestMessage,
-  CharacterCanBeCreatedResultMessage,
-  CharacterCreationRequestMessage,
-  CharacterDeletionPrepareRequestMessage,
-  CharacterDeletionRequestMessage,
-  CharacterFirstSelectionMessage,
-  CharacterNameSuggestionRequestMessage,
-  CharacterSelectionMessage,
-  CharactersListRequestMessage,
-  FriendsGetListMessage,
-  FriendsListMessage,
-  GameContextCreateRequestMessage,
-  HelloGameMessage,
-  IgnoredGetListMessage,
-  MapInformationsRequestMessage,
-  PopupWarningClosedMessage,
-  ProtocolRequired,
-  ReloginTokenRequestMessage,
-  ServerSelectionMessage,
-  messages
+	AllianceGetPlayerApplicationMessage,
+	AllianceRanksMessage,
+	AllianceRanksRequestMessage,
+	AuthenticationTicketMessage,
+	BasicPingMessage,
+	BasicPongMessage,
+	CharacterCanBeCreatedRequestMessage,
+	CharacterCanBeCreatedResultMessage,
+	CharacterCreationRequestMessage,
+	CharacterDeletionPrepareRequestMessage,
+	CharacterDeletionRequestMessage,
+	CharacterFirstSelectionMessage,
+	CharacterNameSuggestionRequestMessage,
+	CharacterSelectionMessage,
+	CharactersListRequestMessage,
+	FriendsGetListMessage,
+	FriendsListMessage,
+	GameContextCreateRequestMessage,
+	HelloGameMessage,
+	IgnoredGetListMessage,
+	MapInformationsRequestMessage,
+	PopupWarningClosedMessage,
+	ProtocolRequired,
+	ReloginTokenRequestMessage,
+	ServerSelectionMessage,
+	messages,
 } from "../breakEmu_Server/IO"
 import ServerClient from "../breakEmu_Server/ServerClient"
 import WorldServer from "./WorldServer"
@@ -53,23 +53,33 @@ class WorldClient extends ServerClient {
 
 	constructor(socket: Socket, account: Account) {
 		super(socket)
-		console.log("WorldClient", account)
 		this._account = account
+
+		WorldServer.getInstance().AddClient(this)
+		this.setupEventHandlers()
+		this.initialize()
 	}
 
 	public async initialize(): Promise<void> {
-		await this.Send(
-			this.serialize(
-				new ProtocolRequired(
-					ConfigurationManager.getInstance().dofusProtocolVersion
-				)
-			)
-		)
-		await this.Send(this.serialize(new HelloGameMessage()))
-		this.Socket.on(
-			"data",
-			async (data) => await this.handleData(this.Socket, data)
-		)
+		try {
+      await this.Send(
+        this.serialize(
+          new ProtocolRequired(
+            ConfigurationManager.getInstance().dofusProtocolVersion
+          )
+        )
+      )
+      await this.Send(this.serialize(new HelloGameMessage()))
+      this.Socket.on(
+        "data",
+        async (data) => await this.handleData(this.Socket, data)
+      )
+    } catch (error: unknown | any) {
+      await this.logger.writeAsync(
+        `Error while initializing client: ${error.message}`,
+        ansiColorCodes.red
+      )
+    }
 	}
 
 	public async handleData(socket: Socket, data: Buffer): Promise<void> {
@@ -97,7 +107,6 @@ class WorldClient extends ServerClient {
 					await AuthentificationHandler.handleAuthenticationTicketMessage(this)
 					break
 				case CharactersListRequestMessage.id:
-					console.log("Characters List size", this.account?.pseudo)
 					await CharacterListHandler.handleCharactersListMessage(this)
 					break
 				case CharacterCanBeCreatedRequestMessage.id:
@@ -130,15 +139,16 @@ class WorldClient extends ServerClient {
 					)
 					break
 				case CharacterFirstSelectionMessage.id:
-					console.log("CharacterFirstSelectionMessage", message)
+					const cfsm = message as CharacterFirstSelectionMessage
 					await CharacterSelectionHandler.handleCharacterSelectionMessage(
-						message as CharacterSelectionMessage,
+						this.account?.characters.get(cfsm.id_ as number) as Character,
 						this
 					)
 					break
 				case CharacterSelectionMessage.id:
+					const msg = message as CharacterSelectionMessage
 					await CharacterSelectionHandler.handleCharacterSelectionMessage(
-						message as CharacterSelectionMessage,
+						this.account?.characters.get(msg.id_ as number) as Character,
 						this
 					)
 					break
@@ -163,16 +173,18 @@ class WorldClient extends ServerClient {
 					break
 				case GameContextCreateRequestMessage.id:
 					await ContextHandler.handleGameContextCreateMessage(
-						this,
 						this.selectedCharacter as Character
 					)
 					break
-        case FriendsGetListMessage.id:
-          await this.Send(this.serialize(new FriendsListMessage([])))
-          break
-        case MapInformationsRequestMessage.id:
-          MapHandler.handleMapInformationsRequestMessage(this, message as MapInformationsRequestMessage)
-          break
+				case FriendsGetListMessage.id:
+					await this.Send(this.serialize(new FriendsListMessage([])))
+					break
+				case MapInformationsRequestMessage.id:
+					await MapHandler.handleMapInformationsRequestMessage(
+						this,
+						message as MapInformationsRequestMessage
+					)
+					break
 				default:
 					await this.logger.writeAsync(
 						`${messages[message?.id as number].name} is not handled`,
@@ -180,9 +192,9 @@ class WorldClient extends ServerClient {
 					)
 					break
 			}
-		} catch (error: any) {
+		} catch (error: unknown | any) {
 			await this.logger.writeAsync(
-				`Error while handling data: ${error.message}`,
+				`Error while handling data: ${error.stack}`,
 				ansiColorCodes.red
 			)
 		}

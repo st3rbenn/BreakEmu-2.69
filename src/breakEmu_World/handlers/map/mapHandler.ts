@@ -10,15 +10,13 @@ import {
 import WorldClient from "../../WorldClient"
 
 class MapHandler {
-	public static handleMapInformationsRequestMessage(
+	public static async handleMapInformationsRequestMessage(
 		client: WorldClient,
 		message: MapInformationsRequestMessage
 	) {
 		const currentCharacterGameRoleInfo = client?.selectedCharacter?.toGameRolePlayActorInformations() as GameRolePlayActorInformations
 
-    console.log('MAP ID', currentCharacterGameRoleInfo.look?.indexedColors)
-
-		client.Send(
+		await client.Send(
 			client.serialize(
 				new MapComplementaryInformationsDataMessage(
 					0,
@@ -35,13 +33,13 @@ class MapHandler {
 			)
 		)
 
-		client.Send(client.serialize(new MapFightCountMessage(0)))
+		await client.Send(client.serialize(new MapFightCountMessage(0)))
 
-		client.Send(client.serialize(new BasicNoOperationMessage()))
-		//DateTime.Now.GetUnixTimeStampDouble()
+		await client.Send(client.serialize(new BasicNoOperationMessage()))
+
 		const date = new Date()
 		const unixTime = Math.round(date.getTime() / 1000)
-		client.Send(client.serialize(new BasicTimeMessage(unixTime, 1)))
+		await client.Send(client.serialize(new BasicTimeMessage(unixTime, 1)))
 	}
 }
 

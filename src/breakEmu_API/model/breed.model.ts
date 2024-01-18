@@ -15,6 +15,7 @@ class Breed {
 	private _spForWisdom: string
 	private _spForChance: string
 	private _startLifePoints: number
+  private _breedSpells: number[] = []
 
 	private static _Breeds: Breed[] = []
 
@@ -31,7 +32,8 @@ class Breed {
 		spForVitality: string,
 		spForWisdom: string,
 		spForChance: string,
-		startLifePoints: number
+		startLifePoints: number,
+    breedSpellsId: string
 	) {
 		this._id = id
 		this._name = name
@@ -46,6 +48,7 @@ class Breed {
 		this._spForWisdom = spForWisdom
 		this._spForChance = spForChance
 		this._startLifePoints = startLifePoints
+    this._breedSpells = breedSpellsId.split(",").map(Number)
 	}
 
 	public get id(): number {
@@ -99,6 +102,14 @@ class Breed {
 	public get startLifePoints(): number {
 		return this._startLifePoints
 	}
+
+  public get breedSpells(): number[] {
+    return this._breedSpells
+  }
+
+  public set breedSpells(breedSpells: number[]) {
+    this._breedSpells = breedSpells
+  }
 
 	public static get breeds(): Breed[] {
 		return Breed._Breeds

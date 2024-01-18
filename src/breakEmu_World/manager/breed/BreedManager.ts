@@ -1,4 +1,5 @@
 import Breed from "../../../breakEmu_API/model/breed.model"
+import Character from "../../../breakEmu_API/model/character.model"
 import Head from "../../../breakEmu_API/model/head.model"
 import ContextEntityLook from "../entities/look/ContextEntityLook"
 
@@ -41,6 +42,13 @@ class BreedManager {
 
 	public getBreedById(id: number): Breed {
 		return this._breeds.find((b) => b.id === id) as Breed
+	}
+
+	public learnBreedSpells(character: Character) {
+		character.learnSpell(0, false)
+    character.breed.breedSpells.map((spellId) => {
+			character.learnSpell(spellId, false)
+    })
 	}
 }
 

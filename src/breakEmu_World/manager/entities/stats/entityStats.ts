@@ -1,5 +1,11 @@
 import ConfigurationManager from "../../../../breakEmu_Core/configuration/ConfigurationManager"
-import { CharacteristicEnum } from "../../../../breakEmu_Server/IO"
+import {
+	ActorExtendedAlignmentInformations,
+	CharacterCharacteristic,
+	CharacterCharacteristicsInformations,
+	CharacteristicEnum,
+  CharacterCharacteristicValue
+} from "../../../../breakEmu_Server/IO"
 import BreedManager from "../../../../breakEmu_World/manager/breed/BreedManager"
 import ApCharacteristic from "./apCharacteristic"
 import Characteristic from "./characteristic"
@@ -8,6 +14,8 @@ import ResistanceCharacteristic from "./resistanceCharacteristic"
 import PointDodgeCharacteristic from "./pointDodgeCharacteristic"
 import RelativeCharacteristic from "./relativeCharacteristic"
 import RangeCharacteristic from "./rangeCharacteristic"
+import Character from "../../../../breakEmu_API/model/character.model"
+import Experience from "../../../../breakEmu_API/model/experience.model"
 
 interface EntityStatsJSON {
 	lifePoints: number
@@ -354,15 +362,17 @@ class EntityStats {
 		return stats
 	}
 
-  public characteristicsToJSON(): any {
-    let characteristics: { [key: string]: any } = {};
-    this.characteristics.forEach((value: Characteristic, key: CharacteristicEnum) => {
-        // Convertir la clé de l'énumération en chaîne
-        let keyAsString = CharacteristicEnum[key];
-        characteristics[keyAsString] = value.toJSON();
-    });
-    return characteristics;
-}
+	public characteristicsToJSON(): any {
+		let characteristics: { [key: string]: any } = {}
+		this.characteristics.forEach(
+			(value: Characteristic, key: CharacteristicEnum) => {
+				// Convertir la clé de l'énumération en chaîne
+				let keyAsString = CharacteristicEnum[key]
+				characteristics[keyAsString] = value.toJSON()
+			}
+		)
+		return characteristics
+	}
 
 	public saveAsJSON(): EntityStatsJSON {
 		return {
@@ -391,9 +401,18 @@ class EntityStats {
 			json.energy,
 			json.criticalHitWeapon
 		)
+
+    stats._characteristics = new Map<CharacteristicEnum, Characteristic>()
+
+    for (let key in json.characteristics) {
+      let characteristic = json.characteristics[key]
+      let keyAsString = CharacteristicEnum[key as keyof typeof CharacteristicEnum]
+      stats.setCharacteristic(keyAsString, new Characteristic(characteristic.base, characteristic.additional, characteristic.objects, characteristic.context))
+    }
+
+
 		stats._missingLifePoints = json.missingLifePoints
 		stats._lifePercentage = json.lifePercentage
-		stats._characteristics = json.characteristics
 		stats._strength = json.strength
 		stats._vitality = json.vitality
 		stats._wisdom = json.wisdom
@@ -488,24 +507,68 @@ class EntityStats {
 		this._criticalHitWeapon = criticalHitWeapon
 	}
 
-	// public toJSON(): any {
-	//   return {
-	//     lifePoints: this.lifePoints,
-	//     maxLifePoints: this.maxLifePoints,
-	//     maxEnergyPoints: this.maxEnergyPoints,
-	//     energy: this.energy,
-	//     criticalHitWeapon: this.criticalHitWeapon,
-	//     missingLifePoints: this._missingLifePoints,
-	//     lifePercentage: this.lifePercentage,
-	//     characteristics: this.characteristics,
-	//     strength: this.strength,
-	//     vitality: this.vitality,
-	//     wisdom: this.wisdom,
-	//     chance: this.chance,
-	//     agility: this.agility,
-	//     intelligence: this.intelligence
-	//   }
-	// }
+	public getCharacterCharacteristicInformations(character: Character) {
+		const alignementInfos: ActorExtendedAlignmentInformations = new ActorExtendedAlignmentInformations(
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		)
+
+		const stats = new CharacterCharacteristicsInformations(
+			character.experience,
+			Experience.getCharacterExperienceLevelFloor(character.level),
+			Experience.getCharacterExperienceNextLevelFloor(character.level),
+			0,
+			character.kamas,
+			alignementInfos,
+			this.getCharacterCharacteristic(),
+			0,
+			[],
+			0
+		)
+
+		return stats
+	}
+
+	public getCharacterCharacteristic(
+		selected: CharacteristicEnum[] | null = null
+	): CharacterCharacteristic[] {
+		let result: Map<CharacteristicEnum, CharacterCharacteristic> = new Map<
+			CharacteristicEnum,
+			CharacterCharacteristic
+		>()
+
+		if(selected == null) {
+		  this._characteristics.forEach((value: Characteristic, key: CharacteristicEnum) => {
+		    result.set(key, value.characterCharacteristicDetailed(key))
+		  })
+		} else {
+		  let characteristics = this._characteristics.keys()
+
+		  for(let i = 0; i < selected.length; i++) {
+		    if(characteristics.next().value == selected[i]) {
+		      result.set(selected[i], this._characteristics.get(selected[i])?.characterCharacteristicDetailed(selected[i]) as CharacterCharacteristic)
+		    }
+		  }
+		}
+
+    const lifePoint = CharacteristicEnum.LIFE_POINTS
+    const maxLifePoint = CharacteristicEnum.MAX_LIFE_POINTS
+    const maxEnergyPoint = CharacteristicEnum.MAX_ENERGY_POINTS
+    const energyPoint = CharacteristicEnum.ENERGY_POINTS
+
+		result.set(lifePoint, new CharacterCharacteristicValue(lifePoint, this.lifePoints))
+		result.set(maxLifePoint, new CharacterCharacteristicValue(maxLifePoint, this.maxLifePoints))
+		result.set(maxEnergyPoint, new CharacterCharacteristicValue(maxEnergyPoint, this.maxEnergyPoints))
+		result.set(energyPoint, new CharacterCharacteristicValue(energyPoint, this.energy))
+
+		return Array.from(result.values())
+	}
 }
 
 export default EntityStats

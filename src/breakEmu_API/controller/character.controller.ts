@@ -10,6 +10,7 @@ import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats
 import Database from "../Database"
 import Character from "../model/character.model"
 import { PrismaClient } from "@prisma/client"
+import Job from "../../breakEmu_API/model/job.model"
 
 class CharacterController {
 	public _logger: Logger = new Logger("CharacterController")
@@ -48,7 +49,7 @@ class CharacterController {
 					c.look as string
 				)
 
-        const character = new Character(
+				const character = new Character(
 					c.id,
 					c.userId,
 					BreedManager.getInstance().getBreedById(c.breed_id),
@@ -63,13 +64,14 @@ class CharacterController {
 					c.kamas,
 					c.statsPoints,
 					[],
-					[],
+					Character.loadShortcutsFromJson(JSON.parse(c.shortcuts?.toString() as string)),
 					[],
 					0,
-          EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string))
+					Job.loadFromJson(JSON.parse(c.jobs?.toString() as string)),
+					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string))
 				)
 
-        charactersList.push(character)
+				charactersList.push(character)
 			}
 
 			return charactersList
@@ -140,6 +142,9 @@ class CharacterController {
 				startLevel - 1
 			)
 
+			const jobs = Job.new().map((job) => job.saveAsJSON())
+      const stats = EntityStats.new(startLevel).saveAsJSON()
+
 			const newCharacter = await this._database.prisma.character.create({
 				data: {
 					userId: account.id as number,
@@ -155,7 +160,9 @@ class CharacterController {
 					direction: 1,
 					kamas: ConfigurationManager.getInstance().startKamas,
 					statsPoints: ConfigurationManager.getInstance().startStatsPoints,
-					stats: JSON.stringify(EntityStats.new(startLevel).saveAsJSON()),
+					stats: JSON.stringify(stats),
+					jobs: JSON.stringify(jobs),
+          shortcuts: JSON.stringify([]),
 				},
 			})
 
@@ -172,6 +179,10 @@ class CharacterController {
 				newCharacter.direction,
 				newCharacter.kamas
 			)
+
+      BreedManager.getInstance().learnBreedSpells(character)
+
+      // console.log(character.spells)
 
 			return successCallback(character)
 		} catch (error) {

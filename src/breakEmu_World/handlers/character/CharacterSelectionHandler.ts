@@ -1,24 +1,23 @@
 import Character from "../../../breakEmu_API/model/character.model"
+import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
 import Logger from "../../../breakEmu_Core/Logger"
 import {
-	CharacterCapabilitiesMessage,
-	CharacterLoadingCompleteMessage,
-	CharacterSelectedSuccessMessage,
-	CharacterSelectionMessage,
-	NotificationListMessage,
-	SequenceNumberRequestMessage,
+  CharacterCapabilitiesMessage,
+  CharacterSelectedSuccessMessage,
+  NotificationListMessage,
+  SequenceNumberRequestMessage
 } from "../../../breakEmu_Server/IO"
 import WorldClient from "../../../breakEmu_World/WorldClient"
 
 class CharacterSelectionHandler {
 	private static logger: Logger = new Logger("CharacterSelectionHandler")
 	public static async handleCharacterSelectionMessage(
-		message: CharacterSelectionMessage,
+		character: Character,
 		client: WorldClient
 	) {
-		const character = client.account?.characters.get(message.id_ as number)
-
-		client.Send(
+    this.logger.write(`CharacterSelectionHandler: ${character?.name}`, ansiColorCodes.bgMagenta)
+    character.client = client
+		await client.Send(
 			client.serialize(
 				new CharacterSelectedSuccessMessage(
 					character?.toCharacterBaseInformations(),
@@ -26,20 +25,21 @@ class CharacterSelectionHandler {
 				)
 			)
 		)
-		client.Send(client.serialize(new NotificationListMessage([2147483647])))
-		client.Send(client.serialize(new CharacterCapabilitiesMessage(4095)))
-		client.Send(client.serialize(new SequenceNumberRequestMessage()))
+		await client.Send(client.serialize(new NotificationListMessage([2147483647])))
+		await client.Send(client.serialize(new CharacterCapabilitiesMessage(4095)))
+		await client.Send(client.serialize(new SequenceNumberRequestMessage()))
 
-		character?.refreshJobs(client)
-		character?.refreshSpells(client)
-		// character?.refreshGuild(client)
-		character?.refreshEmotes(client)
-		character?.refreshInventory(client)
-		character?.refreshShortcuts(client)
-		character?.sendServerExperienceModificator(client)
-		character?.onCharacterLoadingComplete(client)
+		await character?.refreshJobs()
+		await character?.refreshSpells()
+		// character?.refreshGuild()
+		await character?.refreshEmotes()
+		await character?.refreshInventory()
+		await character?.refreshShortcuts()
+		await character?.sendServerExperienceModificator()
 
 		client.selectedCharacter = character as Character
+
+		await character?.onCharacterLoadingComplete()
 	}
 }
 

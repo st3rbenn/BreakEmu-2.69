@@ -1,0 +1,30 @@
+-- CreateTable
+CREATE TABLE `spellLevel` (
+    `id` INTEGER NOT NULL,
+    `spellId` INTEGER NOT NULL,
+    `spellBreed` INTEGER NOT NULL,
+    `grade` INTEGER NOT NULL,
+    `minPlayerLevel` INTEGER NOT NULL,
+    `apCost` INTEGER NOT NULL,
+    `minRange` INTEGER NOT NULL,
+    `maxRange` INTEGER NOT NULL,
+    `castInLine` BOOLEAN NOT NULL,
+    `castInDiag` BOOLEAN NOT NULL,
+    `castTestLos` BOOLEAN NOT NULL,
+    `criticalHitProb` INTEGER NOT NULL,
+    `needFreeCell` BOOLEAN NOT NULL,
+    `needTakenCell` BOOLEAN NOT NULL,
+    `needFreeTrapCell` BOOLEAN NOT NULL,
+    `maxStack` INTEGER NOT NULL,
+    `maxCastPerTurn` INTEGER NOT NULL,
+    `maxCastPerTarget` INTEGER NOT NULL,
+    `minCastInterval` INTEGER NOT NULL,
+    `initialCooldown` INTEGER NOT NULL,
+    `globalCooldown` INTEGER NOT NULL,
+    `hideEffects` BOOLEAN NOT NULL,
+    `hidden` BOOLEAN NOT NULL,
+    `effects` JSON NOT NULL,
+    `criticalEffects` JSON NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

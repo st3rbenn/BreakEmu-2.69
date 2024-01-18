@@ -2,12 +2,14 @@ import { PrismaClient } from "@prisma/client"
 import Logger from "../breakEmu_Core/Logger"
 import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
 import BreedManager from "../breakEmu_World/manager/breed/BreedManager"
-import ContextEntityLook from "../breakEmu_World/manager/entities/look/ContextEntityLook"
 import Breed from "./model/breed.model"
-import Character from "./model/character.model"
 import Experience from "./model/experience.model"
 import Head from "./model/head.model"
 import World from "./model/world.model"
+import Skill from "./model/skill.model"
+import Spell from "./model/spell.model"
+import SpellLevel from "./model/spellLevel.model"
+
 class Database {
 	private static instance: Database
 	public _logger: Logger = new Logger("Database")
@@ -75,7 +77,7 @@ class Database {
 			)
 			World.worlds.push(world)
 		}
-    this._logger.writeAsync(`Loaded ${World.worlds.length} worlds`)
+		this._logger.writeAsync(`Loaded ${World.worlds.length} worlds`)
 
 		/* Load all heads */
 		const heads = await this.prisma.head.findMany()
@@ -110,23 +112,118 @@ class Database {
 				breed.spForVitality,
 				breed.spforWisdom,
 				breed.spForChance,
-				breed.startLifePoints
+				breed.startLifePoints,
+				breed.breedSpellsId as string
 			)
 
 			BreedManager.getInstance().breeds.push(breedRecord)
 		}
-		this._logger.writeAsync(`Loaded ${BreedManager.getInstance().breeds.length} breeds`)
+		this._logger.writeAsync(
+			`Loaded ${BreedManager.getInstance().breeds.length} breeds`
+		)
 
 		/* Load all experiences/Levels */
 		const experiences = await this.prisma.experience.findMany()
 		for (const experience of experiences) {
 			Experience.experienceLevels.push(
-				new Experience(Number(experience.level), Number(experience.experience))
+				new Experience(
+					Number(experience.level),
+					Number(experience.characterExperience),
+					Number(experience.jobExperience),
+					Number(experience.guildExperience),
+					Number(experience.mountExperience)
+				)
 			)
 		}
 		this._logger.writeAsync(
 			`Loaded ${Experience.experienceLevels.length} levels`
 		)
+
+		/* Load all Skills */
+		const skills = await this.prisma.skill.findMany()
+		for (const skill of skills) {
+			Skill.addSkill(
+				new Skill(
+					skill.id,
+					skill.name,
+					skill.parentJobId,
+					skill.gatheredRessourceItem,
+					skill.interactiveId,
+					skill.levelMin
+				)
+			)
+		}
+		this._logger.writeAsync(`Loaded ${Skill.getSkills().size} skills`)
+
+		/* Load all spells */
+		const spells = await this.prisma.spell.findMany()
+		const spellsLevel = await this.prisma.spellLevel.findMany()
+		const spellVariant = await this.prisma.spellVariant.findMany()
+		await new Promise<void>((resolve) => {
+			let step = 0
+			for (const spell of spells) {
+				Spell.addSpell(
+					new Spell(
+						spell.id,
+						spell.name,
+						spell.description,
+						spell.verbose as boolean
+					)
+				)
+			}
+
+			step++
+
+			for (const spellLevel of spellsLevel) {
+				const minimumLevel = spellLevel.minPlayerLevel
+				Spell.getSpellById(spellLevel.spellId)?.setMinimumLevel(minimumLevel)
+				Spell.getSpellById(spellLevel.spellId)?.levels.set(
+					spellLevel.grade,
+					new SpellLevel(
+						spellLevel.id,
+						spellLevel.spellId,
+						spellLevel.spellBreed,
+						spellLevel.grade,
+						spellLevel.minPlayerLevel,
+						spellLevel.apCost,
+						spellLevel.minRange,
+						spellLevel.maxRange,
+						spellLevel.castInLine,
+						spellLevel.castInDiag,
+						spellLevel.castTestLos,
+						spellLevel.criticalHitProb,
+						spellLevel.needFreeCell,
+						spellLevel.needTakenCell,
+						spellLevel.needFreeTrapCell,
+						spellLevel.maxStack,
+						spellLevel.maxCastPerTurn,
+						spellLevel.maxCastPerTarget,
+						spellLevel.minCastInterval,
+						spellLevel.initialCooldown,
+						spellLevel.globalCooldown,
+						spellLevel.hideEffects,
+						spellLevel.hidden
+					)
+				)
+			}
+
+			step++
+
+			for (const variant of spellVariant) {
+				const spellIds = variant.spellIds.split(",").map(Number)
+				const spell = Spell.getSpellById(variant.id)
+				if (spell) {
+					spell.variant = Spell.getSpellById(spellIds[0]) as Spell
+					spellIds.shift()
+				}
+			}
+
+			step++
+
+			if (step == 3) resolve()
+		})
+
+		this._logger.writeAsync(`Loaded ${Spell.getSpells.size} spells`)
 	}
 }
 

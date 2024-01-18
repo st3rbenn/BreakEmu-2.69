@@ -65,8 +65,8 @@ class AuthTransition extends TransitionServer {
 
 		for (const client of AuthServer.getInstance().GetClients()) {
 			const gameServerMessage = await WorldServerManager.getInstance().gameServerInformation(
-				client,
 				server,
+				client,
 				message.status
 			)
 			const serverStatusUpdateMessage = new ServerStatusUpdateMessage(
