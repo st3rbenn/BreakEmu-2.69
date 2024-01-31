@@ -17,7 +17,7 @@ def embeautifier_json(fichier_entree, fichier_sortie):
         print(f"Une erreur est survenue : {e}")
 
 
-json_file_name = "spellVariants"
+json_file_name = "subAreas"
 # Remplacez ces chemins par les chemins de votre fichier
 chemin_fichier_entree = f"src/breakEmu_API/data/{json_file_name}.json"
 chemin_fichier_sortie = f"src/breakEmu_API/data/formatted_{json_file_name}.json"

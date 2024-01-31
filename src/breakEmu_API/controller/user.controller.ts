@@ -1,17 +1,23 @@
-import WorldClient from "../../breakEmu_World/WorldClient"
+import { Prisma } from "@prisma/client"
 import Character from "../../breakEmu_API/model/character.model"
+import CharacterItem from "../../breakEmu_API/model/characterItem.model"
+import Finishmoves from "../../breakEmu_API/model/finishmoves.model"
+import Job from "../../breakEmu_API/model/job.model"
+import Spell from "../../breakEmu_API/model/spell.model"
 import AuthClient from "../../breakEmu_Auth/AuthClient"
 import { ansiColorCodes } from "../../breakEmu_Core/Colors"
 import Logger from "../../breakEmu_Core/Logger"
 import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
+import Effect from "../../breakEmu_World/manager/entities/effect/Effect"
+import EffectCollection from "../../breakEmu_World/manager/entities/effect/EffectCollection"
 import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
 import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
 import Database from "../Database"
 import Account from "../model/account.model"
 import BaseController from "./base.controller"
-import { Prisma } from "@prisma/client"
-import Job from "../../breakEmu_API/model/job.model"
-import Spell from "../../breakEmu_API/model/spell.model"
+import Inventory from "../../breakEmu_World/manager/items/Inventory"
+import WorldClient from "../../breakEmu_World/WorldClient"
+import CharacterShortcut from "breakEmu_World/manager/shortcut/character/CharacterShortcut"
 
 class UserController extends BaseController {
 	public _logger: Logger = new Logger("UserController")
@@ -49,7 +55,10 @@ class UserController extends BaseController {
 		}
 	}
 
-	async getAccountByNickname(nickname: string): Promise<Account | undefined> {
+	async getAccountByNickname(
+		nickname: string,
+		client: WorldClient
+	): Promise<Account | undefined> {
 		try {
 			const acc = (await this._database.prisma.user.findUnique({
 				where: {
@@ -101,11 +110,20 @@ class UserController extends BaseController {
 					BreedManager.getInstance().getBreedById(c.breed_id)
 				)
 
-				const look: ContextEntityLook = BreedManager.getInstance().getBreedLook(
+				const test: ContextEntityLook = ContextEntityLook.parseFromString(
+					c.look as string
+				)
+
+				const oui: ContextEntityLook = BreedManager.getInstance().getBreedLook(
 					c.breed_id,
 					c.sex,
 					c.cosmeticId,
-					validateColor
+					validateColor,
+					test.skins
+				)
+
+				const look: ContextEntityLook = ContextEntityLook.parseFromString(
+					c.look as string
 				)
 
 				const character = new Character(
@@ -123,12 +141,42 @@ class UserController extends BaseController {
 					c.kamas,
 					c.statsPoints,
 					[],
-					Character.loadShortcutsFromJson(JSON.parse(c.shortcuts?.toString() as string)),
+					new Map<number, CharacterShortcut>(),
 					[],
 					0,
-          Job.loadFromJson(JSON.parse(c.jobs?.toString() as string)),
+					Job.loadFromJson(JSON.parse(c.jobs?.toString() as string)),
+					Finishmoves.loadFromJson(
+						JSON.parse(c.finishMoves?.toString() as string)
+					),
 					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string))
 				)
+				character.client = client
+
+				if (character.stats) {
+					character.stats.client = client
+				}
+
+				const shrts = Character.loadShortcutsFromJson(
+					JSON.parse(c.shortcuts?.toString() as string)
+				)
+
+				character.generalShortcutBar.shortcuts = shrts.generalShortcuts
+				character.spellShortcutBar.shortcuts = shrts.spellShortcuts
+
+				character.spells = Spell.loadFromJson(
+					JSON.parse(c.spells?.toString() as string),
+					character
+				)
+
+				let items: CharacterItem[] = []
+
+				CharacterItem.charactersItems.forEach((item) => {
+					if (item.characterId === character.id) {
+						items.push(item)
+					}
+				})
+
+				character.inventory = new Inventory(character, items)
 
 				account.characters.set(character.id, character)
 			}
@@ -140,7 +188,9 @@ class UserController extends BaseController {
 
 			return account
 		} catch (error) {
-			await this._logger.writeAsync(`Error while getting account ${nickname}`)
+			this._logger.error(
+				`Error while getting account ${nickname} -> ${(error as any).stack}`
+			)
 			return
 		}
 	}

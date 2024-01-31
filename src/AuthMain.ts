@@ -9,10 +9,6 @@ class Main {
 	public logger: Logger = new Logger("Main")
 	private authTransition: AuthTransition = AuthTransition.getInstance()
 
-	constructor() {
-		this.Start()
-	}
-
 	async Start(): Promise<void> {
 		try {
 			await this.logger.onStartup()
@@ -20,7 +16,7 @@ class Main {
 			await Database.getInstance().initialize()
 			await this.authTransition.connect()
 			await WorldController.getInstance().getRealmList()
-			await AuthServer.getInstance().Start() 
+			await AuthServer.getInstance().Start()
 
 			await this.authTransition.handleMessagesForAuth()
 		} catch (error) {
@@ -29,4 +25,6 @@ class Main {
 	}
 }
 
-new Main()
+new Main().Start().then(r => {
+	console.log("And the magic begins...")
+})

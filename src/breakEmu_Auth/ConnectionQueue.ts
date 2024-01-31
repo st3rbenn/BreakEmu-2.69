@@ -4,6 +4,7 @@ import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import AuthClient from "./AuthClient"
 import AuthServer from "./AuthServer"
+import AuthTransition from "./AuthTransition"
 
 interface IQueue {
 	position: number
@@ -95,7 +96,7 @@ class ConnectionQueue {
 	private async processConnection(socket: IQueue): Promise<void> {
 		const client = new AuthClient(socket.socket)
 		await AuthServer.getInstance().AddClient(client)
-		await client.setupEventHandlers()
+    client.setupEventHandlers()
 
 		await client.initialize()
 	}

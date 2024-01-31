@@ -4,7 +4,8 @@ import {
 	CharacterCharacteristic,
 	CharacterCharacteristicsInformations,
 	CharacteristicEnum,
-  CharacterCharacteristicValue
+	CharacterCharacteristicValue,
+	StatsBoostEnum,
 } from "../../../../breakEmu_Server/IO"
 import BreedManager from "../../../../breakEmu_World/manager/breed/BreedManager"
 import ApCharacteristic from "./apCharacteristic"
@@ -16,6 +17,7 @@ import RelativeCharacteristic from "./relativeCharacteristic"
 import RangeCharacteristic from "./rangeCharacteristic"
 import Character from "../../../../breakEmu_API/model/character.model"
 import Experience from "../../../../breakEmu_API/model/experience.model"
+import WorldClient from "breakEmu_World/WorldClient"
 
 interface EntityStatsJSON {
 	lifePoints: number
@@ -32,6 +34,7 @@ interface EntityStatsJSON {
 	chance: Characteristic | undefined
 	agility: Characteristic | undefined
 	intelligence: Characteristic | undefined
+	totalWeight: number | undefined
 }
 
 class EntityStats {
@@ -43,11 +46,14 @@ class EntityStats {
 	private _criticalHitWeapon: number
 	private _missingLifePoints: number = this.maxLifePoints - this.lifePoints
 	private _lifePercentage: number = this.lifePoints / this.maxLifePoints
+	private _currentMaxWeight: number = 1000
 
 	private _characteristics: Map<CharacteristicEnum, Characteristic> = new Map<
 		CharacteristicEnum,
 		Characteristic
 	>()
+
+	public client: WorldClient | undefined = undefined
 
 	private _strength: Characteristic | undefined = this.getCharacteristic(
 		CharacteristicEnum.STRENGTH
@@ -80,6 +86,39 @@ class EntityStats {
 		this._maxEnergyPoints = maxEnergyPoints
 		this._energy = energy
 		this._criticalHitWeapon = criticalHitWeapon
+	}
+
+	[Symbol.iterator](): Iterator<[CharacteristicEnum, Characteristic]> {
+		return this._characteristics.entries()
+	}
+
+	public getCharacteristicToBoost(statId: StatsBoostEnum): Characteristic {
+		switch (statId) {
+			case StatsBoostEnum.STRENGTH:
+				return this.getCharacteristic(
+					CharacteristicEnum.STRENGTH
+				) as Characteristic
+			case StatsBoostEnum.VITALITY:
+				return this.getCharacteristic(
+					CharacteristicEnum.VITALITY
+				) as Characteristic
+			case StatsBoostEnum.WISDOM:
+				return this.getCharacteristic(
+					CharacteristicEnum.WISDOM
+				) as Characteristic
+			case StatsBoostEnum.CHANCE:
+				return this.getCharacteristic(
+					CharacteristicEnum.CHANCE
+				) as Characteristic
+			case StatsBoostEnum.AGILITY:
+				return this.getCharacteristic(
+					CharacteristicEnum.AGILITY
+				) as Characteristic
+			case StatsBoostEnum.INTELLIGENCE:
+				return this.getCharacteristic(
+					CharacteristicEnum.INTELLIGENCE
+				) as Characteristic
+		}
 	}
 
 	public initialize(): void {
@@ -131,6 +170,12 @@ class EntityStats {
 			level * 100,
 			0
 		)
+
+		stats.setCharacteristic(
+			CharacteristicEnum.STATS_POINTS,
+			ApCharacteristic.new(ConfigurationManager.getInstance().startStatsPoints)
+		)
+
 		stats.setCharacteristic(
 			CharacteristicEnum.ACTION_POINTS,
 			ApCharacteristic.new(ConfigurationManager.getInstance().startAp)
@@ -390,6 +435,7 @@ class EntityStats {
 			chance: this.getCharacteristic(CharacteristicEnum.CHANCE),
 			agility: this.getCharacteristic(CharacteristicEnum.AGILITY),
 			intelligence: this.getCharacteristic(CharacteristicEnum.INTELLIGENCE),
+			totalWeight: this.currentMaxWeight,
 		}
 	}
 
@@ -402,14 +448,22 @@ class EntityStats {
 			json.criticalHitWeapon
 		)
 
-    stats._characteristics = new Map<CharacteristicEnum, Characteristic>()
+		stats._characteristics = new Map<CharacteristicEnum, Characteristic>()
 
-    for (let key in json.characteristics) {
-      let characteristic = json.characteristics[key]
-      let keyAsString = CharacteristicEnum[key as keyof typeof CharacteristicEnum]
-      stats.setCharacteristic(keyAsString, new Characteristic(characteristic.base, characteristic.additional, characteristic.objects, characteristic.context))
-    }
-
+		for (let key in json.characteristics) {
+			let characteristic = json.characteristics[key]
+			let keyAsString =
+				CharacteristicEnum[key as keyof typeof CharacteristicEnum]
+			stats.setCharacteristic(
+				keyAsString,
+				new Characteristic(
+					characteristic.base,
+					characteristic.additional,
+					characteristic.objects,
+					characteristic.context
+				)
+			)
+		}
 
 		stats._missingLifePoints = json.missingLifePoints
 		stats._lifePercentage = json.lifePercentage
@@ -419,6 +473,7 @@ class EntityStats {
 		stats._chance = json.chance
 		stats._agility = json.agility
 		stats._intelligence = json.intelligence
+		stats._currentMaxWeight = json.totalWeight
 		return stats
 	}
 
@@ -452,6 +507,26 @@ class EntityStats {
 
 	public get missingLifePoints(): number {
 		return this._missingLifePoints
+	}
+
+	public set missingLifePoints(missingLifePoints: number) {
+		this._missingLifePoints = missingLifePoints
+	}
+
+	public get lifePercentage(): number {
+		return this._lifePercentage
+	}
+
+	public set lifePercentage(lifePercentage: number) {
+		this._lifePercentage = lifePercentage
+	}
+
+	public get currentMaxWeight(): number {
+		return this._currentMaxWeight
+	}
+
+	public set currentMaxWeight(currentMaxWeight: number) {
+		this._currentMaxWeight = currentMaxWeight
 	}
 
 	public getCharacteristic(
@@ -543,29 +618,50 @@ class EntityStats {
 			CharacterCharacteristic
 		>()
 
-		if(selected == null) {
-		  this._characteristics.forEach((value: Characteristic, key: CharacteristicEnum) => {
-		    result.set(key, value.characterCharacteristicDetailed(key))
-		  })
+		if (selected == null) {
+			this._characteristics.forEach(
+				(value: Characteristic, key: CharacteristicEnum) => {
+					result.set(key, value.characterCharacteristicDetailed(key))
+				}
+			)
 		} else {
-		  let characteristics = this._characteristics.keys()
+			let characteristics = this._characteristics.keys()
 
-		  for(let i = 0; i < selected.length; i++) {
-		    if(characteristics.next().value == selected[i]) {
-		      result.set(selected[i], this._characteristics.get(selected[i])?.characterCharacteristicDetailed(selected[i]) as CharacterCharacteristic)
-		    }
-		  }
+			for (let i = 0; i < selected.length; i++) {
+				if (characteristics.next().value == selected[i]) {
+					result.set(
+						selected[i],
+						this._characteristics
+							.get(selected[i])
+							?.characterCharacteristicDetailed(
+								selected[i]
+							) as CharacterCharacteristic
+					)
+				}
+			}
 		}
 
-    const lifePoint = CharacteristicEnum.LIFE_POINTS
-    const maxLifePoint = CharacteristicEnum.MAX_LIFE_POINTS
-    const maxEnergyPoint = CharacteristicEnum.MAX_ENERGY_POINTS
-    const energyPoint = CharacteristicEnum.ENERGY_POINTS
+		const lifePoint = CharacteristicEnum.LIFE_POINTS
+		const maxLifePoint = CharacteristicEnum.MAX_LIFE_POINTS
+		const maxEnergyPoint = CharacteristicEnum.MAX_ENERGY_POINTS
+		const energyPoint = CharacteristicEnum.ENERGY_POINTS
 
-		result.set(lifePoint, new CharacterCharacteristicValue(lifePoint, this.lifePoints))
-		result.set(maxLifePoint, new CharacterCharacteristicValue(maxLifePoint, this.maxLifePoints))
-		result.set(maxEnergyPoint, new CharacterCharacteristicValue(maxEnergyPoint, this.maxEnergyPoints))
-		result.set(energyPoint, new CharacterCharacteristicValue(energyPoint, this.energy))
+		result.set(
+			lifePoint,
+			new CharacterCharacteristicValue(lifePoint, this.lifePoints)
+		)
+		result.set(
+			maxLifePoint,
+			new CharacterCharacteristicValue(maxLifePoint, this.maxLifePoints)
+		)
+		result.set(
+			maxEnergyPoint,
+			new CharacterCharacteristicValue(maxEnergyPoint, this.maxEnergyPoints)
+		)
+		result.set(
+			energyPoint,
+			new CharacterCharacteristicValue(energyPoint, this.energy)
+		)
 
 		return Array.from(result.values())
 	}

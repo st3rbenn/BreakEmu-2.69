@@ -14,10 +14,10 @@ class Main {
 		await this.logger.onStartup()
 		await ConfigurationManager.getInstance().Load()
 		await WorldTransition.getInstance().connect()
-		// await WorldTransition.getInstance().handleMessagesForWorld()
-		await Database.getInstance().initialize()
-		await Database.getInstance().loadAll()
-		await WorldServer.getInstance(World.worlds[0].toWorldServerData()).Start()
+		const dbInit = await Database.getInstance().initialize(true)
+		if (dbInit) {
+			WorldServer.getInstance(World.worlds[0].toWorldServerData()).Start()
+		}
 
 		await this.logger.writeAsync(`Server started!`, ansiColorCodes.bgGreen)
 	}

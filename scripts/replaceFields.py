@@ -23,7 +23,6 @@ def replace_field_with_i18n(data, i18n_data):
             if key in d and str(d[key]) in i18n_data:
                 d[key] = i18n_data[str(d[key])]
 
-
 if len(sys.argv) <= 1:
     print("Veuillez fournir le chemin du fichier JSON des sorts comme argument.")
     sys.exit(1)

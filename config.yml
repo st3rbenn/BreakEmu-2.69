@@ -25,6 +25,7 @@ dofus:
   startMapId: 154010883
   startCellId: 400
   startLevel: 1
-  startKamas: 1000000
-  startStatsPoints: 0
-  XpRate: 1
+  startKamas: 0
+  startStatsPoints: 5
+  XpRate: 1.5
+  dropRate: 1.5

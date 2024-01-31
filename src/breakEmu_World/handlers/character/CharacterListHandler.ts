@@ -2,8 +2,8 @@ import Character from "../../../breakEmu_API/model/character.model"
 import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
 import Logger from "../../../breakEmu_Core/Logger"
 import {
-	CharacterBaseInformations,
-	CharactersListMessage,
+  CharacterBaseInformations,
+  CharactersListMessage,
 } from "../../../breakEmu_Server/IO"
 import WorldClient from "../../../breakEmu_World/WorldClient"
 
@@ -11,22 +11,36 @@ class CharacterListHandler {
 	private static logger: Logger = new Logger("CharacterListHandler")
 
 	public static async handleCharactersListMessage(client: WorldClient) {
-		let characters = client.account?.characters as Map<number, Character>
+		try {
+			let characters = client.account?.characters
 
-		let characterToBaseInfo: CharacterBaseInformations[] = []
+			let characterToBaseInfo: CharacterBaseInformations[] = []
 
-		this.logger.write(
-			`Sending ${characters?.size} characters to client ${client.account?.username}`,
-			ansiColorCodes.bgYellow
-		)
+			this.logger.write(
+				`Sending: ${characters?.size} characters for client: ${client.account?.username}`,
+				ansiColorCodes.bgYellow
+			)
 
-		characters.forEach((c: Character) => {
-			characterToBaseInfo.push(c.toCharacterBaseInformations())
-		})
+			if(characters) {
+        characters.forEach((c: Character) => {
+          characterToBaseInfo.push(c.toCharacterBaseInformations())
+        })
+      } else {
+        this.logger.write(
+          `No characters found for account ${client.account?.username}`,
+          ansiColorCodes.bgYellow
+        )
+      }
 
-		client.Send(
-			client.serialize(new CharactersListMessage(characterToBaseInfo))
-		)
+			await client.Send(
+				client.serialize(new CharactersListMessage(characterToBaseInfo))
+			)
+		} catch (error) {
+			await this.logger.writeAsync(
+				`Error while handling CharactersListMessage: ${(error as any).stack}`,
+				ansiColorCodes.red
+			)
+		}
 	}
 }
 

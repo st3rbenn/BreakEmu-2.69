@@ -4,6 +4,251 @@ import { BinaryReader, BinaryWriter } from '../interfaces';
 import DofusMessage from './dofusMessage';
 import DofusType from './dofusType';
 
+export enum ItemTypeEnum
+    {
+        AMULET=1,
+        BOW=2,
+        WAND=3,
+        STAFF=4,
+        DAGGER=5,
+        SWORD=6,
+        HAMMER=7,
+        SHOVEL=8,
+        RING=9,
+        BELT=10,
+        BOOTS=11,
+        POTION=12,
+        EXPERIENCE_SCROLL=13,
+        ORDER_ABILITY_ITEM=14,
+        MISCELLANEOUS_RESOURCES=15,
+        HAT=16,
+        CLOAK=17,
+        PET=18,
+        AXE=19,
+        TOOL=20,
+        PICKAXE=21,
+        SCYTHE=22,
+        DOFUS=23,
+        MISCELLANEOUS=24,
+        DOCUMENT=25,
+        SMITHMAGIC_POTION=26,
+        MUTATION_ITEM=27,
+        BOOST_FOOD=28,
+        BLESSING=29,
+        CURSE=30,
+        ROLEPLAY_BUFF=31,
+        FOLLOWING_CHARACTER=32,
+        BREAD=33,
+        CEREAL=34,
+        FLOWER=35,
+        PLANT=36,
+        BEER=37,
+        WOOD=38,
+        ORE=39,
+        ALLOY=40,
+        FISH=41,
+        TREAT=42,
+        TELEPORTATION_POTION=43,
+        UNKNOWN_TEXT_ID_29778=44,
+        UNKNOWN_TEXT_ID_29779=45,
+        FRUIT=46,
+        BONE=47,
+        POWDER=48,
+        EDIBLE_FISH=49,
+        PRECIOUS_STONE=50,
+        STONE=51,
+        UNKNOWN_TEXT_ID_29731=52,
+        FEATHER=53,
+        HAIR=54,
+        FABRIC=55,
+        LEATHER=56,
+        WOOL=57,
+        SEED=58,
+        SKIN=59,
+        OIL=60,
+        STUFFED_TOY=61,
+        UNKNOWN_TEXT_ID_29759=62,
+        MEAT=63,
+        UNKNOWN_TEXT_ID_29767=64,
+        TAIL=65,
+        METARIA=66,
+        VEGETABLE=68,
+        EDIBLE_MEAT=69,
+        DYE=70,
+        ALCHEMY_EQUIPMENT=71,
+        PET_EGG=72,
+        SKILL=73,
+        FAIRYWORK=74,
+        SPELL_LEARNING_SCROLL=75,
+        CHARACTERISTIC_SCROLL=76,
+        UNKNOWN_TEXT_ID_29679=77,
+        SMITHMAGIC_RUNE=78,
+        DRINK=79,
+        MISSION_ITEM=80,
+        BACKPACK=81,
+        SHIELD=82,
+        SOUL_STONE=83,
+        KEY=84,
+        FULL_SOUL_STONE=85,
+        PERCEPTOR_DELEVELING_POTION=86,
+        SEEKER_SCROLL=87,
+        MAGIC_STONE=88,
+        GIFT=89,
+        UNKNOWN_TEXT_ID_29784=90,
+        DRAGOTURKEY=91,
+        GOBBALL=92,
+        BREEDING_ITEM=93,
+        VARIOUS=94,
+        PLANK=95,
+        BARK=96,
+        DRAGOTURKEY_CERTIFICATE=97,
+        ROOT=98,
+        CAPTURING_NET=99,
+        BAG_OF_RESOURCES=100,
+        CROSSBOW=102,
+        LEG=103,
+        WING=104,
+        EGG=105,
+        EAR=106,
+        CARAPACE=107,
+        BUD=108,
+        EYE=109,
+        JELLY=110,
+        SHELL=111,
+        PRISM=112,
+        LIVING_OBJECT=113,
+        MAGIC_WEAPON=114,
+        FRAGMENT_OF_SHUSHU_SOUL=115,
+        PET_POTION=116,
+        EQUIPMENT=118,
+        MUSHROOM=119,
+        PETSMOUNT=121,
+        PETSMOUNT_POTION=122,
+        UNKNOWN_TEXT_ID_29669=123,
+        UNKNOWN_TEXT_ID_29808=124,
+        SOUVENIR=125,
+        MAIN_QUESTS=126,
+        TEMPLE_QUESTS=127,
+        WANTED_NOTICE=128,
+        ALIGNMENT=129,
+        UNKNOWN_TEXT_ID_29724=130,
+        EVENT=131,
+        ARCHIPELAGO_OF_VULKANIA=132,
+        ASTRUB=133,
+        UNKNOWN_TEXT_ID_29793=134,
+        BWORK_CAMP=136,
+        CANIA=137,
+        AMAKNA_CASTLE=138,
+        FRIGOST_ISLAND=139,
+        OTOMAI_ISLAND=140,
+        KWISMAS_ISLAND=141,
+        INCARNAM=142,
+        KOALAK_MOUNTAIN=143,
+        PANDALA=144,
+        MADRESTAM_HARBOUR=145,
+        PROVINCE_OF_AMAKNA=146,
+        KROSMOZ=147,
+        TOKEN=148,
+        MOON_ISLAND=149,
+        WABBIT_ISLANDS=150,
+        TROPHY=151,
+        PEBBLE=152,
+        KWISMAS=153,
+        WRAPPING_PAPER=154,
+        SUFOKIA=155,
+        ALMANAX=156,
+        FIGURINE=157,
+        UNKNOWN_TEXT_ID_297037=158,
+        UNKNOWN_TEXT_ID_297033=159,
+        UNKNOWN_TEXT_ID_297027=160,
+        UNKNOWN_TEXT_ID_297028=161,
+        UNKNOWN_TEXT_ID_297031=162,
+        UNKNOWN_TEXT_ID_297032=163,
+        GARMENT=164,
+        CONQUEST_POTION=165,
+        MIMISYMBIC=166,
+        DUNGEON_KEEPER_ESSENCE=167,
+        VIGILANTES=168,
+        SIDEKICK=169,
+        DIVINE_DIMENSIONS=171,
+        CHEST=172,
+        EMOTE_SCROLL=173,
+        MAP=174,
+        MAP_FRAGMENT=175,
+        BOX_OF_FRAGMENTS=176,
+        UNKNOWN_TEXT_ID_472462=177,
+        IDOL=178,
+        PREPARATION=179,
+        UNKNOWN_TEXT_ID_544014=180,
+        UNKNOWN_TEXT_ID_544017=181,
+        UNKNOWN_TEXT_ID_544016=182,
+        SUBSTRATE=183,
+        CONTAINER=184,
+        SAP=185,
+        UNKNOWN_TEXT_ID_561243=186,
+        PRIMITIVE_MEAT=187,
+        SMILIES_SCROLL=188,
+        SMITHMAGIC_ORB=189,
+        DRAGOTURKEY_HARNESSES=190,
+        UNKNOWN_TEXT_ID_585144=191,
+        UNKNOWN_TEXT_ID_585146=192,
+        EXPLORATION_EQUIPMENT=195,
+        SEEMYOOL_CERTIFICATE=196,
+        RECEIPT=197,
+        OHWYMI=198,
+        COSTUME=199,
+        TITLE_SCROLL=200,
+        NIMALTOPIA=201,
+        SIDIMOTE=202,
+        INVISIBLE_OBJECT=203,
+        TOWERS_OF_THE_BROTHERHOOD_OF_THE_FORGOTTEN=205,
+        MOUNT_POTION=206,
+        RHINEETLE_CERTIFICATE=207,
+        PET_FOOD=209,
+        TRANSCENDENCE_RUNE=211,
+        UNKNOWN_TEXT_ID_777453=212,
+        FLEASTER_ISLAND=213,
+        EMOTE_POTION=214,
+        ARCHIPELAGO_OF_SCALES=215,
+        PURSE_OF_KAMAS=216,
+        PRYSMARADITE=217,
+        HAVEN_BAG_POPOCKET=218,
+        DREAM_RESOURCES=219,
+        ELIOCALYPSE=220,
+        UNKNOWN_TEXT_ID_818310=221,
+        ORNAMENTAL_SCROLL=222,
+        TEMPORIS_SCROLLS=223,
+        TEMPORIS=225,
+        ITEM_USABLE_IN_TEMPORIS=226,
+        LIQUID=228,
+        COMBAT_RESOURCE=229,
+        OBSOLETE=230,
+        RABMAJOKE=231,
+        HAIKU=232,
+        ASTRAL_RUNE=233,
+        RESSOURCES_EN_COURS_DINTÉGRATION=234,
+        HAIKU_WORDS=236,
+        ECAFLIP_CARD_TEMPORIS=238,
+        KITTY_NEKO=240,
+        TEMPORIS_RESOURCES=241,
+        ATOLL_OF_THE_POSSESSED=242,
+        UNKNOWN_TEXT_ID_903536=243,
+        UNKNOWN_TEXT_ID_905999=244,
+        OBSOLETE_RESOURCES=245,
+        CEREMONIAL_HAT=246,
+        CEREMONIAL_CAPE=247,
+        CEREMONIAL_SHIELD=248,
+        CEREMONIAL_PET=249,
+        CEREMONIAL_PETSMOUNT=250,
+        CEREMONIAL_WEAPON=251,
+        MISCELLANEOUS_CEREMONIAL_ITEM=252,
+        DESTROYERS_NIGHTMARE=253,
+        BONTA_BRAKMAR=254,
+        SEEMYOOL_HARNESSES=255,
+        RHINEETLE_HARNESSES=256,
+
+    }
+
 export enum SubEntityBindingPointCategoryEnum {
     HOOK_POINT_CATEGORY_UNUSED = 0,
     HOOK_POINT_CATEGORY_PET = 1,
@@ -14,6 +259,713 @@ export enum SubEntityBindingPointCategoryEnum {
     HOOK_POINT_CATEGORY_BASE_FOREGROUND = 6,
     HOOK_POINT_CATEGORY_PET_FOLLOWER = 7,
     HOOK_POINT_CATEGORY_UNDERWATER_BUBBLES = 8,
+}
+
+export enum SkillTypeEnum
+{
+    CHOP6=6,
+    CHOP10=10,
+    CREATE_JEWELLERY12=12,
+    WORK_LEATHER13=13,
+    CARVE15=15,
+    FORGE20=20,
+    PEEL22=22,
+    PREPARE_A_POTION23=23,
+    MINE24=24,
+    MINE25=25,
+    MINE26=26,
+    BAKE27=27,
+    MINE28=28,
+    MINE29=29,
+    MINE30=30,
+    MINE31=31,
+    MELT32=32,
+    CHOP33=33,
+    CHOP34=34,
+    CHOP35=35,
+    CHOP37=37,
+    CHOP38=38,
+    CHOP39=39,
+    CHOP40=40,
+    CHOP41=41,
+    PICK_UP42=42,
+    SAVE44=44,
+    REAP45=45,
+    REAP46=46,
+    GRIND47=47,
+    POLISH_A_STONE48=48,
+    REAP50=50,
+    REAP52=52,
+    REAP53=53,
+    REAP54=54,
+    MINE55=55,
+    MINE56=56,
+    REAP57=57,
+    REAP58=58,
+    REGENERATE62=62,
+    SEW63=63,
+    GATHER68=68,
+    GATHER69=69,
+    GATHER71=71,
+    GATHER72=72,
+    GATHER73=73,
+    GATHER74=74,
+    LOCK81=81,
+    ENTER84=84,
+    BUY97=97,
+    SELL98=98,
+    UNLOCK100=100,
+    SAW101=101,
+    DRAW102=102,
+    OPEN104=104,
+    LOCK105=105,
+    UNLOCK106=106,
+    CHANGE_THE_PRICE108=108,
+    MAKE_CANDIES109=109,
+    USE_WORKBENCH110=110,
+    REGENERATE111=111,
+    SMITHMAGE113=113,
+    USE114=114,
+    SCULPTMAGE118=118,
+    COMBINE_RESOURCES121=121,
+    SHELL122=122,
+    FISH124=124,
+    FISH125=125,
+    FISH126=126,
+    FISH127=127,
+    FISH128=128,
+    FISH129=129,
+    FISH130=130,
+    FISH131=131,
+    PREPARE_MEAT134=134,
+    PREPARE_FISH135=135,
+    FISH136=136,
+    CHOP139=139,
+    CHOP141=141,
+    PLAY150=150,
+    SUMMON_A_FAIRY151=151,
+    FISH_FOR_QUAQUACKS152=152,
+    SEARCH153=153,
+    CHOP154=154,
+    CHOP155=155,
+    FORGE_A_SHIELD156=156,
+    BE_TRANSPORTED157=157,
+    CHOP158=158,
+    REAP159=159,
+    GATHER160=160,
+    MINE161=161,
+    MINE162=162,
+    SHOEMAGE164=164,
+    COSTUMAGE166=166,
+    JEWELMAGE168=168,
+    UNKNOWN_TEXT_ID_60209169=169,
+    CONSULT170=170,
+    CRAFT171=171,
+    CHOP174=174,
+    ACCESS175=175,
+    BUY176=176,
+    SELL177=177,
+    CHANGE_THE_PRICE178=178,
+    ACTIVATE179=179,
+    SHATTER_ITEMS181=181,
+    GO_TO_INCARNAM183=183,
+    USE184=184,
+    "@REF_COFFRE_MAISON185"=185,
+    "@REF_MAISON186"=186,
+    LEAVE187=187,
+    GATHER188=188,
+    FISH189=189,
+    CHOP190=190,
+    REAP191=191,
+    MINE192=192,
+    PICK_UP193=193,
+    PICK_UP195=195,
+    PICK_UP196=196,
+    "@REF_MULTIENCLOS198"=198,
+    MAKE_A_SMALL_KEY199=199,
+    GO_TO_THE_TEMPLE200=200,
+    FORGE_A_TROPHY201=201,
+    SEW_A_LINING202=202,
+    PREPARE_A_SAUCE203=203,
+    MAKE_A_BROOM204=204,
+    SEW_FABRIC205=205,
+    PREPARE_LIVER_OIL206=206,
+    MAKE_A_TOY207=207,
+    WRAP_A_GIFT209=209,
+    OPEN_A_GIFT_PACKAGE210=210,
+    REVIVE211=211,
+    GO_TO_SUFOKIA212=212,
+    GO_TO_AMAKNA213=213,
+    PICK_UP_A_ROCK_CRYSTAL214=214,
+    OPEN_A_SHELL215=215,
+    MAKE_A_BOW_WOW_COLLAR217=217,
+    PREPARE_A_HOT_MEAL218=218,
+    PREPARE_A_FRIGOSTIAN_DELICACY219=219,
+    MAKE_A_BOX_OF_MATERIALS220=220,
+    MAKE_A_PAIR_OF_FRIGOSTIAN_CRAMPONS221=221,
+    MAKE_A_WINDY_BATTLE_SWORD222=222,
+    MAKE_A_FRIGOSTIAN_SHIELD223=223,
+    MAKE_SQUEAKY_SMILERS224=224,
+    MAKE_A_WHACK_SAW225=225,
+    MAKE_A_CLANKEN_RACKET226=226,
+    MAKE_A_MIDWINTER_SPADE227=227,
+    PREPARE_ICEFISH_CHEESE228=228,
+    MAKE_AN_AMMUNITION_BAG229=229,
+    MAKE_A_CREEMATHA_CROP230=230,
+    MAKE_A_WOODEN_SLIBOU_PIECE231=231,
+    MAKE_A_FISHERMANS_GILET232=232,
+    CUT_ICE233=233,
+    WEAVE_A_VEIL234=234,
+    MAKE_BRAKMARIAN_EXPLOSIVES235=235,
+    GRILL_A_WABBIT_PAW236=236,
+    PICK_UP_A_CAWWOT237=237,
+    MAKE_WAX238=238,
+    SALVAGE_A_BOTTLE239=239,
+    TO_THE_SPLASH_ZONE240=240,
+    TO_THE_UNDERTOW_ROOMS241=241,
+    TO_THE_ABYSS_ROOMS242=242,
+    TO_MERKATORS_AQUADOME243=243,
+    USE_LEVER244=244,
+    RECREATE_A_SCALE245=245,
+    MAKE_SOLES246=246,
+    PICK_UP_A_MUSHROOM247=247,
+    HUNT_FOR_TREASURE_LEVEL_20248=248,
+    HUNT_FOR_TREASURE_LEVEL_40249=249,
+    HUNT_FOR_TREASURE_LEVEL_60250=250,
+    HUNT_FOR_TREASURE_LEVEL_80251=251,
+    HUNT_FOR_TREASURE_LEVEL_100252=252,
+    HUNT_FOR_TREASURE_LEVEL_120253=253,
+    HUNT_FOR_TREASURE_LEVEL_140254=254,
+    HUNT_FOR_TREASURE_LEVEL_160255=255,
+    HUNT_FOR_TREASURE_LEVEL_180256=256,
+    HUNT_FOR_TREASURE_LEVEL_200257=257,
+    LEAVE_THE_DIMENSION258=258,
+    STAY_IN_THE_DIMENSION259=259,
+    OPEN_A_CHEST260=260,
+    PICK_UP_AN_ICE_CUBE261=261,
+    ARENA_I262=262,
+    ARENA_II263=263,
+    ARENA_III264=264,
+    ARENA_IV265=265,
+    ARENA_V266=266,
+    ARENA_VI267=267,
+    ARENA_VII268=268,
+    ARENA_VIII269=269,
+    ARENA_IX270=270,
+    ARENA_X271=271,
+    ARENA_XI272=272,
+    ARENA_XII273=273,
+    ASSEMBLE_A_MAP275=275,
+    PEEL_SWEET_POTATOES276=276,
+    HUNT_FOR_LEGENDARY_TREASURE277=277,
+    MAKE_A_WATCH278=278,
+    MAKE_A_BATH_SOAP279=279,
+    MAKE_PARADOXICAL_TEMPORAL_EXPLOSIVES280=280,
+    PICK_UP_EGGS281=281,
+    MAKE_ETERNAL_TEMPORAL_EXPLOSIVES282=282,
+    MAKE_HISTORY_ALTERING_TEMPORAL_EXPLOSIVES283=283,
+    MAKE_SINGULAR_TEMPORAL_EXPLOSIVES284=284,
+    USE_A_PARADOXICAL_TEMPORAL_DETONATOR285=285,
+    USE_A_SINGULAR_TEMPORAL_DETONATOR286=286,
+    USE_A_HISTORY_ALTERING_TEMPORAL_DETONATOR287=287,
+    USE_AN_ETERNAL_TEMPORAL_DETONATOR288=288,
+    CHECK_THE_STATE_OF_THE_WORKSHOP289=289,
+    CONCOCT_A_TRANSPARENCY_POTION290=290,
+    INVASION_OF_THE_XELORIUM291=291,
+    THE_LEGEND_OF_METHEA292=292,
+    CONSULT293=293,
+    GET_SCRAP295=295,
+    REAP296=296,
+    CREATE_AN_IDOL297=297,
+    MINE298=298,
+    CHOP299=299,
+    GATHER300=300,
+    FISH301=301,
+    GO_TO_INCARNAM302=302,
+    GATHER303=303,
+    GATHER304=304,
+    GATHER305=305,
+    CHOP306=306,
+    REAP307=307,
+    REAP308=308,
+    EXTRACT_A_STONE_BLOCK309=309,
+    LOOK_TOWARDS_SIDIMOTE310=310,
+    LOOK_TOWARDS_ASTRUB311=311,
+    LOOK_TOWARDS_SUFOKIA312=312,
+    LOOK_TOWARDS_FRIGOST313=313,
+    LOOK_TOWARDS_NOLIFIS_ISLAND314=314,
+    LOOK_TOWARDS_OHWYMI315=315,
+    LOOK_TOWARDS_MOON_ISLAND316=316,
+    FISH317=317,
+    FISH318=318,
+    FISH319=319,
+    FISH320=320,
+    FISH321=321,
+    FISH322=322,
+    FISH323=323,
+    FISH324=324,
+    FISH325=325,
+    FISH326=326,
+    FISH327=327,
+    FISH328=328,
+    FORGE_A_BACK_SCRATCHER_WITH_MULIC_BERE329=329,
+    SCULPT_A_BACK_SCRATCHER_WITH_MULIC_BERE330=330,
+    CRAFT_A_BACK_SCRATCHER_WITH_MULIC_BERE331=331,
+    ASSEMBLE_A_BACK_SCRATCHER_WITH_MULIC_BERE332=332,
+    USE_MAGUS_AXS_WORKSHOP333=333,
+    FORGE_A_KNOUT_WITH_MULIC_BERE334=334,
+    SCULPT_A_KNOUT_WITH_MULIC_BERE335=335,
+    CRAFT_A_KNOUT_WITH_MULIC_BERE336=336,
+    ASSEMBLE_A_KNOUT_WITH_MULIC_BERE337=337,
+    GATHER_FOUR_LEAF_CLOVER338=338,
+    POINT_OUT_AN_EXIT339=339,
+    PICK_UP_CORAL340=340,
+    REAP341=341,
+    MINE342=342,
+    CHOP343=343,
+    GATHER344=344,
+    PICK_UP_A_SHELL345=345,
+    UNSPEAKABLE_WORKBENCH346=346,
+    FISH347=347,
+    WRITE_A_RECEIPT348=348,
+    NATASHA_MANKAS_WORKSHOP349=349,
+    FRESH_EGGS350=350,
+    CRAFTMAGE351=351,
+    FISH_FOR_A_MUSHROOM352=352,
+    PICK_UP_A_SOMNITIA_SLEEP_KILLER353=353,
+    PICK_UP_A_GRILLED_SOMNITIA_SLEEP_KILLER354=354,
+    CONSULT355=355,
+    MAKE_A_CANDLE_WICK356=356,
+    OPEN_A_SURPRISE_GIFT357=357,
+    MAKESHIFT_WORKSHOP358=358,
+    PICK_UP359=359,
+    PANNEAU_DIRECTIONNEL_TEXTE_LIBRE360=360,
+    PANNEAU_DIRECTIONNEL_VIA_RÉFÉRENCE_HINT361=361,
+    PANNEAU_DIRECTIONNEL_VIA_RÉFÉRENCE_SUBAREA362=362,
+    REAP_SHREDS_OF_POSSIBILITY370=370,
+    PICK_UP_A_PAPER_WRAPPER371=371,
+    CRAFT_AN_UPGRADE372=372,
+    MAKE_A_DOSE_OF_DOCILITY373=373,
+    GO_BACK_INTO_THE_TEMPORAL_ANOMALY374=374,
+    DIP_IN_SWEAT_AND_BLOOD375=375,
+    MAKE_PAINT376=376,
+    COOK377=377,
+    MAKESHIFT_WORKSHOP378=378,
+    FASHION_A_PRYSMARADITE380=380,
+    RESTORE_A_BOOK381=381,
+    PATCH_FABRIC382=382,
+    CREATE_A_SPELL_SCROLL383=383,
+    FORGE_A_KATANA384=384,
+    PREPARE_A_FERMENTED_MIXTURE385=385,
+    GATHER_FUJIBAKAMAS386=386,
+    CARVE_A_SPIRIT_BAMBOO_STAFF387=387,
+    COOK_WANCHIAOS388=388,
+    FISH389=389,
+    BREW_STRONG_BEER390=390,
+    MINE391=391,
+    MINE392=392,
+    GATHER393=393,
+    PREPARE_WINDALOO394=394,
+    PLAY_FIVE_CAT_MONTE397=397,
+    MODIFY_A_KITTY_NEKO398=398,
+    CREATE_A_RUNE_OF_HARMONY399=399,
+    UTILISER_AVEC_PORTÉE400=400,
+
+}
+
+export enum StatedElementState
+{
+    Active = 0,
+    Unactive = 1,
+    Used = 2,
+}
+
+export enum InteractiveTypeEnum
+{
+    ASH1 = 1,
+    SAW2 = 2,
+    OAK8 = 8,
+    CRAFTING_TABLE11 = 11,
+    WORKSHOP12 = 12,
+    BENCH13 = 13,
+    CAULDRON15 = 15,
+    ZAAP16 = 16,
+    IRON17 = 17,
+    OVEN22 = 22,
+    SILVER24 = 24,
+    GOLD25 = 25,
+    BAUXITE26 = 26,
+    MOULD27 = 27,
+    YEW28 = 28,
+    EBONY29 = 29,
+    ELM30 = 30,
+    MAPLE31 = 31,
+    HORNBEAM32 = 32,
+    CHESTNUT33 = 33,
+    WALNUT34 = 34,
+    CHERRY35 = 35,
+    COBALT37 = 37,
+    WHEAT38 = 38,
+    HOP39 = 39,
+    MILL40 = 40,
+    GRIND41 = 41,
+    FLAX42 = 42,
+    BARLEY43 = 43,
+    RYE44 = 44,
+    OATS45 = 45,
+    HEMP46 = 46,
+    MALT47 = 47,
+    POTATO_HEAP48 = 48,
+    POTATO_TABLE49 = 49,
+    CRUSHER50 = 50,
+    TIN52 = 52,
+    COPPER53 = 53,
+    MANGANESE54 = 54,
+    BRONZE55 = 55,
+    FOUNTAIN_OF_YOUTH56 = 56,
+    ANVIL57 = 57,
+    SEWING_MACHINE58 = 58,
+    POT60 = 60,
+    EDELWEISS61 = 61,
+    ALEMBIC62 = 62,
+    WHEAT63 = 63,
+    SPELT64 = 64,
+    SORGHUM65 = 65,
+    WILD_MINT66 = 66,
+    FIVE_LEAF_CLOVER67 = 67,
+    FREYESQUE_ORCHID68 = 68,
+    MORTAR_AND_PESTLE69 = 69,
+    DOOR70 = 70,
+    GRAWN71 = 71,
+    AGGRESSIVE_SALMOON72 = 72,
+    OCTOPWUS73 = 73,
+    TROUT74 = 74,
+    GUDGEON75 = 75,
+    KITTENFISH76 = 76,
+    CRAB77 = 77,
+    BREADED_FISH78 = 78,
+    EDIEM_CARP79 = 79,
+    SLUDGY_TROUT80 = 80,
+    SHINY_SARDINE81 = 81,
+    COTTON82 = 82,
+    SPINNER83 = 83,
+    WELL84 = 84,
+    SAFE85 = 85,
+    SEWING_MACHINE86 = 86,
+    WOODEN_BENCH88 = 88,
+    ALEMBIC90 = 90,
+    MAGIC_ANVIL92 = 92,
+    MUNSTER_CRUSHER93 = 93,
+    WORKBENCH94 = 94,
+    WORKBENCH95 = 95,
+    WORKBENCH96 = 96,
+    WORKBENCH97 = 97,
+    BOMBU98 = 98,
+    STRANGE_SHADOW99 = 99,
+    SNAPPER100 = 100,
+    OLIVIOLET101 = 101,
+    STRENGTH_MACHINE102 = 102,
+    PYROTECHNIC_WORKBENCH103 = 103,
+    QUAQUACK104 = 104,
+    TRASH105 = 105,
+    ZAAPI106 = 106,
+    SHIELD_ANVIL107 = 107,
+    BAMBOO108 = 108,
+    DARK_BAMBOO109 = 109,
+    HOLY_BAMBOO110 = 110,
+    RICE111 = 111,
+    PANDKIN112 = 112,
+    DOLOMITE113 = 113,
+    SILICATE114 = 114,
+    RESTLESS115 = 115,
+    MAGIC_SEWING_MACHINE116 = 116,
+    MAGIC_WORKSHOP117 = 117,
+    MAGIC_TABLE118 = 118,
+    LIST_OF_CRAFTSMEN119 = 119,
+    PADDOCK120 = 120,
+    KALIPTUS121 = 121,
+    WORKBENCH122 = 122,
+    SWITCH127 = 127,
+    CLASS_STATUE128 = 128,
+    NO_TRAD_ANY_IE129 = 129,
+    SNOWDROP131 = 131,
+    ICEFISH132 = 132,
+    ASPEN133 = 133,
+    FROSTEEZ134 = 134,
+    OBSIDIAN135 = 135,
+    SHELL136 = 136,
+    POSS_YBELS_SEWING_MACHINE137 = 137,
+    FACTORY138 = 138,
+    BAD_QUALITY_KITCHEN_TABLE139 = 139,
+    BAD_QUALITY_WORKSHOP140 = 140,
+    BAD_QUALITY_WORKBENCH141 = 141,
+    BAD_QUALITY_SEWING_MACHINE142 = 142,
+    TOY_MACHINE143 = 143,
+    FISH_PRESS144 = 144,
+    WRAPPING_STATION145 = 145,
+    GIFT_PACKAGE146 = 146,
+    GIFT_WRAPPING_STATION147 = 147,
+    ALCHEMISTS_WORKSHOP148 = 148,
+    JEWELLERS_WORKSHOP149 = 149,
+    BUTCHERS_WORKSHOP150 = 150,
+    BUTCHERS_AND_HUNTERS_WORKSHOP151 = 151,
+    SHIELD_SMITHS_WORKSHOP152 = 152,
+    BAKERS_WORKSHOP153 = 153,
+    HANDYMENS_WORKSHOP154 = 154,
+    LUMBERJACKS_WORKSHOP155 = 155,
+    HUNTERS_WORKSHOP156 = 156,
+    SHOEMAKERS_WORKSHOP157 = 157,
+    SMITHMAGIS_WORKSHOP158 = 158,
+    SMITHS_WORKSHOP159 = 159,
+    MINERS_WORKSHOP160 = 160,
+    FARMERS_WORKSHOP161 = 161,
+    FISHMONGERS_WORKSHOP162 = 162,
+    FISHERMEN_AND_FISHMONGERS_WORKSHOP163 = 163,
+    FISHERMENS_WORKSHOP164 = 164,
+    CARVERS_WORKSHOP165 = 165,
+    TAILORS_WORKSHOP166 = 166,
+    ARENA167 = 167,
+    BANK168 = 168,
+    BAR_RACUDA169 = 169,
+    LIBRARY170 = 170,
+    KWISMAS_SHOPS171 = 171,
+    DOJO172 = 172,
+    CHURCH173 = 173,
+    GROCERY_STORE174 = 174,
+    SKI_MAKER175 = 175,
+    TOWN_HALL176 = 176,
+    PROFESSION_INFORMATION_CENTRE177 = 177,
+    KANOJEDO178 = 178,
+    KOLOSSIUM179 = 179,
+    MILITIA180 = 180,
+    FRIGOSTS_DOCTOR181 = 181,
+    INN182 = 182,
+    ATYU_SIRVIS_INN183 = 183,
+    ATOLMOND_INN184 = 184,
+    THE_SILVER_TAVERN185 = 185,
+    DJAUL_INN186 = 186,
+    BAGRUTTE_INN187 = 187,
+    WOODENGLASS_INN188 = 188,
+    MISERY_INN189 = 189,
+    KIKIM_INN190 = 190,
+    LISA_KAYAS_TAVERN191 = 191,
+    SAKAI_TAVERN192 = 192,
+    BWORK_INN193 = 193,
+    BURNT_CAT_INN194 = 194,
+    LAST_CHANCE_SALOON195 = 195,
+    SCRAPMETAL_INN196 = 196,
+    FEUBUK_INN197 = 197,
+    DRUNKEN_PANDAWA_INN198 = 198,
+    FRIGOSTIAN_PARADISE_TAVERN199 = 199,
+    PINCHAUT_INN200 = 200,
+    RIPATE_INN201 = 201,
+    GUILD_TEMPLE202 = 202,
+    TOWER_OF_BRAKMAR203 = 203,
+    TOWER_OF_ARCHIVES204 = 204,
+    TOWER_OF_ORDERS205 = 205,
+    FOGGERNAUT_SUBMARINE206 = 206,
+    ALTAR207 = 207,
+    KROSMASTER208 = 208,
+    GITH_SMOLDS_WORKSHOP209 = 209,
+    AL_SHABS_WORKSHOP210 = 210,
+    FRIGOSTINES_WORKSHOP211 = 211,
+    FRANCKYS_WORKSHOP212 = 212,
+    DUTCHS_WORKSHOP213 = 213,
+    BROKKREITRIS_WORKSHOP214 = 214,
+    INGRAM_PARTS_WORKSHOP215 = 215,
+    CLARISSE_TOCATES_WORKSHOP216 = 216,
+    BEA_FORTAXS_WORKSHOP217 = 217,
+    CARLA_GARFIELDS_WORKSHOP218 = 218,
+    WEAVER_OF_FORTUNES219 = 219,
+    BARREL_OF_EXPLOSIVES220 = 220,
+    SUTOL_FLOWER221 = 221,
+    BARBECUE222 = 222,
+    FRESH_CAWWOT223 = 223,
+    PROFESSION_INFORMATION_CENTRES_WEATHERED_ALEMBIC224 = 224,
+    BOTTLE_OF_RUM225 = 225,
+    LIFT226 = 226,
+    MUSHROOM227 = 227,
+    BOWISSES_TABLE228 = 228,
+    MERIANAS_WORKSHOP229 = 229,
+    BWORK_PORTAL230 = 230,
+    AUTOMATED_TREASURE_MACHINE231 = 231,
+    PORTAL232 = 232,
+    GOLDEN_CHEST233 = 233,
+    ICE_CUBE234 = 234,
+    GO_TO235 = 235,
+    DESK236 = 236,
+    DRAFTING_TABLE237 = 237,
+    GO_TO_INSTANCE_A238 = 238,
+    GO_TO_INSTANCE_B239 = 239,
+    GO_TO_INSTANCE_C240 = 240,
+    OLD_CHEST_XXIII241 = 241,
+    CLOCKMAKERS_WORKBENCH242 = 242,
+    CHEST_XI243 = 243,
+    CHEST_XXIII244 = 244,
+    CHEST_XXXI245 = 245,
+    CHEST_LIX246 = 246,
+    CLOCK_THATS_2_MINUTES_FAST247 = 247,
+    CLOCK_THATS_3_MINUTES_SLOW248 = 248,
+    CLOCK_THATS_7_MINUTES_FAST249 = 249,
+    CLOCK_THATS_8_MINUTES_SLOW250 = 250,
+    PAXTIM_EGGS251 = 251,
+    VOYAGERS_WORKSHOP252 = 252,
+    ELIOTROPE_PORTAL253 = 253,
+    NETTLE254 = 254,
+    SAGE255 = 255,
+    GINSENG256 = 256,
+    BELLADONNA257 = 257,
+    MANDRAKE258 = 258,
+    HAZEL259 = 259,
+    CORN260 = 260,
+    MILLET261 = 261,
+    STONE_BLOCK262 = 262,
+    PIKE263 = 263,
+    KRALOVE264 = 264,
+    EEL265 = 265,
+    GREY_SEA_BREAM266 = 266,
+    PERCH267 = 267,
+    RAY268 = 268,
+    MONKFISH269 = 269,
+    SICKLE_HAMMERHEAD_SHARK270 = 270,
+    LARD_BASS271 = 271,
+    COD272 = 272,
+    TENCH273 = 273,
+    SWORDFISH274 = 274,
+    MULIC_BERES_ANVIL275 = 275,
+    MULIC_BERES_WORKBENCH276 = 276,
+    MULIC_BERES_WORKSHOP277 = 277,
+    MULIC_BERES_ASSEMBLER278 = 278,
+    MAGUS_AXS_WORKSHOP279 = 279,
+    HUPPERMAGE_PLATFORM280 = 280,
+    FOUR_LEAF_CLOVER281 = 281,
+    POINT_OUT_AN_EXIT282 = 282,
+    CATUNA283 = 283,
+    STAIRS284 = 284,
+    REINFORCED_DOOR285 = 285,
+    UNSPEAKABLE_WORKBENCH286 = 286,
+    MAHAQUANY287 = 287,
+    SALIKRONIA288 = 288,
+    QUISNOA289 = 289,
+    LIMPET290 = 290,
+    SEPIOLITE291 = 291,
+    WORKBENCH292 = 292,
+    SEPIOLITE293 = 293,
+    MAHAQUANY294 = 294,
+    SALIKRONIA295 = 295,
+    QUISNOA296 = 296,
+    LIMPET297 = 297,
+    NATASHA_MANKAS_WORKSHOP298 = 298,
+    FRESH_EGGS299 = 299,
+    HOUSE300 = 300,
+    TOURNAMENT_ARENA301 = 301,
+    AQUATIC_MUSHROOM302 = 302,
+    SOMNITIA_SLEEP_KILLER303 = 303,
+    GRILLED_SOMNITIA_SLEEP_KILLER304 = 304,
+    MINIATURE_VILLAGE305 = 305,
+    ASTRUBIAN_SEWING_MACHINE306 = 306,
+    GALAETHIELS_PINGWIN307 = 307,
+    SURPRISE_GIFT308 = 308,
+    CREAKING_BOX309 = 309,
+    SURPRISE_POTION310 = 310,
+    MAKESHIFT_WORKSHOP311 = 311,
+    DOOR_TO_THE_REALM_OF_THE_GODS312 = 312,
+    RESOURCE_MARKETPLACE313 = 313,
+    EQUIPMENT_MARKETPLACE314 = 314,
+    CONSUMABLES_MARKETPLACE315 = 315,
+    PANNEAU_DIRECTIONNEL316 = 316,
+    CRYSTAL317 = 317,
+    RUNE_MARKETPLACE318 = 318,
+    CREATURE_MARKETPLACE319 = 319,
+    SOUL_MARKETPLACE320 = 320,
+    FLAX_OF_DESTINY321 = 321,
+    PAPER_WRAPPER322 = 322,
+    NAFSS_WORKSHOP323 = 323,
+    UNSTABLE_PASSAGE324 = 324,
+    LIGHT_GREEN_BIN325 = 325,
+    ENCHANTED_MILLSTONE326 = 326,
+    WELL_OF_INFINITE_DREAMS327 = 327,
+    SANCTUARY_ZAAP328 = 328,
+    SKELETON329 = 329,
+    LOCKER_ROOM330 = 330,
+    SIEGE_ENGINE331 = 331,
+    BOOK332 = 332,
+    SWORD333 = 333,
+    CORRUPTED_SADIDA_STATUE334 = 334,
+    FLOWER335 = 335,
+    DIVINATION_TABLE336 = 336,
+    LANTERN_TREE337 = 337,
+    PRIMORDIAL_LANTERN338 = 338,
+    MASTERS_SANCTUARY339 = 339,
+    FROOGY_BRIDGE340 = 340,
+    WHITE_BOW_MEOW_SPRING341 = 341,
+    BWAK_SPRING342 = 342,
+    PANDALAN_PIG_SPRING343 = 343,
+    GRINDSTONE344 = 344,
+    QUENCHING_VAT345 = 345,
+    KATANA_FORGE346 = 346,
+    BLANKET_OF_DEAD_LEAVES347 = 347,
+    POTTERY348 = 348,
+    FUJIBAKAMA349 = 349,
+    STATUE_OF_KOZARU350 = 350,
+    BOWL_OF_OFFERINGS351 = 351,
+    MEDITATIVE_STATUE352 = 352,
+    INCENSE353 = 353,
+    SPIRIT_BAMBOO354 = 354,
+    BUCKET355 = 355,
+    RICE_POLISHER356 = 356,
+    NIXIE_MONEY_BOX357 = 357,
+    TRACES_OF_BLOOD358 = 358,
+    REMAINS_OF_A_ZAAP359 = 359,
+    CALLIGLYPHS360 = 360,
+    PANDALAN_PORCO_SPRING361 = 361,
+    LIQUID_CRYSTAL362 = 362,
+    BENDABLE_CRYSTAL363 = 363,
+    PAPER_TULIP364 = 364,
+    INK_SNAPPER365 = 365,
+    BLACK_FIRE_WELL366 = 366,
+    WHITE_FIRE_WELL367 = 367,
+    ROCK368 = 368,
+    WORN_SIGN369 = 369,
+    DOJO_SCROLL370 = 370,
+    PAINTBRUSH371 = 371,
+    GAME_TABLE372 = 372,
+    SLOT_MACHINE373 = 373,
+    STRANGE_FANG374 = 374,
+    PIECES_OF_WRECKAGE375 = 375,
+    LOOT_OF_THE_POSSESSED376 = 376,
+    DESTROYER_GLYPH377 = 377,
+    HALF_EATEN_SAUSAGE378 = 378,
+    CH_TYX_STATUE379 = 379,
+    PICKAXE380 = 380,
+    COSMETICS_MARKETPLACE381 = 381,
+    TABIBUS_20_KAMAS386 = 386,
+    OTOTUBE_20_KAMAS387 = 387,
+
+}
+
+export enum GenericActionEnum {
+    None,
+    Teleport,
+    OpenBank,
+    RemoveItem,
+    LearnOrnament,
+    LearnTitle,
+    Collect,
+    Bidshop,
+    Zaap,
+    Zaapi,
+    CreateGuild,
+    LearnSpell,
+    AddKamas,
+    Craft,
+    AddItem,
+    AddExperience,
+    Notification,
+    Fight,
+    Smithmagic,
+    RuneTrade,
+    Unhandled,
 }
 
 export enum BuildTypeEnum {
@@ -92,6 +1044,17 @@ export enum GameActionFightInvisibilityStateEnum {
     INVISIBLE = 1,
     DETECTED = 2,
     VISIBLE = 3,
+}
+
+export enum DirectionsEnum {
+    DIRECTION_EAST = 0,
+    DIRECTION_SOUTH_EAST = 1,
+    DIRECTION_SOUTH = 2,
+    DIRECTION_SOUTH_WEST = 3,
+    DIRECTION_WEST = 4,
+    DIRECTION_NORTH_WEST = 5,
+    DIRECTION_NORTH = 6,
+    DIRECTION_NORTH_EAST = 7,
 }
 
 export enum CharacterInventoryPositionEnum {
@@ -292,6 +1255,15 @@ export enum MountCharacteristicEnum {
     FERTILE = 8,
     PREGNANT = 9,
 }
+
+export enum StatsBoostEnum {
+    STRENGTH = 10,
+    VITALITY,
+    WISDOM,
+    CHANCE,
+    AGILITY,
+    INTELLIGENCE
+  }
 
 export enum ExchangeTypeEnum {
     UNKNOWN_TRADE_TYPE = -1,
@@ -6205,7 +7177,7 @@ export interface RawActorOrientation {
 }
 
 export class ActorOrientation extends DofusType {
-    public static id: number = 3924;
+    public static id: number = 366;
 
     public id_: number | undefined = 0;
     public direction: number | undefined = 1;
@@ -9605,7 +10577,7 @@ export interface RawObjectEffect {
 }
 
 export class ObjectEffect extends DofusType {
-    public static id: number = 6577;
+    public static id: number = 4941;
 
     public actionId: number | undefined = 0;
 
@@ -9639,7 +10611,7 @@ export interface RawObjectEffectInteger extends RawObjectEffect {
 }
 
 export class ObjectEffectInteger extends ObjectEffect {
-    public static id: number = 9369;
+    public static id: number = 7541;
 
     public value: number | undefined = 0;
 
@@ -13574,7 +14546,7 @@ export interface RawFinishMoveInformations {
 }
 
 export class FinishMoveInformations extends DofusType {
-    public static id: number = 7837;
+    public static id: number = 8642;
 
     public finishMoveId: number | undefined = 0;
     public finishMoveState: boolean | undefined = false;
@@ -30268,7 +31240,7 @@ export interface RawKamasUpdateMessage {
 }
 
 export class KamasUpdateMessage extends DofusMessage {
-    public static id: number = 7707;
+    public static id: number = 7533;
 
     public kamasTotal: number | undefined = 0;
 
@@ -37939,7 +38911,7 @@ export interface RawStatsUpgradeResultMessage {
 }
 
 export class StatsUpgradeResultMessage extends DofusMessage {
-    public static id: number = 929;
+    public static id: number = 5392;
 
     public result: number | undefined = 0;
     public nbCharacBoost: number | undefined = 0;
@@ -39720,7 +40692,7 @@ export interface RawObjectAddedMessage {
 }
 
 export class ObjectAddedMessage extends DofusMessage {
-    public static id: number = 2523;
+    public static id: number = 1715;
 
     public object_: ObjectItem | undefined;
     public origin: number | undefined = 0;
@@ -40350,7 +41322,7 @@ export interface RawObjectErrorMessage {
 }
 
 export class ObjectErrorMessage extends DofusMessage {
-    public static id: number = 2965;
+    public static id: number = 9812;
 
     public reason: number | undefined = 0;
 
@@ -42316,25 +43288,21 @@ export class InventoryWeightMessage extends DofusMessage {
     public static id: number = 1264;
 
     public inventoryWeight: number | undefined = 0;
-    public shopWeight: number | undefined = 0;
     public weightMax: number | undefined = 0;
 
-    public constructor(inventoryWeight?: number | undefined, shopWeight?: number | undefined, weightMax?: number | undefined) {
+    public constructor(inventoryWeight?: number | undefined, weightMax?: number | undefined) {
         super();
         this.inventoryWeight = inventoryWeight;
-        this.shopWeight = shopWeight;
         this.weightMax = weightMax;
     }
 
     public serialize(writer: BinaryWriter): void {
         writer.writeVarInt(this.inventoryWeight!);
-        writer.writeVarInt(this.shopWeight!);
         writer.writeVarInt(this.weightMax!);
     }
 
     public deserialize(reader: BinaryReader): void {
         this.inventoryWeight = reader.readVarInt();
-        this.shopWeight = reader.readVarInt();
         this.weightMax = reader.readVarInt();
     }
 
@@ -42344,7 +43312,6 @@ export class InventoryWeightMessage extends DofusMessage {
         }
 
         this.inventoryWeight = data.inventoryWeight;
-        this.shopWeight = data.shopWeight;
         this.weightMax = data.weightMax;
 
         return this;
@@ -51559,7 +52526,7 @@ export interface RawSetUpdateMessage {
 }
 
 export class SetUpdateMessage extends DofusMessage {
-    public static id: number = 9473;
+    public static id: number = 2262;
 
     public setId: number | undefined = 0;
     public setObjects: number[] | undefined;
@@ -51575,7 +52542,7 @@ export class SetUpdateMessage extends DofusMessage {
     public serialize(writer: BinaryWriter): void {
         writer.writeVarShort(this.setId!);
         writer.writeShort(this.setObjects!.length);
-        this.setObjects!.forEach((current: number) => writer.writeVarShort(current));
+        this.setObjects!.forEach((current: number) => writer.writeVarInt(current));
         writer.writeShort(this.setEffects!.length);
         this.setEffects!.forEach((current) => {
             writer.writeShort(current.id);
@@ -51588,7 +52555,7 @@ export class SetUpdateMessage extends DofusMessage {
         this.setObjects = [];
         const countSetObjects = reader.readShort();
         for (let i: number = 0; i < countSetObjects; i++) {
-            this.setObjects.push(reader.readVarShort());
+            this.setObjects.push(reader.readVarUInt());
         }
         this.setEffects = [];
         const countSetEffects = reader.readShort();
@@ -51869,7 +52836,7 @@ export interface RawFinishMoveListMessage {
 }
 
 export class FinishMoveListMessage extends DofusMessage {
-    public static id: number = 2694;
+    public static id: number = 4627;
 
     public finishMoves: FinishMoveInformations[] | undefined;
 
@@ -52243,7 +53210,7 @@ export interface RawShortcutBarRemovedMessage {
 }
 
 export class ShortcutBarRemovedMessage extends DofusMessage {
-    public static id: number = 9619;
+    public static id: number = 2604;
 
     public barType: number | undefined = 0;
     public slot: number | undefined = 0;
@@ -53952,7 +54919,7 @@ export interface RawObjectMovementMessage {
 }
 
 export class ObjectMovementMessage extends DofusMessage {
-    public static id: number = 8953;
+    public static id: number = 8402;
 
     public objectUID: number | undefined = 0;
     public position: number | undefined = 63;
@@ -56924,7 +57891,7 @@ export interface RawPlayerStatusUpdateRequestMessage {
 }
 
 export class PlayerStatusUpdateRequestMessage extends DofusMessage {
-    public static id: number = 5133;
+    public static id: number = 9450;
 
     public status: PlayerStatus | undefined;
 
@@ -59151,6 +60118,20 @@ export class AllianceInvitationMessage extends DofusMessage {
     }
 }
 
+export class AchievementAlmostFinishedDetailedListRequestMessage extends DofusMessage {
+  public static id: number = 8255;
+
+  public constructor() {
+    super();
+  }
+
+  public serialize(writer: BinaryWriter): void {
+  }
+
+  public deserialize(reader: BinaryReader): void {
+  }
+}
+
 export interface RawShowCellRequestMessage {
     id: number;
     cellId: number;
@@ -59351,7 +60332,7 @@ export interface RawFinishMoveSetRequestMessage {
 }
 
 export class FinishMoveSetRequestMessage extends DofusMessage {
-    public static id: number = 8686;
+    public static id: number = 1852;
 
     public finishMoveId: number | undefined = 0;
     public finishMoveState: boolean | undefined = false;
@@ -59389,7 +60370,7 @@ export interface RawFinishMoveListRequestMessage {
 }
 
 export class FinishMoveListRequestMessage extends DofusMessage {
-    public static id: number = 6091;
+    public static id: number = 3924;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -61386,7 +62367,7 @@ export interface RawCheckFileMessage {
 }
 
 export class CheckFileMessage extends DofusMessage {
-    public static id: number = 2262;
+    public static id: number = 1;
 
     public filenameHash: string | undefined;
     public type: number | undefined = 0;
@@ -61454,7 +62435,7 @@ export interface RawStatsUpgradeRequestMessage {
 }
 
 export class StatsUpgradeRequestMessage extends DofusMessage {
-    public static id: number = 9735;
+    public static id: number = 2564;
 
     public useAdditionnal: boolean | undefined = false;
     public statId: number | undefined = 11;
@@ -63496,7 +64477,7 @@ export interface RawShortcutBarRemoveRequestMessage {
 }
 
 export class ShortcutBarRemoveRequestMessage extends DofusMessage {
-    public static id: number = 7396;
+    public static id: number = 8528;
 
     public barType: number | undefined = 0;
     public slot: number | undefined = 0;
@@ -63575,7 +64556,7 @@ export interface RawShortcutBarSwapRequestMessage {
 }
 
 export class ShortcutBarSwapRequestMessage extends DofusMessage {
-    public static id: number = 4225;
+    public static id: number = 5703;
 
     public barType: number | undefined = 0;
     public firstSlot: number | undefined = 0;
@@ -63658,7 +64639,7 @@ export interface RawShortcutBarAddRequestMessage {
 }
 
 export class ShortcutBarAddRequestMessage extends DofusMessage {
-    public static id: number = 7311;
+    public static id: number = 7306;
 
     public barType: number | undefined = 0;
     public shortcut: Shortcut | undefined;
@@ -63765,7 +64746,7 @@ export interface RawObjectSetPositionMessage {
 }
 
 export class ObjectSetPositionMessage extends DofusMessage {
-    public static id: number = 7839;
+    public static id: number = 2180;
 
     public objectUID: number | undefined = 0;
     public position: number | undefined = 63;
@@ -66420,7 +67401,7 @@ export const types: { [key: number]: typeof DofusType } = {
     6272: HumanOption,
     374: HumanOptionAlliance,
     2856: HumanOptionFollowers,
-    3924: ActorOrientation,
+    366: ActorOrientation,
     4311: GroupMonsterStaticInformations,
     5831: HumanInformations,
     6629: FightTeamMemberInformations,
@@ -66471,8 +67452,8 @@ export const types: { [key: number]: typeof DofusType } = {
     5822: AchievementAchieved,
     5596: Item,
     9326: ObjectItem,
-    6577: ObjectEffect,
-    9369: ObjectEffectInteger,
+    4941: ObjectEffect,
+    7541: ObjectEffectInteger,
     9332: CharacterSpellModification,
     1767: CharacterBaseCharacteristic,
     6762: InteractiveElementSkill,
@@ -66540,7 +67521,7 @@ export const types: { [key: number]: typeof DofusType } = {
     4451: FightTemporaryBoostWeaponDamagesEffect,
     7115: FightTemporaryBoostStateEffect,
     5674: FightTemporarySpellBoostEffect,
-    7837: FinishMoveInformations,
+    8642: FinishMoveInformations,
     956: FightStartingPositions,
     5935: BasicNamedAllianceInformations,
     2484: AllianceInformations,
@@ -66882,7 +67863,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     4019: AchievementDetailedListMessage,
     9044: AuthenticationTicketAcceptedMessage,
     6703: GuildInvitationStateRecrutedMessage,
-    7707: KamasUpdateMessage,
+    7533: KamasUpdateMessage,
     7292: StorageObjectsUpdateMessage,
     3343: GuildInvitedMessage,
     4852: ShortcutBarContentMessage,
@@ -67060,7 +68041,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6480: AccountHouseMessage,
     2175: AcquaintanceSearchErrorMessage,
     255: ExchangeStartOkRecycleTradeMessage,
-    929: StatsUpgradeResultMessage,
+    5392: StatsUpgradeResultMessage,
     2666: MapRunningFightListMessage,
     1620: SequenceNumberRequestMessage,
     3818: PartyInvitationDetailsMessage,
@@ -67097,7 +68078,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     5240: ChatAdminServerMessage,
     1248: MountSterilizedMessage,
     4158: BasicWhoIsMessage,
-    2523: ObjectAddedMessage,
+    1715: ObjectAddedMessage,
     3464: GameActionNoopMessage,
     4006: PopupWarningMessage,
     1501: JobExperienceUpdateMessage,
@@ -67111,7 +68092,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6961: BreachCharactersMessage,
     815: AllianceVersatileInfoListMessage,
     2762: HaapiShopApiKeyMessage,
-    2965: ObjectErrorMessage,
+    9812: ObjectErrorMessage,
     5316: SymbioticObjectErrorMessage,
     6833: MimicryObjectErrorMessage,
     5197: KohUpdateMessage,
@@ -67376,13 +68357,13 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     8139: QuestObjectiveValidatedMessage,
     5626: GameRolePlayAggressionMessage,
     7251: GuildInformationsMembersMessage,
-    9473: SetUpdateMessage,
+    2262: SetUpdateMessage,
     7611: ExchangeMountsPaddockAddMessage,
     9486: CharacterExperienceGainMessage,
     4815: PrismsListMessage,
     9870: PrismsListUpdateMessage,
     9744: EntitiesInformationMessage,
-    2694: FinishMoveListMessage,
+    4627: FinishMoveListMessage,
     6887: PartyModifiableStatusMessage,
     6469: JobExperienceOtherPlayerUpdateMessage,
     8188: GuildModificationStartedMessage,
@@ -67391,7 +68372,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6005: GameContextRemoveElementWithEventMessage,
     8153: GameRolePlayPlayerFightFriendlyRequestedMessage,
     7079: UpdateMountCharacteristicsMessage,
-    9619: ShortcutBarRemovedMessage,
+    2604: ShortcutBarRemovedMessage,
     35: ExchangeBuyOkMessage,
     1338: LifePointsRegenEndMessage,
     1030: GameContextCreateMessage,
@@ -67435,7 +68416,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     4989: CharacterAlignmentWarEffortProgressionMessage,
     2529: AtlasPointInformationsMessage,
     6071: GuestModeMessage,
-    8953: ObjectMovementMessage,
+    8402: ObjectMovementMessage,
     7160: LockableCodeResultMessage,
     2208: ExchangeMountStableErrorMessage,
     9096: GuildFightPlayersEnemyRemoveMessage,
@@ -67514,7 +68495,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     6653: ContactLookRequestMessage,
     3633: ContactLookRequestByIdMessage,
     1663: FriendAddRequestMessage,
-    5133: PlayerStatusUpdateRequestMessage,
+    9450: PlayerStatusUpdateRequestMessage,
     6284: GuildPaddockTeleportRequestMessage,
     5690: IgnoredAddRequestMessage,
     6299: FriendSetStatusShareMessage,
@@ -67578,13 +68559,14 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     7301: AllianceBulletinSetRequestMessage,
     1729: AllianceInsiderInfoRequestMessage,
     9978: AllianceInvitationMessage,
+    8255: AchievementAlmostFinishedDetailedListRequestMessage,
     3535: ShowCellRequestMessage,
     1536: GameFightTurnFinishMessage,
     3376: GameMapMovementRequestMessage,
     5055: GameActionFightCastOnTargetRequestMessage,
     1470: GameActionFightCastRequestMessage,
-    8686: FinishMoveSetRequestMessage,
-    6091: FinishMoveListRequestMessage,
+    1852: FinishMoveSetRequestMessage,
+    3924: FinishMoveListRequestMessage,
     7240: SpellVariantActivationRequestMessage,
     927: GameContextQuitMessage,
     6725: BreachRoomUnlockRequestMessage,
@@ -67646,9 +68628,9 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     7199: CharacterDeletionRequestMessage,
     4981: AcquaintanceSearchMessage,
     6291: ServerSelectionMessage,
-    2262: CheckFileMessage,
+    1: CheckFileMessage,
     7828: ResetCharacterStatsRequestMessage,
-    9735: StatsUpgradeRequestMessage,
+    2564: StatsUpgradeRequestMessage,
     6836: StartupActionsAllAttributionMessage,
     6059: PaddockToSellListRequestMessage,
     1885: PaddockToSellFilterMessage,
@@ -67707,14 +68689,14 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     9163: IconNamedPresetSaveRequestMessage,
     8482: ObjectDeleteMessage,
     4736: AccessoryPreviewRequestMessage,
-    7396: ShortcutBarRemoveRequestMessage,
+    8528: ShortcutBarRemoveRequestMessage,
     9511: ObjectUseOnCharacterMessage,
-    4225: ShortcutBarSwapRequestMessage,
+    5703: ShortcutBarSwapRequestMessage,
     2641: ObjectUseOnCellMessage,
-    7311: ShortcutBarAddRequestMessage,
+    7306: ShortcutBarAddRequestMessage,
     5636: IdolsPresetSaveRequestMessage,
     6757: PresetUseRequestMessage,
-    7839: ObjectSetPositionMessage,
+    2180: ObjectSetPositionMessage,
     6676: ExchangeBidHouseBuyMessage,
     3234: ExchangeBidHousePriceMessage,
     3308: ExchangeBidHouseSearchMessage,

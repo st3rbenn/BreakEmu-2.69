@@ -1,16 +1,23 @@
-import ConfigurationManager from "../../breakEmu_Core/configuration/ConfigurationManager"
+import { randomUUID } from "crypto"
 import Account from "../../breakEmu_API/model/account.model"
+import CharacterItem from "../../breakEmu_API/model/characterItem.model"
 import Experience from "../../breakEmu_API/model/experience.model"
+import Finishmoves from "../../breakEmu_API/model/finishmoves.model"
+import Item from "../../breakEmu_API/model/item.model"
+import Job from "../../breakEmu_API/model/job.model"
+import Spell from "../../breakEmu_API/model/spell.model"
 import Logger from "../../breakEmu_Core/Logger"
-import { CharacterCreationRequestMessage } from "../../breakEmu_Server/IO"
+import ConfigurationManager from "../../breakEmu_Core/configuration/ConfigurationManager"
+import { CharacterCreationRequestMessage, StatsUpgradeResultEnum } from "../../breakEmu_Server/IO"
 import CharacterCreationResultEnum from "../../breakEmu_World/enum/CharacterCreationResultEnum"
 import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
 import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
 import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
+import Inventory from "../../breakEmu_World/manager/items/Inventory"
+import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
 import Database from "../Database"
 import Character from "../model/character.model"
-import { PrismaClient } from "@prisma/client"
-import Job from "../../breakEmu_API/model/job.model"
+import CharacterItemController from "./characterItem.controller"
 
 class CharacterController {
 	public _logger: Logger = new Logger("CharacterController")
@@ -21,8 +28,6 @@ class CharacterController {
 	private NAME_REGEX: RegExp = /^[A-Z][a-z]{2,9}(?:-[A-Za-z][a-z]{2,9}|[a-z]{1,10})$/
 
 	MaxCharacterSlots: number = 5
-
-	constructor() {}
 
 	public static getInstance(): CharacterController {
 		if (!CharacterController._instance) {
@@ -64,11 +69,26 @@ class CharacterController {
 					c.kamas,
 					c.statsPoints,
 					[],
-					Character.loadShortcutsFromJson(JSON.parse(c.shortcuts?.toString() as string)),
+					new Map<number, CharacterShortcut>(),
 					[],
 					0,
 					Job.loadFromJson(JSON.parse(c.jobs?.toString() as string)),
+					Finishmoves.loadFromJson(
+						JSON.parse(c.finishMoves?.toString() as string)
+					),
 					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string))
+				)
+
+				const shrts = Character.loadShortcutsFromJson(
+					JSON.parse(c.shortcuts?.toString() as string)
+				)
+
+				character.generalShortcutBar.shortcuts = shrts.generalShortcuts
+				character.spellShortcutBar.shortcuts = shrts.spellShortcuts
+
+				character.spells = Spell.loadFromJson(
+					JSON.parse(c.spells?.toString() as string),
+					character
 				)
 
 				charactersList.push(character)
@@ -77,12 +97,12 @@ class CharacterController {
 			return charactersList
 		} catch (error) {
 			await this._logger.writeAsync(
-				`Error while getting characters for account ${accountId} \n ${error}`
+				`Error while getting characters for account ${accountId} \n ${
+					(error as any).stack
+				}`
 			)
 		}
 	}
-
-	public async getCharacterByName(name: string) {}
 
 	public async createCharacter(
 		message: CharacterCreationRequestMessage,
@@ -143,7 +163,7 @@ class CharacterController {
 			)
 
 			const jobs = Job.new().map((job) => job.saveAsJSON())
-      const stats = EntityStats.new(startLevel).saveAsJSON()
+			const stats = EntityStats.new(startLevel).saveAsJSON()
 
 			const newCharacter = await this._database.prisma.character.create({
 				data: {
@@ -162,7 +182,7 @@ class CharacterController {
 					statsPoints: ConfigurationManager.getInstance().startStatsPoints,
 					stats: JSON.stringify(stats),
 					jobs: JSON.stringify(jobs),
-          shortcuts: JSON.stringify([]),
+					shortcuts: JSON.stringify([]),
 				},
 			})
 
@@ -177,12 +197,10 @@ class CharacterController {
 				ConfigurationManager.getInstance().startMapId,
 				ConfigurationManager.getInstance().startCellId,
 				newCharacter.direction,
-				newCharacter.kamas
+				newCharacter.kamas,
+				Finishmoves.getFinishmovesByFree(true)
 			)
-
-      BreedManager.getInstance().learnBreedSpells(character)
-
-      // console.log(character.spells)
+			character.inventory = new Inventory(character)
 
 			return successCallback(character)
 		} catch (error) {
@@ -217,8 +235,33 @@ class CharacterController {
 		}
 	}
 
-	private parseColors(colors: string): number[] {
-		return colors.split(",").map((color) => parseInt(color))
+	public async updateCharacter(character: Character) {
+		try {
+			await this._database.prisma.character.update({
+				where: {
+					id: character.id,
+				},
+				data: {
+					guildId: character.guildId,
+					cosmeticId: character.cosmeticId,
+					sex: character.sex,
+					experience: character.experience,
+					look: ContextEntityLook.convertToString(character.look),
+					mapId: character.mapId.toString(),
+					cellId: character.cellId.toString(),
+					direction: character.direction,
+					kamas: character.kamas,
+					statsPoints: character.statsPoints,
+					stats: JSON.stringify(character?.stats?.saveAsJSON()),
+					jobs: JSON.stringify(character?.jobs?.map((job) => job.saveAsJSON())),
+					shortcuts: character.saveShortcutsAsJSON(),
+					spells: character.saveSpellsAsJSON(),
+					finishMoves: character.saveFinishmovesAsJSON(),
+				},
+			})
+		} catch (error) {
+			console.log(error)
+		}
 	}
 
 	private serializeColors(colors: number[]): string {

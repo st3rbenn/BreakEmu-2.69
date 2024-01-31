@@ -4,13 +4,11 @@ import {
 	ShortcutBarContentMessage,
 	ShortcutBarEnum,
 	ShortcutBarRefreshMessage,
-	ShortcutBarRemovedMessage,
 } from "../../../breakEmu_Server/IO"
 import CharacterShortcut from "./character/CharacterShortcut"
-import CharacterSpellShortcut from "./character/characterSpellShortcut"
 
 abstract class ShortcutBar {
-	private _shortcuts: Map<number, CharacterShortcut>
+	private _shortcuts: Map<number, CharacterShortcut | undefined> = new Map()
 
 	public abstract barEnum: ShortcutBarEnum
 	private _character: Character
@@ -25,14 +23,21 @@ abstract class ShortcutBar {
 
 	constructor(character: Character) {
 		this._character = character
+
+		for (let i = 0; i < 100; i++) {
+			this._shortcuts.set(i, undefined) // Ou une autre valeur représentant un slot vide
+		}
+
+		// console.log(this._shortcuts)
+
 		this._shortcuts = this.initialize()
 	}
 
-	private getShortcut(slotId: number): CharacterShortcut | undefined {
-		return this._shortcuts.get(slotId)
+	public getShortcut(slotId: number): CharacterShortcut | undefined {
+		return this.shortcuts.get(slotId)
 	}
 
-	public get shortcuts(): Map<number, CharacterShortcut> {
+	public get shortcuts(): Map<number, CharacterShortcut | undefined> {
 		return this._shortcuts
 	}
 
@@ -40,60 +45,22 @@ abstract class ShortcutBar {
 		this._shortcuts = shortcuts
 	}
 
-	public async removeShortcut(slotId: number): Promise<void> {
-		let shortcut = this.getShortcut(slotId)
+	public abstract removeShortcut(slotId: number): Promise<void>
 
+	public abstract addShortcut(shortcut: CharacterShortcut): void
+
+	public refreshShortcut(shortcut: CharacterShortcut | undefined): void {
 		if (shortcut) {
-			this._shortcuts.delete(slotId)
-			this.character.shortcuts.delete(shortcut.slotId)
-			await this.character.client?.Send(
+			this.character.client?.Send(
 				this.character.client.serialize(
-					new ShortcutBarRemovedMessage(this.barEnum, slotId)
+					new ShortcutBarRefreshMessage(this.barEnum, shortcut.getShortcut())
 				)
 			)
 		}
 	}
 
-	public async addShortcut(shortcut: CharacterShortcut): Promise<void> {
-		if (!this.canAdd()) {
-			return
-		}
-
-		let shortct = this.getShortcut(shortcut.slotId)
-
-		if (shortct) {
-			await this.removeShortcut(shortcut.slotId)
-		}
-
-		this.character.shortcuts.set(shortcut.slotId, shortcut)
-		this._shortcuts.set(shortcut.slotId, shortcut)
-		this.refreshShortcut(shortcut)
-	}
-
-	public refreshShortcut(shortcut: CharacterShortcut): void {
-		this.character.client?.Send(
-			this.character.client.serialize(
-				new ShortcutBarRefreshMessage(this.barEnum, shortcut.getShortcut())
-			)
-		)
-	}
-
-	public async refresh(): Promise<void> {
-		let sht: Shortcut[] = []
-
-		for (const shortcut of this._shortcuts.values()) {
-			sht.push(shortcut.getShortcut())
-		}
-
-		this.character.client?.Send(
-			this.character.client?.serialize(
-				new ShortcutBarContentMessage(this.barEnum, sht)
-			)
-		)
-	}
-
 	public getFreeSlotId(): number | null {
-		for (let i = 0; i < 99; i++) {
+		for (let i = 0; i < 100; i++) {
 			if (this.getShortcut(i) == null) {
 				return i
 			}
@@ -106,7 +73,25 @@ abstract class ShortcutBar {
 		return this.getFreeSlotId() != null
 	}
 
-	public abstract initialize(): Map<number, CharacterShortcut>
+	public async refresh(): Promise<void> {
+		let sht: Shortcut[] = []
+		for (const shortcut of this._shortcuts.keys()) {
+			const sh = this.getShortcut(shortcut)
+			if (sh) {
+				sht.push(sh.getShortcut())
+			}
+		}
+
+		this.character.client?.Send(
+			this.character.client?.serialize(
+				new ShortcutBarContentMessage(this.barEnum, sht)
+			)
+		)
+	}
+
+	public abstract swap(firstSlot: number, secondSlot: number): Promise<void>
+
+	public abstract initialize(): Map<number, CharacterShortcut | undefined>
 }
 
 export default ShortcutBar

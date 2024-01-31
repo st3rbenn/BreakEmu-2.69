@@ -1,1 +1,0 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:true});Object.defineProperty(exports,"NetworkMessageHeader",{enumerable:true,get:function get(){return _networkMessageHeader["default"];}});var _networkMessageHeader=_interopRequireDefault(require("./networkMessageHeader"));function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{"default":obj};}

@@ -23,6 +23,10 @@ class ContextEntityLook {
 		this._subentities = subentities
 	}
 
+	public get actorLook(): ContextEntityLook {
+		return this
+	}
+
 	public get bonesId(): number {
 		return this._bonesId
 	}
@@ -108,80 +112,77 @@ class ContextEntityLook {
 		return stringBuilder.join("")
 	}
 
-  static parseFromString(look: string): ContextEntityLook {
-    const lookData = look.split("{")[1].split("}")[0].split("|")
-    const bonesId = parseInt(lookData[0])
-    const skins = lookData[1].split(",").map(Number)
-    const indexedColors: number[] = []
-    const scales: number[] = []
-    const subEntities: ContextSubEntity[] = []
+	static parseFromString(look: string): ContextEntityLook {
+		const lookData = look.split("{")[1].split("}")[0].split("|")
+		const bonesId = parseInt(lookData[0])
+		const skins = lookData[1].split(",").map(Number)
+		const indexedColors: number[] = []
+		const scales: number[] = []
+		const subEntities: ContextSubEntity[] = []
 
-    if (lookData[2]) {
-      const colors = lookData[2].split(",")
-      for (const color of colors) {
-        const colorData = color.split("=")
-        indexedColors[parseInt(colorData[0])] = parseInt(colorData[1])
-      }
-    }
+		if (lookData[2]) {
+			lookData[2].split(",").forEach((color) => {
+				if (color) {
+          indexedColors.push(parseInt(color.split("=")[1]))
+				}
+			})
+		}
 
-    if (lookData[3]) {
-      scales.push(parseInt(lookData[3]))
-    }
+		if (lookData[3]) {
+			scales.push(parseInt(lookData[3]))
+		}
 
-    if (lookData[4]) {
-      const subEntitiesData = lookData[4].split(",")
-      for (const subEntityData of subEntitiesData) {
-        const subEntityLook = this.parseFromString(subEntityData.split("=")[1])
-        const subEntity = new ContextSubEntity(
-          parseInt(subEntityData.split("@")[0]),
-          parseInt(subEntityData.split("@")[1].split("=")[0]),
-          subEntityLook
-        )
-        subEntities.push(subEntity)
-      }
-    }
+		if (lookData[4]) {
+			lookData[4].split(",").forEach((subEntityData) => {
+				const [idAt, lookStr] = subEntityData.split("=")
+				const [id, type] = idAt.split("@").map(Number)
+				const subEntityLook = this.parseFromString(lookStr)
+				const subEntity = new ContextSubEntity(id, type, subEntityLook)
+				subEntities.push(subEntity)
+			})
+		}
 
-    return new ContextEntityLook(
-      bonesId,
-      skins,
-      indexedColors,
-      scales,
-      subEntities
-    )
-  }
+		return new ContextEntityLook(
+			bonesId,
+			skins,
+			indexedColors,
+			scales,
+			subEntities
+		)
+	}
 
-  static verifyColors(colors: number[], sex: boolean, breed: Breed) {
-    const defaultColor: number[] = sex ? breed.femaleColors : breed.maleColors
+	static verifyColors(colors: number[], sex: boolean, breed: Breed) {
+		const defaultColor: number[] = sex ? breed.femaleColors : breed.maleColors
 
-    if(colors.length == 0) {
-      return defaultColor
-    }
+		if (colors.length == 0) {
+			return defaultColor
+		}
 
-    let num: number = 0
-    const verifiedColors: number[] = []
+		let num: number = 0
+		const verifiedColors: number[] = []
 
-    for (const color of colors) {
-      if(defaultColor.length > num) {
-        verifiedColors.push(color == -1 ? defaultColor[num] : color)
-      }
-      num++
-    }
+		for (const color of colors) {
+			if (defaultColor.length > num) {
+				verifiedColors.push(color == -1 ? defaultColor[num] : color)
+			}
+			num++
+		}
 
-    const convertedColors = this.getConvertedColors(verifiedColors)
+		const convertedColors = this.getConvertedColors(verifiedColors)
 
-    return convertedColors
-  }
+		return convertedColors
+	}
 
-  static getConvertedColors(colors: number[]): number[] {
-    const col: number[] = new Array(colors.length);
-    for(let i = 0; i < colors.length; i++) {
-      const color = colors[i]
-      col[i] = (i + 1 << 24) | (color & 16777215)
-    }
-    return col
-  }
+	static getConvertedColors(colors: number[]): number[] {
+		const col: number[] = new Array(colors.length)
+		for (let i = 0; i < colors.length; i++) {
+			const color = colors[i]
+			col[i] = ((i + 1) << 24) | (color & 16777215)
+		}
+		return col
+	}
 
-	toEntityLook(): EntityLook {
+	public toEntityLook(): EntityLook {
 		return new EntityLook(
 			this._bonesId,
 			this._skins,
@@ -189,6 +190,20 @@ class ContextEntityLook {
 			this._scales,
 			this._subentities.map((sub) => sub.toSubEntity())
 		)
+	}
+
+	public addSkin(skinId: number) {
+		const look = this.actorLook
+		if (!look.skins.includes(skinId)) {
+			look.skins.push(skinId)
+		}
+	}
+
+	public removeSkin(skinId: number) {
+		const look = this.actorLook
+		if (look.skins.includes(skinId)) {
+			look.skins.splice(look.skins.indexOf(skinId), 1)
+		}
 	}
 }
 

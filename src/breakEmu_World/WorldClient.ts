@@ -1,10 +1,12 @@
 import { Socket } from "net"
+import UserController from "../breakEmu_API/controller/user.controller"
 import Account from "../breakEmu_API/model/account.model"
 import Character from "../breakEmu_API/model/character.model"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
 import {
+	AchievementAlmostFinishedDetailedListRequestMessage,
 	AllianceGetPlayerApplicationMessage,
 	AllianceRanksMessage,
 	AllianceRanksRequestMessage,
@@ -20,29 +22,45 @@ import {
 	CharacterNameSuggestionRequestMessage,
 	CharacterSelectionMessage,
 	CharactersListRequestMessage,
+	FinishMoveInformations,
+	FinishMoveListMessage,
+	FinishMoveListRequestMessage,
+	FinishMoveSetRequestMessage,
 	FriendsGetListMessage,
 	FriendsListMessage,
 	GameContextCreateRequestMessage,
 	HelloGameMessage,
 	IgnoredGetListMessage,
 	MapInformationsRequestMessage,
+	ObjectSetPositionMessage,
+	PlayerStatusUpdateRequestMessage,
 	PopupWarningClosedMessage,
 	ProtocolRequired,
 	ReloginTokenRequestMessage,
 	ServerSelectionMessage,
+	ShortcutBarAddRequestMessage,
+	ShortcutBarRemoveRequestMessage,
+	ShortcutBarSwapRequestMessage,
+	StatsUpgradeRequestMessage,
 	messages,
 } from "../breakEmu_Server/IO"
 import ServerClient from "../breakEmu_Server/ServerClient"
 import WorldServer from "./WorldServer"
 import ContextHandler from "./handlers/ContextHandler"
+import AchievementHandler from "./handlers/achievement/AchievementHandler"
 import AuthentificationHandler from "./handlers/authentification/AuthentificationHandler"
 import CharacterCreationHandler from "./handlers/character/CharacterCreationHandler"
 import CharacterDeletionHandler from "./handlers/character/CharacterDeletionHandler"
 import CharacterListHandler from "./handlers/character/CharacterListHandler"
 import CharacterSelectionHandler from "./handlers/character/CharacterSelectionHandler"
 import RandomCharacterNameHandler from "./handlers/character/RandomCharacterNameHandler"
-import ServerListHandler from "./handlers/server/ServerListHandler"
+import FinishmoveHandler from "./handlers/character/finishmove/FinishmoveHandler"
+import PlayerStatusHandler from "./handlers/character/player/PlayerStatusHandler"
+import ShortcutHandler from "./handlers/character/shortcut/ShortcutHandler"
 import MapHandler from "./handlers/map/MapHandler"
+import ServerListHandler from "./handlers/server/ServerListHandler"
+import InventoryHandler from "./handlers/character/inventory/InventoryHandler"
+import StatsHandler from "./handlers/character/stats/StatsHandler"
 
 class WorldClient extends ServerClient {
 	public logger: Logger = new Logger("WorldClient")
@@ -51,35 +69,39 @@ class WorldClient extends ServerClient {
 
 	private _selectedCharacter: Character | null = null
 
-	constructor(socket: Socket, account: Account) {
+	private _pseudo: string
+	constructor(socket: Socket, pseudo: string) {
 		super(socket)
-		this._account = account
+		this.load(pseudo)
+	}
 
-		WorldServer.getInstance().AddClient(this)
-		this.setupEventHandlers()
-		this.initialize()
+	private async load(pseudo: string) {
+		this._account = (await new UserController().getAccountByNickname(
+			pseudo,
+			this
+		)) as Account
 	}
 
 	public async initialize(): Promise<void> {
 		try {
-      await this.Send(
-        this.serialize(
-          new ProtocolRequired(
-            ConfigurationManager.getInstance().dofusProtocolVersion
-          )
-        )
-      )
-      await this.Send(this.serialize(new HelloGameMessage()))
-      this.Socket.on(
-        "data",
-        async (data) => await this.handleData(this.Socket, data)
-      )
-    } catch (error: unknown | any) {
-      await this.logger.writeAsync(
-        `Error while initializing client: ${error.message}`,
-        ansiColorCodes.red
-      )
-    }
+			await this.Send(
+				this.serialize(
+					new ProtocolRequired(
+						ConfigurationManager.getInstance().dofusProtocolVersion
+					)
+				)
+			)
+			await this.Send(this.serialize(new HelloGameMessage()))
+			this.Socket.on(
+				"data",
+				async (data) => await this.handleData(this.Socket, data)
+			)
+		} catch (error) {
+			await this.logger.writeAsync(
+				`Error while initializing client: ${(error as any).message}`,
+				ansiColorCodes.red
+			)
+		}
 	}
 
 	public async handleData(socket: Socket, data: Buffer): Promise<void> {
@@ -139,9 +161,8 @@ class WorldClient extends ServerClient {
 					)
 					break
 				case CharacterFirstSelectionMessage.id:
-					const cfsm = message as CharacterFirstSelectionMessage
 					await CharacterSelectionHandler.handleCharacterSelectionMessage(
-						this.account?.characters.get(cfsm.id_ as number) as Character,
+						this.selectedCharacter as Character,
 						this
 					)
 					break
@@ -163,7 +184,7 @@ class WorldClient extends ServerClient {
 					await this.Send(this.serialize(new BasicPongMessage(true)))
 					break
 				case AllianceRanksRequestMessage.id:
-					// await this.Send(this.serialize(new AllianceRanksMessage([])))
+					await this.Send(this.serialize(new AllianceRanksMessage([])))
 					break
 				case AllianceGetPlayerApplicationMessage.id:
 					// await this.Send(this.serialize(new AlliancePlayerApplicationMessage()))
@@ -185,6 +206,62 @@ class WorldClient extends ServerClient {
 						message as MapInformationsRequestMessage
 					)
 					break
+				case PlayerStatusUpdateRequestMessage.id:
+					await PlayerStatusHandler.handlePlayerStatusMessage(
+						this,
+						message as PlayerStatusUpdateRequestMessage
+					)
+					break
+				case FinishMoveListRequestMessage.id:
+					let finishMoves: FinishMoveInformations[] = []
+
+					this.selectedCharacter?.finishMoves?.forEach((fm) => {
+						finishMoves.push(fm.toFinishMoveInformations())
+					})
+
+					this.Send(this.serialize(new FinishMoveListMessage(finishMoves)))
+					break
+				case ShortcutBarSwapRequestMessage.id:
+					await ShortcutHandler.handleShortcutBarSwapRequestMessage(
+						this,
+						message as ShortcutBarSwapRequestMessage
+					)
+					break
+				case ShortcutBarRemoveRequestMessage.id:
+					await ShortcutHandler.handleShortcutBarRemoveRequestMessage(
+						this,
+						message as ShortcutBarRemoveRequestMessage
+					)
+					break
+				case ShortcutBarAddRequestMessage.id:
+					await ShortcutHandler.handleShortcutBarAddRequestMessage(
+						this,
+						message as ShortcutBarAddRequestMessage
+					)
+					break
+				case FinishMoveSetRequestMessage.id:
+					await FinishmoveHandler.handleFinishMoveSetRequestMessage(
+						this,
+						message as FinishMoveSetRequestMessage
+					)
+					break
+				case ObjectSetPositionMessage.id:
+					await InventoryHandler.handleObjectSetPositionMessage(
+						this,
+						message as ObjectSetPositionMessage
+					)
+					break
+				case AchievementAlmostFinishedDetailedListRequestMessage.id:
+					await AchievementHandler.handleAchievementAlmostFinishedDetailedListRequestMessage(
+						this
+					)
+					break
+				case StatsUpgradeRequestMessage.id:
+					await StatsHandler.handlerStatsUpgradeRequestMessage(
+						message as StatsUpgradeRequestMessage,
+						this
+					)
+					break
 				default:
 					await this.logger.writeAsync(
 						`${messages[message?.id as number].name} is not handled`,
@@ -192,9 +269,9 @@ class WorldClient extends ServerClient {
 					)
 					break
 			}
-		} catch (error: unknown | any) {
+		} catch (error) {
 			await this.logger.writeAsync(
-				`Error while handling data: ${error.stack}`,
+				`Error while handling data: ${(error as any).stack}`,
 				ansiColorCodes.red
 			)
 		}

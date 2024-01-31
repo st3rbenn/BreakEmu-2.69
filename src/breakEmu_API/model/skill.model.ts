@@ -6,7 +6,7 @@ class Skill {
 	private _interactiveId: number
 	private _levelMin: number
 
-  private static skills: Map<number, Skill> = new Map<number, Skill>()
+    private static skills: Map<number, Skill> = new Map<number, Skill>()
 
 	constructor(
 		id: number,
@@ -50,6 +50,10 @@ class Skill {
 
   public static getSkills(): Map<number, Skill> {
     return this.skills
+  }
+
+  public static getSkill(id: number): Skill | undefined {
+    return this.skills.get(id)
   }
 
   public static addSkill(skill: Skill): void {

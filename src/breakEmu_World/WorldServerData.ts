@@ -75,9 +75,7 @@ class WorldServerData {
 		client: WorldClient,
 		status: number
 	): Promise<GameServerInformations> {
-		const charCount = await CharacterController.getInstance().getCharactersByAccountId(
-			client.account?.id || 0
-		)
+		const charCount = client.account?.characters
 
 		const gameServerMessage = new GameServerInformations(
 			this.IsMonoAccount,
@@ -86,7 +84,7 @@ class WorldServerData {
 			0,
 			status,
 			1,
-			charCount?.length,
+			charCount?.size,
 			5,
 			new Date().getTime()
 		)

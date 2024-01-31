@@ -6,11 +6,11 @@ import AuthClient from "../breakEmu_Auth/AuthClient"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import {
-  BinaryBigEndianReader,
-  DofusMessage,
-  DofusNetworkMessage,
-  GameServerInformations,
-  messages,
+	BinaryBigEndianReader,
+	DofusMessage,
+	DofusNetworkMessage,
+	GameServerInformations,
+	messages,
 } from "../breakEmu_Server/IO"
 import WorldServer from "./WorldServer"
 
@@ -79,9 +79,9 @@ class WorldServerManager {
 		}
 
 		if (client instanceof Account) {
-			charCount = await CharacterController.getInstance().getCharactersByAccountId(
-				client?.id || 0
-			)
+			client.characters.forEach((character) => {
+				charCount?.push(character)
+			})
 		}
 
 		const gameServerMessage = new GameServerInformations(

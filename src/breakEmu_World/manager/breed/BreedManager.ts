@@ -26,14 +26,19 @@ class BreedManager {
 		breedId: number,
 		sex: boolean,
 		cosmeticId: number,
-		colors: number[]
+		colors: number[],
+		skins?: number[]
 	): ContextEntityLook {
 		const breed = this.getBreedById(breedId)
 		const look = sex
 			? ContextEntityLook.parseFromString(breed.femaleLook)
 			: ContextEntityLook.parseFromString(breed.maleLook)
 
-		look.skins.push(parseInt(Head.getSkinById(cosmeticId)))
+		if (skins) {
+			look.skins.push(...skins)
+		} else {
+			look.skins.push(parseInt(Head.getSkinById(cosmeticId)))
+		}
 
 		look.indexedColors.push(...colors)
 
@@ -46,9 +51,9 @@ class BreedManager {
 
 	public learnBreedSpells(character: Character) {
 		character.learnSpell(0, false)
-    character.breed.breedSpells.map((spellId) => {
+		character.breed.breedSpells.map((spellId) => {
 			character.learnSpell(spellId, false)
-    })
+		})
 	}
 }
 

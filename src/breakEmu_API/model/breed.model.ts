@@ -1,5 +1,9 @@
-import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
-import Head from "./head.model"
+import { StatsBoostEnum } from "../../breakEmu_Server/IO"
+
+interface StatUpgradeCost {
+	cost: number
+	until: number
+}
 
 class Breed {
 	private _id: number
@@ -8,14 +12,14 @@ class Breed {
 	private _femaleLook: string
 	private _maleColors: number[]
 	private _femaleColors: number[]
-	private _spForIntelligence: string
-	private _spForAgility: string
-	private _spForStrength: string
-	private _spForVitality: string
-	private _spForWisdom: string
-	private _spForChance: string
+	private _spForIntelligence: { cost: number; until: number }[]
+	private _spForAgility: { cost: number; until: number }[]
+	private _spForStrength: { cost: number; until: number }[]
+	private _spForVitality: { cost: number; until: number }[]
+	private _spForWisdom: { cost: number; until: number }[]
+	private _spForChance: { cost: number; until: number }[]
 	private _startLifePoints: number
-  private _breedSpells: number[] = []
+	private _breedSpells: number[] = []
 
 	private static _Breeds: Breed[] = []
 
@@ -26,14 +30,14 @@ class Breed {
 		femaleLook: string,
 		maleColors: string,
 		femaleColors: string,
-		spForIntelligence: string,
-		spForAgility: string,
-		spForStrength: string,
-		spForVitality: string,
-		spForWisdom: string,
-		spForChance: string,
+		spForIntelligence: StatUpgradeCost[],
+		spForAgility: StatUpgradeCost[],
+		spForStrength: StatUpgradeCost[],
+		spForVitality: StatUpgradeCost[],
+		spForWisdom: StatUpgradeCost[],
+		spForChance: StatUpgradeCost[],
 		startLifePoints: number,
-    breedSpellsId: string
+		breedSpellsId: string
 	) {
 		this._id = id
 		this._name = name
@@ -48,7 +52,7 @@ class Breed {
 		this._spForWisdom = spForWisdom
 		this._spForChance = spForChance
 		this._startLifePoints = startLifePoints
-    this._breedSpells = breedSpellsId.split(",").map(Number)
+		this._breedSpells = breedSpellsId.split(",").map(Number)
 	}
 
 	public get id(): number {
@@ -75,27 +79,27 @@ class Breed {
 		return this._femaleColors
 	}
 
-	public get spForIntelligence(): string {
+	public get spForIntelligence(): { cost: number; until: number }[] {
 		return this._spForIntelligence
 	}
 
-	public get spForAgility(): string {
+	public get spForAgility(): { cost: number; until: number }[] {
 		return this._spForAgility
 	}
 
-	public get spForStrength(): string {
+	public get spForStrength(): { cost: number; until: number }[] {
 		return this._spForStrength
 	}
 
-	public get spForVitality(): string {
+	public get spForVitality(): { cost: number; until: number }[] {
 		return this._spForVitality
 	}
 
-	public get spForWisdom(): string {
+	public get spForWisdom(): { cost: number; until: number }[] {
 		return this._spForWisdom
 	}
 
-	public get spForChance(): string {
+	public get spForChance(): { cost: number; until: number }[] {
 		return this._spForChance
 	}
 
@@ -103,13 +107,46 @@ class Breed {
 		return this._startLifePoints
 	}
 
-  public get breedSpells(): number[] {
-    return this._breedSpells
-  }
+	public get breedSpells(): number[] {
+		return this._breedSpells
+	}
 
-  public set breedSpells(breedSpells: number[]) {
-    this._breedSpells = breedSpells
-  }
+	public set breedSpells(breedSpells: number[]) {
+		this._breedSpells = breedSpells
+	}
+
+	public getStatUpgradeCost(statId: StatsBoostEnum): StatUpgradeCost[] {
+		switch (statId) {
+			case StatsBoostEnum.STRENGTH:
+				return this.spForStrength
+			case StatsBoostEnum.VITALITY:
+				return this.spForVitality
+			case StatsBoostEnum.WISDOM:
+				return this.spForWisdom
+			case StatsBoostEnum.CHANCE:
+				return this.spForChance
+			case StatsBoostEnum.AGILITY:
+				return this.spForAgility
+			case StatsBoostEnum.INTELLIGENCE:
+				return this.spForIntelligence
+		}
+	}
+
+	public getStatUpgradeCostIndex(
+		actualPoints: number,
+		costs: StatUpgradeCost[]
+	): number {
+		let index = 0
+		for(let i = 0; i < costs.length; i++) {
+      console.log(costs[i])
+      if(costs[i].until <= actualPoints) {
+        index = i
+        return index
+      }
+    }
+    index = costs.length - 1
+    return index
+	}
 
 	public static get breeds(): Breed[] {
 		return Breed._Breeds
@@ -117,6 +154,22 @@ class Breed {
 
 	public static set breeds(breeds: Breed[]) {
 		Breed._Breeds = breeds
+	}
+
+	public static statsPointParser(statsPoint: string): StatUpgradeCost[] {
+		const statsPoints = statsPoint.split("|")
+		const sp: StatUpgradeCost[] = []
+		for (const sps of statsPoints) {
+			const res = sps.split(",")
+			if (res[0].length >= 1) {
+				const until = parseInt(res[0])
+				const cost = parseInt(res[1])
+				const stat = { cost, until }
+				sp.push(stat)
+			}
+		}
+
+		return sp
 	}
 }
 

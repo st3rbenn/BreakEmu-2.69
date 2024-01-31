@@ -8,10 +8,13 @@ class CharacterSpell {
 	private _spellId: number
 	private _variant: boolean
 
-	constructor(spellId: number, variant: boolean = false) {
+  private _character: Character
+
+	constructor(spellId: number, variant: boolean = false, character: Character) {
 		this._spellId = spellId
 		this._variant = variant
 		this._spell = Spell.getSpellById(spellId) as Spell
+    this._character = character
 	}
 
 	public get spellId(): number {
@@ -47,10 +50,10 @@ class CharacterSpell {
 		}
 	}
 
-	public learned(character: Character) {
+	public learned() {
 		return (
-			(Spell.getSpellById(this._spellId)?.minimumLevel as number) <=
-			character.level
+    (this.baseSpell?.getMinimumLevel() as number) <=
+			this._character.level
 		)
 	}
 
@@ -68,7 +71,6 @@ class CharacterSpell {
 		for (let i = 0; i < this.baseSpell.spellLevels.length; i++) {
 			const spellLevel = this.baseSpell.levels.get(i) as SpellLevel
 			if (spellLevel.minPlayerLevel <= character.level) {
-				console.log(spellLevel.grade)
 				index = spellLevel.grade
 			} else {
 				break
@@ -84,6 +86,13 @@ class CharacterSpell {
 			this.spell?.getLevelByGrade(this.getGrade(character))?.minPlayerLevel as number + 1
 		)
 	}
+
+  public saveAsJson() {
+    return {
+      spellId: this.spellId,
+      variant: this.variant
+    }
+  }
 }
 
 export default CharacterSpell

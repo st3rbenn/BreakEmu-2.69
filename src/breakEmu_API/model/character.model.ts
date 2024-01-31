@@ -1,75 +1,86 @@
 import ConfigurationManager from "../../breakEmu_Core/configuration/ConfigurationManager"
 import {
-	AlmanachCalendarDateMessage,
-	CharacterBaseInformations,
-	CharacterLoadingCompleteMessage,
-	CharacterStatsListMessage,
-	CurrentMapMessage,
-	EmoteListMessage,
-	EntityDispositionInformations,
-	GameContextCreateMessage,
-	GameContextDestroyMessage,
-	GameContextEnum,
-	GameRolePlayActorInformations,
-	GameRolePlayShowActorMessage,
-	InventoryContentMessage,
-	InventoryWeightMessage,
-	JobCrafterDirectorySettingsMessage,
-	JobDescriptionMessage,
-	JobExperienceMultiUpdateMessage,
-	ServerExperienceModificatorMessage,
-	Shortcut,
-	ShortcutBarContentMessage,
-	ShortcutBarEnum,
-	SpellItem,
-	SpellListMessage,
-	TextInformationMessage,
-	TextInformationTypeEnum,
+  AlmanachCalendarDateMessage,
+  CharacterBaseInformations,
+  CharacterLoadingCompleteMessage,
+  CharacterStatsListMessage,
+  CharacteristicEnum,
+  CurrentMapMessage,
+  EmoteListMessage,
+  EntityDispositionInformations,
+  GameContextCreateMessage,
+  GameContextDestroyMessage,
+  GameContextEnum,
+  GameRolePlayActorInformations,
+  GameRolePlayShowActorMessage,
+  JobCrafterDirectorySettingsMessage,
+  JobDescriptionMessage,
+  JobExperienceMultiUpdateMessage,
+  ServerExperienceModificatorMessage,
+  ShortcutBarEnum,
+  SpellItem,
+  SpellListMessage,
+  StatsUpgradeResultEnum,
+  StatsUpgradeResultMessage,
+  TextInformationMessage,
+  TextInformationTypeEnum,
 } from "../../breakEmu_Server/IO"
 import WorldClient from "../../breakEmu_World/WorldClient"
 import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
 import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
+import CharacterSpell from "../../breakEmu_World/manager/entities/spell/CharacterSpell"
+import Characteristic from "../../breakEmu_World/manager/entities/stats/characteristic"
 import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
+import Inventory from "../../breakEmu_World/manager/items/Inventory"
+import GeneralShortcutBar from "../../breakEmu_World/manager/shortcut/GeneralShortcutBar"
+import SpellShortcutBar from "../../breakEmu_World/manager/shortcut/SpellShortcutBar"
 import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
+import CharacterItemShortcut from "../../breakEmu_World/manager/shortcut/character/characterItemShortcut"
+import CharacterSpellShortcut from "../../breakEmu_World/manager/shortcut/character/characterSpellShortcut"
 import Breed from "./breed.model"
 import Experience from "./experience.model"
+import Finishmoves from "./finishmoves.model"
 import Job from "./job.model"
-import CharacterSpell from "../../breakEmu_World/manager/entities/spell/characterSpell"
-import SpellShortcutBar from "../../breakEmu_World/manager/shortcut/SpellShortcutBar"
-import GeneralShortcutBar from "../../breakEmu_World/manager/shortcut/GeneralShortcutBar"
-import CharacterSpellShortcut from "../../breakEmu_World/manager/shortcut/character/characterSpellShortcut"
-import CharacterItemShortcut from "../../breakEmu_World/manager/shortcut/character/characterItemShortcut"
+import Entity from "../../breakEmu_World/manager/entities/Entity";
+import GameMap from "./map.model";
 
-class Character {
-	private _id: number
+class Character extends Entity {
+	public _id: number
 	private _accountId: number
 	private _breed: Breed
 	private _sex: boolean
 	private _cosmeticId: number
-	private _name: string
+	public _name: string
 	private _experience: number
 	private _look: ContextEntityLook
 	private _level: number
 	private _mapId: number
-	private _cellId: number
-	private _direction: number
+	public _cellId: number
+	public _direction: number
 	private _kamas: number
+	private _guildId: number | null = null
 
 	private _stats?: EntityStats
 	private _statsPoints: number
 	private _knownEmotes: number[]
-	private _shortcuts: Map<number, CharacterShortcut>
+	private _shortcuts: Map<number, CharacterShortcut | undefined>
 	private _knownOrnaments: number[]
 	private _activeOrnament: number
 	private _jobs: Job[]
-	private _spells: Map<number, CharacterSpell>
+	private _spells: Map<number, CharacterSpell> = new Map()
 	private _spellShortcutBar: SpellShortcutBar
 	private _generalShortcutBar: GeneralShortcutBar
 
 	private _characters: Character[] = []
 	private _context: GameContextEnum | undefined
 
+	private _inventory: Inventory
+
+	private _finishmoves: Map<number, Finishmoves> = new Map()
+
 	private _client: WorldClient | undefined
+
+  // private _currantMap: Map
 
 	constructor(
 		id: number,
@@ -90,9 +101,10 @@ class Character {
 		knownOrnaments: number[],
 		activeOrnament: number,
 		jobs: Job[],
-		// spells: Map<number, CharacterSpell>,
+		finishMoves: Map<number, Finishmoves>,
 		stats?: EntityStats
 	) {
+		super(null)
 		this._id = id
 		this._accountId = accountId
 		this._breed = breed
@@ -107,6 +119,7 @@ class Character {
 		this._direction = direction
 		this._kamas = kamas
 		this._stats = stats
+		this.spells = new Map<number, CharacterSpell>()
 		this._statsPoints = statsPoints
 		this._knownEmotes = knownEmotes
 		this._shortcuts = shortcuts
@@ -115,7 +128,7 @@ class Character {
 		this._knownOrnaments = knownOrnaments
 		this._activeOrnament = activeOrnament
 		this._jobs = jobs
-		this._spells = new Map<number, CharacterSpell>()
+		this._finishmoves = finishMoves
 	}
 
 	public static create(
@@ -129,9 +142,10 @@ class Character {
 		mapId: number,
 		cellId: number,
 		direction: number,
-		kamas: number
+		kamas: number,
+		finishmoves: Map<number, Finishmoves>
 	): Character {
-		const startLevel = ConfigurationManager.getInstance().startLevel
+		const startLevel = ConfigurationManager.getInstance().startLevel - 1
 		const bree = BreedManager.getInstance().breeds.find(
 			(b) => b.id === breed
 		) as Breed
@@ -149,19 +163,20 @@ class Character {
 			cellId,
 			direction,
 			kamas,
-			0,
+			ConfigurationManager.getInstance().startStatsPoints,
 			[1],
 			new Map<number, CharacterShortcut>(),
 			[],
 			0,
 			Job.new(),
+			finishmoves,
 			EntityStats.new(startLevel)
 		)
 
+		BreedManager.getInstance().learnBreedSpells(character)
+
 		return character
 	}
-
-	//#region Getters & Setters
 
 	public get id(): number {
 		return this._id
@@ -195,6 +210,14 @@ class Character {
 		this._sex = sex
 	}
 
+	public get inventory(): Inventory {
+		return this._inventory
+	}
+
+	public set inventory(inventory: Inventory) {
+		this._inventory = inventory
+	}
+
 	public get cosmeticId(): number {
 		return this._cosmeticId
 	}
@@ -225,6 +248,14 @@ class Character {
 
 	public set characters(characters: Character[]) {
 		this._characters = characters
+	}
+
+	public get finishMoves(): Map<number, Finishmoves> {
+		return this._finishmoves
+	}
+
+	public set finishMoves(finishmoves: Map<number, Finishmoves>) {
+		this._finishmoves = finishmoves
 	}
 
 	public get look(): ContextEntityLook {
@@ -267,11 +298,11 @@ class Character {
 		this._kamas = kamas
 	}
 
-	public get stats(): EntityStats | undefined {
-		return this._stats
+	public get stats(): EntityStats {
+		return this._stats as EntityStats
 	}
 
-	public set stats(stats: EntityStats | undefined) {
+	public set stats(stats: EntityStats) {
 		this._stats = stats
 	}
 
@@ -284,18 +315,21 @@ class Character {
 	}
 
 	public get statsPoints(): number {
-		return this._statsPoints
+		return this.stats.getCharacteristic(CharacteristicEnum.STATS_POINTS)
+			?.base as number
 	}
 
 	public set statsPoints(statsPoints: number) {
-		this._statsPoints = statsPoints
+		;(this.stats.getCharacteristic(
+			CharacteristicEnum.STATS_POINTS
+		) as Characteristic).base = statsPoints
 	}
 
 	public get jobs(): Job[] {
 		return this._jobs
 	}
 
-	public get shortcuts(): Map<number, CharacterShortcut> {
+	public get shortcuts(): Map<number, CharacterShortcut | undefined> {
 		return this._shortcuts
 	}
 
@@ -319,6 +353,38 @@ class Character {
 		this._spells = spells
 	}
 
+	public get knownEmotes(): number[] {
+		return this._knownEmotes
+	}
+
+	public set knownEmotes(knownEmotes: number[]) {
+		this._knownEmotes = knownEmotes
+	}
+
+	public get knownOrnaments(): number[] {
+		return this._knownOrnaments
+	}
+
+	public set knownOrnaments(knownOrnaments: number[]) {
+		this._knownOrnaments = knownOrnaments
+	}
+
+	public get activeOrnament(): number {
+		return this._activeOrnament
+	}
+
+	public set activeOrnament(activeOrnament: number) {
+		this._activeOrnament = activeOrnament
+	}
+
+	public get guildId(): number | null {
+		return this._guildId
+	}
+
+	public set guildId(guildId: number) {
+		this._guildId = guildId
+	}
+
 	public toCharacterBaseInformations(): CharacterBaseInformations {
 		return new CharacterBaseInformations(
 			this.id,
@@ -330,7 +396,7 @@ class Character {
 		)
 	}
 
-	public toGameRolePlayActorInformations(): GameRolePlayActorInformations {
+	getActorInformations(): GameRolePlayActorInformations {
 		const entityDisposition = new EntityDispositionInformations(
 			this.cellId,
 			this.direction
@@ -384,28 +450,47 @@ class Character {
 	}
 
 	public async refreshSpells() {
+		const spellItems: SpellItem[] = []
 
-    const spellItems: SpellItem[] = []
-
-    for (const spell of this.spells.values()) {
-      spellItems.push(spell.getSpellItem(this))
-    }
+		for (const spell of this.spells.values()) {
+			spellItems.push(spell.getSpellItem(this))
+		}
 
 		await this?.client?.Send(
-			this?.client?.serialize(
-        new SpellListMessage(false, spellItems)
-        )
+			this?.client?.serialize(new SpellListMessage(false, spellItems))
 		)
 	}
 
-	// public refreshGuild() {
-	//   if(this._guildId === 0) return
+	public async refreshGuild() {
+		if (this.guildId === 0) return
+		// TODO: Send guild info
+	}
 
-	// }
+	public async refreshAll() {
+		await this.refreshJobs()
+		await this.refreshSpells()
+		await this.refreshGuild()
+		await this.refreshEmotes()
+		await this.client?.selectedCharacter?.inventory.refresh()
+		await this.refreshShortcuts()
+		await this.sendServerExperienceModificator()
+	}
+
+	public async refreshActorOnMap() {
+		//TODO: Send actor on map it means to all players on the map
+		console.log("refreshActorOnMap")
+		await this.client?.Send(
+			this.client.serialize(
+				new GameRolePlayShowActorMessage(this.getActorInformations())
+			)
+		)
+	}
+
+  public async sendOnMap() {}
 
 	public async onCharacterLoadingComplete() {
 		await this.onConnected()
-		this.reply("Bienvenue sur BreakEmu !", "DarkGreen", true, true)
+		await this.reply("Bienvenue sur BreakEmu !", "38a3d9", true, true)
 		await this?.client?.Send(
 			this?.client?.serialize(new CharacterLoadingCompleteMessage())
 		)
@@ -470,19 +555,19 @@ class Character {
 		this.reply(value, "DarkOrange", false, false)
 	}
 
-	public replyError(value: any): void {
-		this.reply(value, "DarkRed", false, false)
+	public async replyError(value: any): Promise<void> {
+		await this.reply(value, "DarkRed", false, false)
 	}
 
-	public reply(
+	public async reply(
 		value: any,
 		color: string,
 		bold: boolean = false,
 		underline: boolean = false
-	): void {
+	): Promise<void> {
 		value = this.applyPolice(value, bold, underline)
 		// Remplacez la ligne suivante par votre propre logique d'envoi
-		this?.client?.Send(
+		await this?.client?.Send(
 			this?.client?.serialize(
 				new TextInformationMessage(0, 0, [
 					`<font color="#${color}">${value}</font>`,
@@ -513,19 +598,6 @@ class Character {
 		)
 	}
 
-	public async refreshInventory() {
-		await this?.client?.Send(
-			this?.client?.serialize(new InventoryContentMessage([], this.kamas))
-		)
-		// this.refreshWeight(client)
-	}
-
-	public refreshWeight() {
-		this?.client?.Send(
-			this?.client?.serialize(new InventoryWeightMessage(0, 0, 1000))
-		)
-	}
-
 	public async refreshShortcuts() {
 		await this.spellShortcutBar.refresh()
 		await this.generalShortcutBar.refresh()
@@ -535,45 +607,108 @@ class Character {
 		return this._spells.has(spellId)
 	}
 
-	public learnSpell(spellId: number, notify: boolean) {
+	public async learnSpell(spellId: number, notify: boolean) {
 		if (this.hasSpell(spellId)) return
 
-		let spell = new CharacterSpell(spellId)
+		let spell = new CharacterSpell(spellId, false, this)
 		this.spells.set(spellId, spell)
 
-		if (spell.learned(this) && this.spellShortcutBar.canAdd()) {
-			this.spellShortcutBar.add(spellId)
+		if (spell.learned() && this.spellShortcutBar.canAdd()) {
+			const spellShortcut = new CharacterSpellShortcut(
+				this.spellShortcutBar.getFreeSlotId() as number,
+				spellId,
+				ShortcutBarEnum.SPELL_SHORTCUT_BAR
+			)
+			this.spellShortcutBar.addShortcut(spellShortcut)
 
 			if (notify) {
-				this.refreshShortcuts()
+				await this.refreshShortcuts()
+				await this.textInformation(
+					TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
+					3,
+					[spellId.toString()]
+				)
 			}
+		}
+
+		if (notify) {
+			await this.refreshSpells()
 		}
 	}
 
-	public saveShortcutsAsJson(): string {
+	public saveSpellsAsJSON(): string {
+		let spells = []
+
+		for (const spell of this.spells.values()) {
+			spells.push(spell.saveAsJson())
+		}
+
+		return JSON.stringify(spells)
+	}
+
+	public saveShortcutsAsJSON(): string {
 		let shortcuts = []
-		for (const shortcut of this.shortcuts.values()) {
-			shortcuts.push({
-				barType: shortcut.barType,
-				slotId: shortcut.slotId,
-				spellId:
-					shortcut instanceof CharacterSpellShortcut ? shortcut.spellId : null,
-				itemUid:
-					shortcut instanceof CharacterItemShortcut ? shortcut.itemUid : null,
-				itemGid:
-					shortcut instanceof CharacterItemShortcut ? shortcut.itemGid : null,
+		for (const shortcut of this.generalShortcutBar.shortcuts.values()) {
+			const shr = shortcut as CharacterItemShortcut
+			if (shortcut) {
+				shortcuts.push({
+					barType: shr.barType,
+					slotId: shr.slotId,
+					spellId: null,
+					itemUid: shr.itemUid,
+					itemGid: shr.itemGid,
+				})
+			}
+		}
+
+		for (const shortcut of this.spellShortcutBar.shortcuts.values()) {
+			const shr = shortcut as CharacterSpellShortcut
+			if (shortcut) {
+				shortcuts.push({
+					barType: shr.barType,
+					slotId: shr.slotId,
+					spellId: shr.spellId,
+					itemUid: null,
+					itemGid: null,
+				})
+			}
+		}
+
+		return JSON.stringify(shortcuts)
+	}
+
+	public saveFinishmovesAsJSON(): string {
+		let finishmoves = []
+		for (const finishmove of this.finishMoves.values()) {
+			finishmoves.push({
+				id: finishmove.id,
 			})
 		}
-		return JSON.stringify(shortcuts)
+		return JSON.stringify(finishmoves)
+	}
+
+	public async onStatUpgradeResult(
+		result: StatsUpgradeResultEnum,
+		nbCharacBoost: number
+	) {
+		await this.client?.Send(
+			this.client?.serialize(
+				new StatsUpgradeResultMessage(result, nbCharacBoost)
+			)
+		)
 	}
 
 	public static loadShortcutsFromJson(
 		json: any
-	): Map<number, CharacterShortcut> {
-		const shortcuts = new Map<number, CharacterShortcut>()
+	): {
+		spellShortcuts: Map<number, CharacterShortcut>
+		generalShortcuts: Map<number, CharacterShortcut>
+	} {
+		const spellShortcuts = new Map<number, CharacterShortcut>()
+		const generalShortcuts = new Map<number, CharacterShortcut>()
 		for (const shortcut of json) {
-			if (shortcut.barType === ShortcutBarEnum.GENERAL_SHORTCUT_BAR) {
-				shortcuts.set(
+			if (shortcut.barType == ShortcutBarEnum.GENERAL_SHORTCUT_BAR) {
+				generalShortcuts.set(
 					shortcut.slotId,
 					new CharacterItemShortcut(
 						shortcut.slotId,
@@ -582,8 +717,8 @@ class Character {
 						shortcut.barType
 					)
 				)
-			} else if (shortcut.barType === ShortcutBarEnum.SPELL_SHORTCUT_BAR) {
-				shortcuts.set(
+			} else if (shortcut.barType == ShortcutBarEnum.SPELL_SHORTCUT_BAR) {
+				spellShortcuts.set(
 					shortcut.slotId,
 					new CharacterSpellShortcut(
 						shortcut.slotId,
@@ -593,7 +728,11 @@ class Character {
 				)
 			}
 		}
-		return shortcuts
+
+		return {
+			spellShortcuts,
+			generalShortcuts,
+		}
 	}
 }
 

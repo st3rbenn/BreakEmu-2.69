@@ -1,0 +1,575 @@
+import { randomUUID } from "crypto"
+import CharacterController from "../../../breakEmu_API/controller/character.controller"
+import CharacterItemController from "../../../breakEmu_API/controller/characterItem.controller"
+import Character from "../../../breakEmu_API/model/character.model"
+import CharacterItem from "../../../breakEmu_API/model/characterItem.model"
+import Item from "../../../breakEmu_API/model/item.model"
+import ItemSet from "../../../breakEmu_API/model/itemSet.model"
+import {
+	CharacterInventoryPositionEnum,
+	EffectsEnum,
+	InventoryContentMessage,
+	InventoryWeightMessage,
+	KamasUpdateMessage,
+	ObjectAddedMessage,
+	ObjectErrorEnum,
+	ObjectErrorMessage,
+	ObjectItem,
+	ObjectMovementMessage,
+	ObjectQuantityMessage,
+	SetUpdateMessage,
+} from "../../../breakEmu_Server/IO"
+import ItemEffectsManager from "../effect/ItemEffectsManager"
+import ItemCollection from "./collections/ItemCollections"
+
+class Inventory extends ItemCollection<CharacterItem> {
+	public maxKamas: number = 2000000000
+	public itemCastEffect: EffectsEnum = EffectsEnum.Effect_CastSpell_1175
+
+	private _character: Character
+	public _currentWeight: number = 0
+	public hasWeaponEquiped: boolean = this.getWeapon() !== null
+
+	constructor(character: Character, items: CharacterItem[] = []) {
+		super(items)
+		this.character = character
+	}
+
+	public _isChangingStuff: boolean = false
+
+	public get isChangingStuff(): boolean {
+		return this._isChangingStuff
+	}
+
+	public set isChangingStuff(value: boolean) {
+		this._isChangingStuff = value
+	}
+
+	public dofusPositions: CharacterInventoryPositionEnum[] = [
+		CharacterInventoryPositionEnum.INVENTORY_POSITION_DOFUS_1,
+		CharacterInventoryPositionEnum.INVENTORY_POSITION_DOFUS_2,
+		CharacterInventoryPositionEnum.INVENTORY_POSITION_DOFUS_3,
+		CharacterInventoryPositionEnum.INVENTORY_POSITION_DOFUS_4,
+		CharacterInventoryPositionEnum.INVENTORY_POSITION_DOFUS_5,
+		CharacterInventoryPositionEnum.INVENTORY_POSITION_DOFUS_6,
+	]
+
+	public ringPositions: CharacterInventoryPositionEnum[] = [
+		CharacterInventoryPositionEnum.INVENTORY_POSITION_RING_LEFT,
+		CharacterInventoryPositionEnum.INVENTORY_POSITION_RING_RIGHT,
+	]
+
+	public get currentWeight(): number {
+		let weight: number = 0
+		this.items.forEach((item) => {
+			weight += item.record.realWeight * item.quantity
+		})
+
+		return weight
+	}
+
+  public set currentWeight(value: number) {
+    this._currentWeight = value
+  }
+
+	public async onItemAdded(item: CharacterItem): Promise<void> {
+		const it = await item.getObjectItem()
+		await this.character.client?.Send(
+			this.character.client?.serialize(new ObjectAddedMessage(it, 0))
+		)
+		await this.refreshWeight()
+	}
+
+	public async onItemsAdded(items: CharacterItem[]): Promise<void> {
+		for (const item of items) {
+			await this.onItemAdded(item)
+		}
+
+		await this.refreshWeight()
+	}
+
+	public async onItemStacked(item: CharacterItem): Promise<void> {
+		await item.save()
+		await this.updateItemQuantity(item)
+		await this.refreshWeight()
+	}
+
+	public async onItemsStackeds(items: CharacterItem[]): Promise<void> {
+		for (const item of items) {
+			await this.onItemStacked(item)
+		}
+
+		await this.refreshWeight()
+	}
+
+	public async onItemRemoved(item: CharacterItem): Promise<void> {
+		const id = await CharacterItemController.getInstance().getIntIdFromUuid(
+			item.uId
+		)
+		await this.character.client?.Send(
+			this.character.client?.serialize(
+				new ObjectMovementMessage(id as number, -1)
+			)
+		)
+		await this.refreshWeight()
+	}
+
+	public async onItemsRemoved(items: CharacterItem[]): Promise<void> {
+		for (const item of items) {
+			await this.onItemRemoved(item)
+		}
+
+		await this.refreshWeight()
+	}
+
+	public async onItemUnstacked(item: CharacterItem): Promise<void> {
+		await item.save()
+		await this.updateItemQuantity(item)
+		await this.refreshWeight()
+	}
+
+	public async onItemsUnstackeds(items: CharacterItem[]): Promise<void> {
+		for (const item of items) {
+			await this.onItemUnstacked(item)
+		}
+
+		await this.refreshWeight()
+	}
+	public async onItemQuantityChanged(item: CharacterItem): Promise<void> {
+		await item.save()
+		await this.updateItemQuantity(item)
+		await this.refreshWeight()
+	}
+	public async onItemsQuantityChanged(items: CharacterItem[]): Promise<void> {
+		for (const item of items) {
+			await item.save()
+			await this.updateItemQuantity(item)
+		}
+
+		await this.refreshWeight()
+	}
+
+	public get character(): Character {
+		return this._character
+	}
+
+	public set character(character: Character) {
+		this._character = character
+	}
+
+	public getWeapon(): CharacterItem | null {
+		return this.getEquipedItem(
+			CharacterInventoryPositionEnum.ACCESSORY_POSITION_WEAPON
+		)
+	}
+
+	public getEquipedItem(
+		position: CharacterInventoryPositionEnum
+	): CharacterItem | null {
+		for (const [key, item] of this.items) {
+			if (item.positionEnum === position) {
+				return item
+			}
+		}
+
+		return null
+	}
+
+	public async refresh() {
+		const objectItem: ObjectItem[] = await this.getObjectsItems()
+
+		await this.character.client?.Send(
+			this.character.client?.serialize(
+				new InventoryContentMessage(objectItem, this.character.kamas)
+			)
+		)
+
+		await this.refreshWeight()
+	}
+
+	public async refreshKamas() {
+		await this.character.client?.Send(
+			this.character.client?.serialize(
+				new KamasUpdateMessage(this.character.kamas)
+			)
+		)
+	}
+
+	public async refreshWeight() {
+		await this.character.client?.Send(
+			this.character.client?.serialize(
+				new InventoryWeightMessage(this.currentWeight, this.character.stats?.currentMaxWeight)
+			)
+		)
+	}
+
+	public async addNewItem(gid: number, quantity: number, perfect: boolean) {
+		let template = Item.getItem(gid)
+
+		if (template !== null) {
+			let obj = new CharacterItem(
+				this.character.id,
+				randomUUID(),
+				gid,
+				quantity,
+				CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
+				"",
+				template.effects.generate(perfect),
+				template.appearanceId
+			)
+
+			await CharacterItemController.getInstance().createCharacterItemWithMapping(
+				obj
+			)
+
+			super.addItem(obj)
+			return obj
+		} else {
+			return null
+		}
+	}
+
+	public async setItemPosition(
+		item: CharacterItem,
+		position: CharacterInventoryPositionEnum,
+		quantity: number
+	) {
+		this._isChangingStuff = true
+		if (
+			position != CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+		) {
+			if (this.character.level < item.record.level) {
+				await this.onError(ObjectErrorEnum.LEVEL_TOO_LOW)
+				return
+			}
+
+			//TODO: Check Item Criteria
+
+			if (
+				item.positionEnum ==
+					CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED &&
+				this.dofusPositions.includes(item.position) &&
+				this.dofusPositions.includes(position)
+			) {
+				return
+			}
+
+			if (
+				this.checkStacks(item, position, this.ringPositions) &&
+				item.hasSet()
+			) {
+				await this.onError(ObjectErrorEnum.CANNOT_EQUIP_HERE)
+				return
+			}
+
+			if (
+				this.checkStacks(item, position, this.dofusPositions) &&
+				item.positionEnum ==
+					CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+			) {
+				await this.onError(ObjectErrorEnum.CANNOT_EQUIP_HERE)
+				return
+			}
+
+			if (!this.isChangingStuff) {
+				await this.character.replyError(
+					"Vous êtes en train de changer d'équipement, veuillez patienter"
+				)
+				return
+			}
+
+			await this.equipItem(item, position, quantity)
+		} else {
+			if (
+				item.positionEnum ==
+				CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+			) {
+				await this.onError(ObjectErrorEnum.CANNOT_EQUIP_HERE)
+				return
+			} else {
+				await this.unequipItem(item, quantity)
+			}
+		}
+
+		await item.save()
+		await this.onObjectMoved(item, position)
+		await this.refreshWeight()
+		await CharacterController.getInstance().updateCharacter(this.character)
+		await this.character.refreshActorOnMap()
+		await this.character.refreshStats()
+
+		this._isChangingStuff = false
+	}
+
+	public async onError(error: ObjectErrorEnum) {
+		await this.character.client?.Send(
+			this.character.client?.serialize(new ObjectErrorMessage(error))
+		)
+	}
+
+	public checkStacks(
+		item: CharacterItem,
+		position: CharacterInventoryPositionEnum,
+		checker: CharacterInventoryPositionEnum[]
+	): boolean {
+		checker.forEach(async (pos) => {
+			const equipedItem = this.getEquipedItem(pos)
+			if (equipedItem != null && equipedItem.gId == item.gId) {
+				return true
+			}
+		})
+
+		return false
+	}
+
+	public async equipItem(
+		item: CharacterItem,
+		position: CharacterInventoryPositionEnum,
+		quantity: number
+	) {
+		const alreadyEquiped = this.getEquipedItem(position)
+		const lastPosition = item.positionEnum
+
+		if (alreadyEquiped != null) {
+			await this.unequipItem(alreadyEquiped, quantity)
+			await this.onObjectMoved(
+				alreadyEquiped,
+				CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+			)
+		}
+
+		if (item.quantity == 1) {
+			item.positionEnum = position
+		} else {
+			const newItem = await CharacterItemController.getInstance().cutItem(
+				item,
+				quantity
+			)
+
+			await this.addItem(newItem)
+			await this.updateItemQuantity(item)
+		}
+
+		await item.save()
+		await this.onItemMoved(item, lastPosition)
+
+		// let equipedItems = await this.getEquipedItems()
+		// for (const equipedItem of equipedItems) {
+		// 	if (equipedItem.gId != item.gId) {
+		// 		await this.setItemPosition(
+		// 			equipedItem,
+		// 			CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
+		// 			equipedItem.quantity
+		// 		)
+		// 	}
+		// }
+	}
+
+	public async getEquipedItems(): Promise<CharacterItem[]> {
+		let equipedItems: CharacterItem[] = []
+
+		for (const [key, item] of this.items) {
+			if (item.isEquiped()) {
+				equipedItems.push(item)
+			}
+		}
+
+		return equipedItems
+	}
+
+	public async unequipItem(item: CharacterItem, quantity: number) {
+		try {
+			if (
+				item.positionEnum !=
+				CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+			) {
+				const sameItem = await this.getSameItem(item)
+				const lastPosition = item.positionEnum
+
+				if (sameItem != null) {
+					if (item.uId != sameItem.uId) {
+						item.positionEnum =
+							CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+						sameItem.quantity += quantity
+						await CharacterItemController.getInstance().updateItem(sameItem)
+						await this.updateItemQuantity(sameItem)
+						await this.removeItem(item, item.quantity)
+					} else {
+						item.positionEnum =
+							CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+						await CharacterItemController.getInstance().updateItem(item)
+					}
+				} else {
+					item.positionEnum =
+						CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+					await CharacterItemController.getInstance().updateItem(item)
+				}
+
+				await this.onItemMoved(item, lastPosition)
+			}
+		} catch (error) {
+			console.log(error as any)
+		}
+	}
+
+	public async updateItemQuantity(item: CharacterItem) {
+		const id = await CharacterItemController.getInstance().getIntIdFromUuid(
+			item.uId
+		)
+		if (id) {
+			await this.character.client?.Send(
+				this.character.client?.serialize(
+					new ObjectQuantityMessage(id, item.quantity)
+				)
+			)
+		}
+	}
+
+	public async onItemMoved(
+		item: CharacterItem,
+		lastPosition: CharacterInventoryPositionEnum
+	) {
+		const flag =
+			lastPosition !=
+			CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+		const flag2 = item.isEquiped()
+
+		if (flag2 && !flag) {
+			await ItemEffectsManager.getInstance().addEffects(
+				this.character,
+				item.effects
+			)
+		}
+
+		if (!flag2 && flag) {
+			await ItemEffectsManager.getInstance().removeEffects(
+				this.character,
+				item.effects
+			)
+		}
+
+		await this.updateLook(item, flag2)
+
+		if (item.record.hasSet) {
+			const itemSetEquiped = await this.coutnItemSetEquiped(item)
+
+			if (flag2) {
+				await this.applyItemSetEffects(
+					item.record.itemSet,
+					itemSetEquiped,
+					flag2
+				)
+			} else {
+				await this.applyItemSetEffects(
+					item.record.itemSet,
+					itemSetEquiped,
+					flag2
+				)
+			}
+		}
+	}
+
+	public async applyItemSetEffects(
+		itemSet: ItemSet,
+		count: number,
+		equipped: boolean
+	): Promise<void> {
+		if (equipped && count >= 2) {
+			if (count >= 3) {
+        console.log(`itemSet Equiped and count >= 3`)
+				await ItemEffectsManager.getInstance().removeEffects(
+					this.character,
+					itemSet.getEffects(count - 1)
+				)
+			}
+
+      console.log(`itemSet Equiped and count >= 2`)
+
+			await ItemEffectsManager.getInstance().addEffects(
+				this.character,
+				itemSet.getEffects(count)
+			)
+		} else if (!equipped && count >= 1) {
+      console.log(`itemSet not Equiped and count >= 1`)
+			await ItemEffectsManager.getInstance().removeEffects(
+				this.character,
+				itemSet.getEffects(count + 1)
+			)
+
+			if (count >= 2) {
+				await ItemEffectsManager.getInstance().addEffects(
+					this.character,
+					itemSet.getEffects(count)
+				)
+			}
+		}
+
+		// if ((equipped && count >= 2) || (!equipped && count >= 1)) {
+		// 	await this.onSetUpdated(itemSet, count)
+		// }
+	}
+
+	public async onSetUpdated(itemSet: ItemSet, count: number) {
+		const allItemsSetId = Array.from(itemSet.items.keys())
+
+		const objectEffects = itemSet.getEffects(count).getObjectEffects()
+
+		let test: any[] = []
+
+		objectEffects.map((effect) => {
+			test.push(effect)
+		})
+
+		await this.character.client?.Send(
+			this.character.client?.serialize(
+				new SetUpdateMessage(itemSet.id, allItemsSetId, test)
+			)
+		)
+	}
+
+	public async coutnItemSetEquiped(itemSet: CharacterItem): Promise<number> {
+		let count = 0
+
+		for (const item of await this.getEquipedItems()) {
+			if (item.hasSet() && itemSet.record.itemSetid == item.record.itemSetid) {
+				count++
+			}
+		}
+
+		return count
+	}
+
+	public async updateLook(item: CharacterItem, equiped: boolean) {
+		const itemType = Item.getItem(item.gId).typeEnum
+		switch (itemType) {
+			default:
+				if (item.appearanceId != 0) {
+					if (equiped) {
+						this.character.look.addSkin(item.appearanceId)
+					} else {
+						this.character.look.removeSkin(item.appearanceId)
+					}
+				}
+				break
+		}
+	}
+
+	public async onObjectMoved(
+		item: CharacterItem,
+		newPosition: CharacterInventoryPositionEnum
+	) {
+		const id = await CharacterItemController.getInstance().getIntIdFromUuid(
+			item.uId
+		)
+
+		if (id) {
+			await this.character.client?.Send(
+				this.character.client?.serialize(
+					new ObjectMovementMessage(id, newPosition)
+				)
+			)
+		}
+	}
+}
+
+export default Inventory

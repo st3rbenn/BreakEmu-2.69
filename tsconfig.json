@@ -6,25 +6,37 @@
 		"lib": ["esnext", "dom"], // Assurez-vous d'inclure les bonnes librairies pour votre environnement
 		"allowJs": true, // Permet à TypeScript de compiler des fichiers JavaScript
 		"jsx": "preserve", // Si vous utilisez React, préservez la syntaxe JSX pour que Babel la traite
-		"outDir": "./dist", // Répertoire de sortie
-		"rootDir": ".", // Répertoire source
-		"strict": true, // Activez les options strictes pour un meilleur contrôle du type
 		"noEmit": true, // Empêche TypeScript de compiler les fichiers; Babel le fera
-		"esModuleInterop": true, // Permet une interopérabilité plus facile des modules ES avec CommonJS
 		"forceConsistentCasingInFileNames": true, // Force la cohérence des majuscules/minuscules dans les noms de fichiers
 		"moduleResolution": "node", // Résolution de module pour Node.js
 		"skipLibCheck": true, // Ignore les vérifications de types dans les fichiers de déclaration
-		"experimentalDecorators": true, // Active les décorateurs si nécessaire
-		"emitDecoratorMetadata": true, // Émet des métadonnées pour les décorateurs,
 		"baseUrl": "./src",
+    "incremental": true,
+    "outDir": "/build",
+    "rootDir": "./",
+    "strictPropertyInitialization": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": true,
+    "importHelpers": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "noImplicitThis": false,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true
+
 	},
 	"include": [
 		"src/breakEmu_Auth/**/*.ts",
 		"src/breakEmu_Protocol/**/*.ts",
 		"src/breakEmu_ServerSync/**/*.ts",
+    "src/breakEmu_Core/**/*.ts",
 		"src/AuthMain.ts",
-    "src/WorldMain.ts"
-, "src/breakEmu_Server/TransitionServer.ts"	],
+		"src/WorldMain.ts",
+		"src/breakEmu_Server/TransitionServer.ts"
+	],
 	"exclude": [
 		"node_modules", // Exclut 'node_modules'
 		"**/*.test.ts" // Exclut les fichiers de test
