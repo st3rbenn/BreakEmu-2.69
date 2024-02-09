@@ -41,6 +41,11 @@ class Cell {
 		return this._mapChangeData
 	}
 
+  public isWalkable(): boolean {
+    return (this.losMov & 1) == 0
+  }
+
+
 	public save(): CellData {
 		return {
 			id: this.id,

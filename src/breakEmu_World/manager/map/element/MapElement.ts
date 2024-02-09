@@ -3,10 +3,8 @@ import {GenericActionEnum} from "../../../../breakEmu_Server/IO";
 import MapInstance from "../MapInstance";
 import Character from "../../../../breakEmu_API/model/character.model";
 
-class MapElement {
+abstract class MapElement {
     public record: InteractiveElementModel
-
-    public actionIdentifier: GenericActionEnum
     public param1: string
     public param2: string
     public param3: string

@@ -5,6 +5,7 @@ import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationMa
 import AuthClient from "./AuthClient"
 import ConnectionQueue from "./ConnectionQueue"
 import ServerStatus from "./enum/ServerStatus"
+import AuthTransition from "./AuthTransition";
 
 class AuthServer {
 	public logger: Logger = new Logger("AuthServer")
@@ -43,6 +44,12 @@ class AuthServer {
 		const server = createServer(
 			async (socket) => await ConnectionQueue.getInstance().enqueue(socket)
 		)
+
+		/*setInterval(async () => {
+			await AuthTransition.getInstance().receive("ServerStatusUpdateMessage").then((msg) => {
+				AuthTransition.getInstance().handleServerStatusUpdateMessage(msg as string)
+			})
+		}, 1000)*/
 
 		server.listen({ port: this.port, host: this.ip }, async () => {
 			await this.logger.writeAsync(

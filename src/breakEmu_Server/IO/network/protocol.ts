@@ -261,6 +261,14 @@ export enum SubEntityBindingPointCategoryEnum {
     HOOK_POINT_CATEGORY_UNDERWATER_BUBBLES = 8,
 }
 
+export enum MapScrollEnum {
+    TOP,
+    LEFT,
+    BOTTOM,
+    RIGHT,
+    UNDEFINED,
+}
+
 export enum SkillTypeEnum
 {
     CHOP6=6,
@@ -580,8 +588,7 @@ export enum StatedElementState
     Used = 2,
 }
 
-export enum InteractiveTypeEnum
-{
+export enum InteractiveTypeEnum {
     ASH1 = 1,
     SAW2 = 2,
     OAK8 = 8,
@@ -1453,6 +1460,16 @@ export enum TriggerTypeEnum
     *CT =tackle enemy?
     *CI = Summoned
     */
+}
+
+export enum ServerConstantTypeEnum {
+    TIME_BEFORE_DISCONNECTION = 1,
+    KOH_DURATION = 2,
+    KOH_WINNING_SCORE = 3,
+    MINIMAL_TIME_BEFORE_KOH = 4,
+    TIME_BEFORE_WEIGH_IN_KOH = 5,
+    UNKNOWN_6 = 6,
+    UNKNOWN_7 = 7,
 }
 
 export enum EffectsEnum {
@@ -5669,7 +5686,7 @@ export interface RawGameRolePlayNamedActorInformations extends RawGameRolePlayAc
 }
 
 export class GameRolePlayNamedActorInformations extends GameRolePlayActorInformations {
-    public static id: number = 5940;
+    public static id: number = 9155;
 
     public name: string | undefined;
 
@@ -5933,7 +5950,7 @@ export interface RawGameRolePlayHumanoidInformations extends RawGameRolePlayName
 }
 
 export class GameRolePlayHumanoidInformations extends GameRolePlayNamedActorInformations {
-    public static id: number = 2640;
+    public static id: number = 5061;
 
     public humanoidInfo: HumanInformations | undefined;
     public accountId: number | undefined = 0;
@@ -5985,8 +6002,10 @@ export interface RawGameRolePlayCharacterInformations extends RawGameRolePlayHum
     alignmentInfos: ActorAlignmentInformations;
 }
 
+
+
 export class GameRolePlayCharacterInformations extends GameRolePlayHumanoidInformations {
-    public static id: number = 5268;
+    public static id: number = 1982;
 
     public alignmentInfos: ActorAlignmentInformations | undefined;
 
@@ -6026,7 +6045,6 @@ export class GameRolePlayCharacterInformations extends GameRolePlayHumanoidInfor
         return this;
     }
 }
-
 export interface RawGameRolePlayPortalInformations extends RawGameRolePlayActorInformations {
     id: number;
     portal: PortalInformation;
@@ -7057,7 +7075,7 @@ export interface RawHumanOption {
 }
 
 export class HumanOption extends DofusType {
-    public static id: number = 6272;
+    public static id: number = 2821;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -7123,7 +7141,7 @@ export interface RawHumanOptionFollowers extends RawHumanOption {
 }
 
 export class HumanOptionFollowers extends HumanOption {
-    public static id: number = 2856;
+    public static id: number = 8461;
 
     public followingCharactersLook: IndexedEntityLook[] | undefined;
 
@@ -7276,7 +7294,7 @@ export interface RawHumanInformations {
 }
 
 export class HumanInformations extends DofusType {
-    public static id: number = 5831;
+    public static id: number = 9307;
 
     public restrictions: ActorRestrictionsInformations | undefined;
     public sex: boolean | undefined = false;
@@ -7846,7 +7864,7 @@ export interface RawIndexedEntityLook {
 }
 
 export class IndexedEntityLook extends DofusType {
-    public static id: number = 2950;
+    public static id: number = 9720;
 
     public look: EntityLook | undefined;
     public index: number | undefined = 0;
@@ -8997,7 +9015,7 @@ export interface RawActorRestrictionsInformations {
 }
 
 export class ActorRestrictionsInformations extends DofusType {
-    public static id: number = 4964;
+    public static id: number = 2284;
 
     public cantBeAggressed: boolean | undefined = false;
     public cantBeChallenged: boolean | undefined = false;
@@ -11527,7 +11545,7 @@ export interface RawHumanOptionOrnament extends RawHumanOption {
 }
 
 export class HumanOptionOrnament extends HumanOption {
-    public static id: number = 5651;
+    public static id: number = 1102;
 
     public ornamentId: number | undefined = 0;
     public level: number | undefined = 0;
@@ -11579,7 +11597,7 @@ export interface RawHumanOptionTitle extends RawHumanOption {
 }
 
 export class HumanOptionTitle extends HumanOption {
-    public static id: number = 6451;
+    public static id: number = 8924;
 
     public titleId: number | undefined = 0;
     public titleParam: string | undefined;
@@ -11755,7 +11773,7 @@ export interface RawActorAlignmentInformations {
 }
 
 export class ActorAlignmentInformations extends DofusType {
-    public static id: number = 1230;
+    public static id: number = 6198;
 
     public alignmentSide: number | undefined = 0;
     public alignmentValue: number | undefined = 0;
@@ -17033,7 +17051,7 @@ export interface RawServerSessionConstant {
 }
 
 export class ServerSessionConstant extends DofusType {
-    public static id: number = 9452;
+    public static id: number = 8054;
 
     public id_: number | undefined = 0;
 
@@ -17067,7 +17085,7 @@ export interface RawServerSessionConstantInteger extends RawServerSessionConstan
 }
 
 export class ServerSessionConstantInteger extends ServerSessionConstant {
-    public static id: number = 292;
+    public static id: number = 8199;
 
     public value: number | undefined = 0;
 
@@ -24682,7 +24700,7 @@ export interface RawGameMapMovementMessage {
 }
 
 export class GameMapMovementMessage extends DofusMessage {
-    public static id: number = 5538;
+    public static id: number = 5371;
 
     public keyMovements: number[] | undefined;
     public forcedDirection: number | undefined = 0;
@@ -27503,7 +27521,7 @@ export interface RawGameContextRemoveElementMessage {
 }
 
 export class GameContextRemoveElementMessage extends DofusMessage {
-    public static id: number = 6344;
+    public static id: number = 4327;
 
     public id_: number | undefined = 0;
 
@@ -41880,7 +41898,7 @@ export interface RawBreachRoomLockedMessage {
 }
 
 export class BreachRoomLockedMessage extends DofusMessage {
-    public static id: number = 335;
+    public static id: number = 6303;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -51518,7 +51536,7 @@ export interface RawServerSessionConstantsMessage {
 }
 
 export class ServerSessionConstantsMessage extends DofusMessage {
-    public static id: number = 713;
+    public static id: number = 3329;
 
     public variables: ServerSessionConstant[] | undefined;
 
@@ -51645,7 +51663,7 @@ export interface RawGameMapNoMovementMessage {
 }
 
 export class GameMapNoMovementMessage extends DofusMessage {
-    public static id: number = 5382;
+    public static id: number = 8603;
 
     public cellX: number | undefined = 0;
     public cellY: number | undefined = 0;
@@ -60207,7 +60225,7 @@ export interface RawGameMapMovementRequestMessage {
 }
 
 export class GameMapMovementRequestMessage extends DofusMessage {
-    public static id: number = 3376;
+    public static id: number = 1119;
 
     public keyMovements: number[] | undefined;
     public mapId: number | undefined = 0;
@@ -65232,7 +65250,7 @@ export interface RawGameMapMovementCancelMessage {
 }
 
 export class GameMapMovementCancelMessage extends DofusMessage {
-    public static id: number = 5266;
+    public static id: number = 2541;
 
     public cellId: number | undefined = 0;
 
@@ -65267,7 +65285,7 @@ export interface RawChangeMapMessage {
 }
 
 export class ChangeMapMessage extends DofusMessage {
-    public static id: number = 3266;
+    public static id: number = 9045;
 
     public mapId: number | undefined = 0;
     public autopilot: boolean | undefined = false;
@@ -65337,7 +65355,7 @@ export interface RawInteractiveUseRequestMessage {
 }
 
 export class InteractiveUseRequestMessage extends DofusMessage {
-    public static id: number = 3068;
+    public static id: number = 9394;
 
     public elemId: number | undefined = 0;
     public skillInstanceUid: number | undefined = 0;
@@ -65447,7 +65465,7 @@ export interface RawGameMapMovementConfirmMessage {
 }
 
 export class GameMapMovementConfirmMessage extends DofusMessage {
-    public static id: number = 1882;
+    public static id: number = 4717;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
     public serialize(writer: BinaryWriter): void {}
@@ -67372,13 +67390,13 @@ export const types: { [key: number]: typeof DofusType } = {
     9830: CharacterCharacteristicValue,
     7041: GameRolePlayGroupMonsterWaveInformations,
     3424: GameRolePlayTaxCollectorInformations,
-    5940: GameRolePlayNamedActorInformations,
+    9155: GameRolePlayNamedActorInformations,
     4944: GameRolePlayMountInformations,
     8307: GameRolePlayNpcInformations,
     5968: GameRolePlayNpcWithQuestInformations,
     1204: GameRolePlayMerchantInformations,
-    2640: GameRolePlayHumanoidInformations,
-    5268: GameRolePlayCharacterInformations,
+    5061: GameRolePlayHumanoidInformations,
+    1982: GameRolePlayCharacterInformations,
     6138: GameRolePlayPortalInformations,
     8271: GameRolePlayMutantInformations,
     6665: GameFightFighterNamedInformations,
@@ -67398,12 +67416,12 @@ export const types: { [key: number]: typeof DofusType } = {
     1888: SpawnCharacterInformation,
     3264: SpawnMonsterInformation,
     9940: EntityDispositionInformations,
-    6272: HumanOption,
+    2821: HumanOption,
     374: HumanOptionAlliance,
-    2856: HumanOptionFollowers,
+    8461: HumanOptionFollowers,
     366: ActorOrientation,
     4311: GroupMonsterStaticInformations,
-    5831: HumanInformations,
+    9307: HumanInformations,
     6629: FightTeamMemberInformations,
     5066: HouseInformations,
     8830: HouseOnMapInformations,
@@ -67414,7 +67432,7 @@ export const types: { [key: number]: typeof DofusType } = {
     5602: PaddockItem,
     5839: AbstractFightTeamInformations,
     563: FightTeamInformations,
-    2950: IndexedEntityLook,
+    9720: IndexedEntityLook,
     4888: HumanOptionSkillUse,
     1267: AlternativeMonstersInGroupLightInformations,
     2177: FightCommonInformations,
@@ -67428,7 +67446,7 @@ export const types: { [key: number]: typeof DofusType } = {
     9464: GameFightMinimalStatsPreparation,
     4029: IdentifiedEntityDispositionInformations,
     335: StatedElement,
-    4964: ActorRestrictionsInformations,
+    2284: ActorRestrictionsInformations,
     4995: CharacterCharacteristicsInformations,
     2111: AbstractCharacterInformation,
     4297: CharacterBasicMinimalInformations,
@@ -67472,11 +67490,11 @@ export const types: { [key: number]: typeof DofusType } = {
     9023: GameRolePlayNpcQuestFlag,
     5623: ItemDurability,
     2164: AchievementAchievedRewardable,
-    5651: HumanOptionOrnament,
-    6451: HumanOptionTitle,
+    1102: HumanOptionOrnament,
+    8924: HumanOptionTitle,
     8916: AccountHouseInformations,
     2751: HouseInformationsInside,
-    1230: ActorAlignmentInformations,
+    6198: ActorAlignmentInformations,
     1367: PortalInformation,
     5996: AlliancePrismInformation,
     6982: AllianceInsiderPrismInformation,
@@ -67573,8 +67591,8 @@ export const types: { [key: number]: typeof DofusType } = {
     6416: CharacterMinimalGuildInformations,
     9412: CharacterMinimalAllianceInformations,
     870: ItemsPreset,
-    9452: ServerSessionConstant,
-    292: ServerSessionConstantInteger,
+    8054: ServerSessionConstant,
+    8199: ServerSessionConstantInteger,
     9088: ShortcutEmote,
     1561: TaxCollectorComplementaryInformations,
     4070: TaxCollectorLootInformations,
@@ -67723,7 +67741,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     1538: GameActionFightMarkCellsMessage,
     772: GameActionFightSpellCooldownVariationMessage,
     7728: FighterStatsListMessage,
-    5538: GameMapMovementMessage,
+    5371: GameMapMovementMessage,
     8796: GameActionFightSummonMessage,
     8910: GameActionFightDropCharacterMessage,
     8084: GameActionFightTriggerGlyphTrapMessage,
@@ -67782,7 +67800,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     9111: InteractiveUsedMessage,
     1874: MapFightCountMessage,
     2058: InteractiveMapUpdateMessage,
-    6344: GameContextRemoveElementMessage,
+    4327: GameContextRemoveElementMessage,
     3750: GameFightOptionStateUpdateMessage,
     6772: BreachTeleportRequestMessage,
     3106: MapComplementaryInformationsBreachMessage,
@@ -68105,7 +68123,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     5720: LeaveDialogMessage,
     9053: ExchangeLeaveMessage,
     8117: TaxCollectorErrorMessage,
-    335: BreachRoomLockedMessage,
+    6303: BreachRoomLockedMessage,
     6079: IdolListMessage,
     3309: EmoteRemoveMessage,
     2268: ExchangeGuildTaxCollectorGetMessage,
@@ -68334,10 +68352,10 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     1543: AcquaintanceAddedMessage,
     7419: StorageObjectRemoveMessage,
     3134: FollowedQuestsMessage,
-    713: ServerSessionConstantsMessage,
+    3329: ServerSessionConstantsMessage,
     5177: DungeonPartyFinderAvailableDungeonsMessage,
     5866: CharacterNameSuggestionSuccessMessage,
-    5382: GameMapNoMovementMessage,
+    8603: GameMapNoMovementMessage,
     2786: MountEmoteIconUsedOkMessage,
     5795: QuestStartedMessage,
     2798: MountRenamedMessage,
@@ -68562,7 +68580,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     8255: AchievementAlmostFinishedDetailedListRequestMessage,
     3535: ShowCellRequestMessage,
     1536: GameFightTurnFinishMessage,
-    3376: GameMapMovementRequestMessage,
+    1119: GameMapMovementRequestMessage,
     5055: GameActionFightCastOnTargetRequestMessage,
     1470: GameActionFightCastRequestMessage,
     1852: FinishMoveSetRequestMessage,
@@ -68710,13 +68728,13 @@ export const messages: { [key: number]: typeof DofusMessage } = {
     9042: ExchangeAcceptMessage,
     118: ExchangeReadyMessage,
     1260: FocusedExchangeReadyMessage,
-    5266: GameMapMovementCancelMessage,
-    3266: ChangeMapMessage,
+    2541: GameMapMovementCancelMessage,
+    9045: ChangeMapMessage,
     5883: GameCautiousMapMovementRequestMessage,
-    3068: InteractiveUseRequestMessage,
+    9394: InteractiveUseRequestMessage,
     2661: InteractiveUseWithParamRequestMessage,
     9947: GameRolePlayAttackMonsterRequestMessage,
-    1882: GameMapMovementConfirmMessage,
+    4717: GameMapMovementConfirmMessage,
     1621: ExchangeObjectMoveKamaMessage,
     6444: ExchangeObjectTransfertExistingToInvMessage,
     9384: ExchangeObjectTransfertListFromInvMessage,

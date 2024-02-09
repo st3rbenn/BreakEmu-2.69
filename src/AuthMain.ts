@@ -7,7 +7,7 @@ import ConfigurationManager from "./breakEmu_Core/configuration/ConfigurationMan
 
 class Main {
 	public logger: Logger = new Logger("Main")
-	private authTransition: AuthTransition = AuthTransition.getInstance()
+	public authTransition: AuthTransition = AuthTransition.getInstance()
 
 	async Start(): Promise<void> {
 		try {
@@ -17,14 +17,18 @@ class Main {
 			await this.authTransition.connect()
 			await WorldController.getInstance().getRealmList()
 			await AuthServer.getInstance().Start()
-
-			await this.authTransition.handleMessagesForAuth()
 		} catch (error) {
 			await this.logger.writeAsync(`Error starting server: ${error}`, "red")
 		}
 	}
 }
 
-new Main().Start().then(r => {
-	console.log("And the magic begins...")
+new Main().Start().then(async () => {
+	await AuthTransition.getInstance().startListeningForServerStatusUpdates()
 })
+
+// setInterval(() => {
+//   const memoryUsage = process.memoryUsage();
+
+//   console.log(`Memory usage: ${memoryUsage.rss / 1024 / 1024} MB`);
+// }, 1000);

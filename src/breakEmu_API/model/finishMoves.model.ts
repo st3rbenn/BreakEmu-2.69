@@ -98,8 +98,6 @@ class Finishmoves {
 			}
 		})
 
-		console.log("finishmoves by free", finishmoves)
-
 		return finishmoves
 	}
 

@@ -17,7 +17,8 @@ import Account from "../model/account.model"
 import BaseController from "./base.controller"
 import Inventory from "../../breakEmu_World/manager/items/Inventory"
 import WorldClient from "../../breakEmu_World/WorldClient"
-import CharacterShortcut from "breakEmu_World/manager/shortcut/character/CharacterShortcut"
+import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
+import GameMap from "../../breakEmu_API/model/map.model"
 
 class UserController extends BaseController {
 	public _logger: Logger = new Logger("UserController")
@@ -73,8 +74,6 @@ class UserController extends BaseController {
 				return
 			}
 
-			this._logger.writeAsync(`User ${acc.id} found`, ansiColorCodes.bgGreen)
-
 			const account = new Account(
 				acc.id,
 				acc.username,
@@ -104,24 +103,6 @@ class UserController extends BaseController {
 			})
 
 			for (const c of characters) {
-				const validateColor = ContextEntityLook.verifyColors(
-					c.colors.split(",").map(Number),
-					c.sex,
-					BreedManager.getInstance().getBreedById(c.breed_id)
-				)
-
-				const test: ContextEntityLook = ContextEntityLook.parseFromString(
-					c.look as string
-				)
-
-				const oui: ContextEntityLook = BreedManager.getInstance().getBreedLook(
-					c.breed_id,
-					c.sex,
-					c.cosmeticId,
-					validateColor,
-					test.skins
-				)
-
 				const look: ContextEntityLook = ContextEntityLook.parseFromString(
 					c.look as string
 				)
@@ -148,6 +129,7 @@ class UserController extends BaseController {
 					Finishmoves.loadFromJson(
 						JSON.parse(c.finishMoves?.toString() as string)
 					),
+					GameMap.getMapById(Number(c.mapId)) as GameMap,
 					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string))
 				)
 				character.client = client
@@ -180,11 +162,6 @@ class UserController extends BaseController {
 
 				account.characters.set(character.id, character)
 			}
-
-			this._logger.writeAsync(
-				`Account ${account.pseudo} has ${account.characters.size} characters`,
-				ansiColorCodes.bgCyan
-			)
 
 			return account
 		} catch (error) {

@@ -12,8 +12,6 @@ class ContextHandler {
 		} else {
 			await character.createContext(GameContextEnum.ROLE_PLAY)
 
-			await character.sendGameRolePlayActorInformations()
-
 			await character.teleport(
 				character.mapId as number,
 				character.cellId as number

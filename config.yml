@@ -11,8 +11,8 @@ worldServer:
   host: 192.168.1.113
   port: 443
 debug:
-  showDebugMessages: true
-  showProtocolMessage: true
+  showDebugMessages: false
+  showProtocolMessage: false
   showDatabaseLogs: false
 dofus:
   dofusProtocolVersion: 1.0.3+7dfcc24

@@ -51,7 +51,7 @@ class AuthClient extends ServerClient {
 			if (ConfigurationManager.getInstance().showProtocolMessage) {
 				await this.logger.writeAsync("Sending ProtocolRequired message")
 			}
-			this.Send(
+			await this.Send(
 				this.serialize(
 					new ProtocolRequired(
 						ConfigurationManager.getInstance().dofusProtocolVersion
@@ -67,7 +67,7 @@ class AuthClient extends ServerClient {
 			const attrs = this._RSAKeyHandler.getAttribute()
 			const encryptedPublicKey = this._RSAKeyHandler.encryptedPublicKey
 
-			this.Send(
+			await this.Send(
 				this.serialize(
 					new HelloConnectMessage(attrs.salt, Array.from(encryptedPublicKey))
 				)

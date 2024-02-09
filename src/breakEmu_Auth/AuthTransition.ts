@@ -26,27 +26,8 @@ class AuthTransition extends TransitionServer {
 		super(uri)
 	}
 
-	public async handleMessagesForAuth() {
-		const msg = await this.receive("ServerStatusUpdateMessage")
-
-    await this.handleServerStatusUpdateMessage(msg as string)
-
-		// await this.receive(
-		// 	"RequestForWorldListMessage",
-		// 	async (msg: string | null) => {
-		// 		// Traiter le message ici
-		// 		if (msg) {
-		// 			await this.handleRequestForWorldList(msg)
-		// 		}
-		// 	}
-		// )
-
-		// La méthode reste en écoute pour de nouveaux messages
-	}
-
 	async handleServerStatusUpdateMessage(msg: string) {
 		const message = JSON.parse(msg)
-		await this.logger.writeAsync(`ServerStatusUpdateMessage`)
 		const server = WorldController.getInstance().worldList.find(
 			(s) => s.worldServerData.Id === message.serverId
 		)
@@ -77,6 +58,12 @@ class AuthTransition extends TransitionServer {
 			})
 		)
 	}
+
+	public async startListeningForServerStatusUpdates(): Promise<void> {
+    await this.subscribe('ServerStatusUpdateChannel', (message) => {
+      this.handleServerStatusUpdateMessage(message)
+    });
+}
 }
 
 export default AuthTransition

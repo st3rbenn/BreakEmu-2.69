@@ -15,10 +15,6 @@ class CharacterSelectionHandler {
 		character: Character,
 		client: WorldClient
 	) {
-		this.logger.write(
-			`CharacterSelectionHandler: ${character?.name}`,
-			ansiColorCodes.bgMagenta
-		)
 		character.client = client
 		await client.Send(
 			client.serialize(
@@ -38,7 +34,7 @@ class CharacterSelectionHandler {
 
 		await character?.refreshAll()
 
-		await character.inventory?.addNewItem(8464, 1, false)
+		// await character.inventory?.addNewItem(8464, 1, false)
 
 		await character?.onCharacterLoadingComplete()
 	}

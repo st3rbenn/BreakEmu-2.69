@@ -24,16 +24,13 @@ class MapPoint {
 
 	constructor(cellId?: number, x?: number, y?: number, point?: Point) {
 		if (cellId) {
-			console.log("cellId: " + cellId)
 			this.m_cellId = cellId
 			this.fromCellId()
 		} else if (point) {
-			console.log("point: " + point)
 			this.m_x = point.x
 			this.m_y = point.y
 			this.fromCoords()
 		} else if (x && y) {
-			console.log("x: " + x + " y: " + y)
 			this.m_x = x
 			this.m_y = y
 			this.fromCoords()
@@ -73,7 +70,7 @@ class MapPoint {
 					undefined,
 					num + num5,
 					num2 + num5,
-					undefined,
+					undefined
 				)
 				num5++
 			}
@@ -84,7 +81,7 @@ class MapPoint {
 					undefined,
 					num + num5,
 					num2 + num5,
-					undefined,
+					undefined
 				)
 				num5++
 			}
@@ -94,13 +91,22 @@ class MapPoint {
 	}
 
 	public static GetPoint(x?: number, y?: number, cell?: number): MapPoint {
-		if (x !== undefined && y !== undefined) return new MapPoint(undefined, x, y)
-		else if (cell !== undefined) return new MapPoint(cell)
-		else throw new Error("Invalid arguments")
+		if (x !== undefined && y !== undefined) {
+			return new MapPoint(undefined, x, y, undefined)
+		} else if (cell !== undefined) {
+			return new MapPoint(cell, undefined, undefined, undefined)
+		} else {
+			throw new Error("Invalid arguments")
+		}
 	}
 
-	public static isInMap(x: number, y: number): boolean {
-		return x + y >= 0 && x - y >= 0 && x - y < 40 && x + y < 28
+	public isInMap(): boolean {
+		return (
+			this.m_x + this.m_y >= 0 &&
+			this.m_x - this.m_y >= 0 &&
+			this.m_x - this.m_y < 40 &&
+			this.m_x + this.m_y < 28
+		)
 	}
 
 	public distanceTo(point: MapPoint): number {
@@ -207,7 +213,7 @@ class MapPoint {
 				break
 		}
 
-		if (mapPoint !== null && MapPoint.isInMap(mapPoint.x, mapPoint.y)) {
+		if (mapPoint !== null && this.isInMap()) {
 			return mapPoint
 		} else {
 			return null
@@ -235,34 +241,22 @@ class MapPoint {
 		predicate: (cellId: number) => boolean
 	): IterableIterator<MapPoint> {
 		let mapPoint: MapPoint = new MapPoint(this.m_x + 1, this.m_y)
-		if (
-			MapPoint.isInMap(mapPoint.x, mapPoint.y) &&
-			predicate(mapPoint.cellId)
-		) {
+		if (this.isInMap() && predicate(mapPoint.cellId)) {
 			yield mapPoint
 		}
 
 		let mapPoint2: MapPoint = new MapPoint(this.m_x, this.m_y - 1)
-		if (
-			MapPoint.isInMap(mapPoint2.x, mapPoint2.y) &&
-			predicate(mapPoint2.cellId)
-		) {
+		if (this.isInMap() && predicate(mapPoint2.cellId)) {
 			yield mapPoint2
 		}
 
 		let mapPoint3: MapPoint = new MapPoint(this.m_x, this.m_y + 1)
-		if (
-			MapPoint.isInMap(mapPoint3.x, mapPoint3.y) &&
-			predicate(mapPoint3.cellId)
-		) {
+		if (this.isInMap() && predicate(mapPoint3.cellId)) {
 			yield mapPoint3
 		}
 
 		let mapPoint4: MapPoint = new MapPoint(this.m_x - 1, this.m_y)
-		if (
-			MapPoint.isInMap(mapPoint4.x, mapPoint4.y) &&
-			predicate(mapPoint4.cellId)
-		) {
+		if (this.isInMap() && predicate(mapPoint4.cellId)) {
 			yield mapPoint4
 		}
 	}

@@ -64,14 +64,15 @@ class Job {
 		)
 	}
 
-	public static new(): Job[] {
-		const jobs: Job[] = []
+	public static new(): Map<number, Job> {
+		const jobs: Map<number, Job> = new Map<number, Job>()
 
 		for (const jobKey in JobTypeEnum) {
 			// Vérifiez si jobKey est une clé numérique
 			if (!isNaN(Number(jobKey))) {
 				// Convertissez la clé en nombre et créez un nouvel objet Job
-				jobs.push(new Job(Number(jobKey), 0))
+				const job = new Job(Number(jobKey), 0)
+				jobs.set(job.jobId, job)
 			}
 		}
 
@@ -89,15 +90,14 @@ class Job {
 		return jobJSON
 	}
 
-	public static loadFromJson(jobsJSON: any): Job[] {
-		const jobs: Job[] = []
+	public static loadFromJson(jobsJSON: any): Map<number, Job> {
+		const jobs: Map<number, Job> = new Map<number, Job>()
 		jobsJSON.forEach((job: any) => {
-			jobs.push(
-				new Job(
-					(Object.values(job)[0] as any).jobId,
-					(Object.values(job)[0] as any).experience
-				)
+			const j = new Job(
+				(Object.values(job)[0] as any).jobId,
+				(Object.values(job)[0] as any).experience
 			)
+			jobs.set(j.jobId, j)
 		})
 
 		return jobs

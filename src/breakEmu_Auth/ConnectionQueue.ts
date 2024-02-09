@@ -96,7 +96,7 @@ class ConnectionQueue {
 	private async processConnection(socket: IQueue): Promise<void> {
 		const client = new AuthClient(socket.socket)
 		await AuthServer.getInstance().AddClient(client)
-    client.setupEventHandlers()
+    	client.setupEventHandlers()
 
 		await client.initialize()
 	}

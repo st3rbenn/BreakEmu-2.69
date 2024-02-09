@@ -6,6 +6,7 @@ import ConfigurationManager from "./breakEmu_Core/configuration/ConfigurationMan
 import WorldServer from "./breakEmu_World/WorldServer"
 import WorldServerManager from "./breakEmu_World/WorldServerManager"
 import WorldTransition from "./breakEmu_World/WorldTransition"
+import { ServerStatusEnum } from "./breakEmu_Server/IO"
 
 class Main {
 	public logger: Logger = new Logger("Main")
@@ -14,9 +15,15 @@ class Main {
 		await this.logger.onStartup()
 		await ConfigurationManager.getInstance().Load()
 		await WorldTransition.getInstance().connect()
+		await WorldTransition.getInstance().handleServerStatusUpdate(
+			292,
+			ServerStatusEnum.STARTING.toString()
+		)
+
 		const dbInit = await Database.getInstance().initialize(true)
 		if (dbInit) {
-			WorldServer.getInstance(World.worlds[0].toWorldServerData()).Start()
+			const worldServerData = World.worlds[0].toWorldServerData()
+			await WorldServer.getInstance(worldServerData).Start()
 		}
 
 		await this.logger.writeAsync(`Server started!`, ansiColorCodes.bgGreen)
@@ -26,8 +33,18 @@ class Main {
 new Main().Start()
 
 process.on("SIGINT", async () => {
+	await WorldTransition.getInstance().handleServerStatusUpdate(
+		World.worlds[0].toWorldServerData().Id,
+		ServerStatusEnum.OFFLINE.toString()
+	)
 	await WorldServerManager.getInstance()._realmList[0].Stop()
 	await Database.getInstance().prisma.$disconnect()
 	await WorldTransition.getInstance().disconnect()
-	process.exit()
+	process.exit(0)
 })
+
+// setInterval(() => {
+//   const memoryUsage = process.memoryUsage();
+
+//   console.log(`Memory usage: ${memoryUsage.rss / 1024 / 1024} MB`);
+// }, 1000);

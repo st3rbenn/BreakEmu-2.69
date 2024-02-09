@@ -71,10 +71,10 @@ class AuthServerStatus {
   }
 
 	initializeHeader(): void {
-		setInterval(() => {
-			const playerCount = this.getPlayerCount()
-			this.updateHeader(playerCount)
-		}, 5000)
+		// setInterval(() => {
+		// 	const playerCount = this.getPlayerCount()
+		// 	this.updateHeader(playerCount)
+		// }, 5000)
 
 		this.screen.render()
 	}

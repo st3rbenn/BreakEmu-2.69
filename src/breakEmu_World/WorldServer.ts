@@ -7,6 +7,7 @@ import WorldTransition from "../breakEmu_World/WorldTransition"
 import WorldClient from "./WorldClient"
 import WorldServerData from "./WorldServerData"
 import ServerStatusEnum from "./enum/ServerStatusEnum"
+import World from "../breakEmu_API/model/world.model"
 
 class WorldServer {
 	public logger: Logger = new Logger("WorldServer")
@@ -35,23 +36,16 @@ class WorldServer {
 	}
 
 	public async Start(): Promise<void> {
-		this.logger.write(`Starting server ${this.worldServerData.Name}`)
-
 		const server = createServer(
 			async (socket) => await this.handleConnection(socket)
 		)
-		server.listen(
-			{ port: this.worldServerData.Port, host: this.worldServerData.Address },
-			() => {
-				this.SERVER_STATE = ServerStatusEnum.ONLINE
-				WorldTransition.getInstance().handleServerStatusUpdate(this)
-				this.logger.write(
-					`Server listening on ${this.worldServerData.Address}:${this.worldServerData.Port}`
-				)
-			}
-		)
+		server.listen({
+			port: this.worldServerData.Port,
+			host: this.worldServerData.Address,
+		})
 
 		this._server = server
+		this.SERVER_STATE = ServerStatusEnum.ONLINE
 
 		this._server.on("error", (err) => {
 			this.logger.write(
@@ -60,11 +54,15 @@ class WorldServer {
 			)
 		})
 
+		await WorldTransition.getInstance().handleServerStatusUpdate(
+			this.worldServerData.Id,
+			this.SERVER_STATE.toString()
+		)
 		await BullManager.getInstance().Start()
 	}
 
 	private async saveAllCharacters(): Promise<void> {
-    this.logger.write(`Saving all characters...`)
+		this.logger.write(`Saving all characters...`)
 		for (const client of this.clients.values()) {
 			if (client?.selectedCharacter) {
 				await CharacterController.getInstance().updateCharacter(
@@ -74,29 +72,19 @@ class WorldServer {
 		}
 	}
 
-  public async save(): Promise<void> {
-    await this.saveAllCharacters()
-  }
+	public async save(): Promise<void> {
+		await this.saveAllCharacters()
+	}
 
 	public async Stop(): Promise<void> {
 		this.logger.write(`Stoping server ${this.worldServerData.Name}`)
 		this.SERVER_STATE = ServerStatusEnum.STOPING
-		await WorldTransition.getInstance().send(
-			"ServerStatusUpdateMessage",
-			JSON.stringify({
-				serverId: this.worldServerData.Id,
-				status: this.SERVER_STATE.toString(),
-			})
-		)
 		this._server?.close(() => {
 			this.SERVER_STATE = ServerStatusEnum.OFFLINE
 		})
-		await WorldTransition.getInstance().send(
-			"ServerStatusUpdateMessage",
-			JSON.stringify({
-				serverId: this.worldServerData.Id,
-				status: this.SERVER_STATE.toString(),
-			})
+		WorldTransition.getInstance().handleServerStatusUpdate(
+			World.worlds[0].toWorldServerData().Id,
+			ServerStatusEnum.OFFLINE.toString()
 		)
 	}
 
@@ -114,29 +102,29 @@ class WorldServer {
 	}
 
 	public async AddClient(client: WorldClient): Promise<void> {
-		client.setupEventHandlers()
 		await client.initialize()
+		client.setupEventHandlers()
 
 		this.clients.set(client?.account?.id as number, client)
-		this.logger.write(
+		await this.logger.writeAsync(
 			`Client ${client.Socket.remoteAddress}:${client.Socket.remotePort} connected`
 		)
 	}
 
-	public RemoveClient(client: WorldClient): void {
-		this.logger.write(
+	public async removeClient(client: WorldClient): Promise<void> {
+		await this.logger.writeAsync(
 			`Client ${client.account?.pseudo} disconnected`,
 			ansiColorCodes.red
 		)
-
+		await client.selectedCharacter?.disconnect()
 		this.clients.delete(client?.account?.id as number)
-
-		this.logger.write(
-			`Total connected clients: ${this.TotalConnectedClients()}`
-		)
 	}
 
 	public TotalConnectedClients(): number {
+		this.logger.write(
+			`Total connected clients: ${this.TotalConnectedClients()}`
+		)
+		console.log(this.clients.values())
 		return this.clients.size
 	}
 }

@@ -2,8 +2,8 @@ import Character from "../../../breakEmu_API/model/character.model"
 import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
 import Logger from "../../../breakEmu_Core/Logger"
 import {
-  CharacterBaseInformations,
-  CharactersListMessage,
+	CharacterBaseInformations,
+	CharactersListMessage,
 } from "../../../breakEmu_Server/IO"
 import WorldClient from "../../../breakEmu_World/WorldClient"
 
@@ -21,16 +21,16 @@ class CharacterListHandler {
 				ansiColorCodes.bgYellow
 			)
 
-			if(characters) {
-        characters.forEach((c: Character) => {
-          characterToBaseInfo.push(c.toCharacterBaseInformations())
-        })
-      } else {
-        this.logger.write(
-          `No characters found for account ${client.account?.username}`,
-          ansiColorCodes.bgYellow
-        )
-      }
+			if (characters) {
+				characters.forEach((c: Character) => {
+					characterToBaseInfo.push(c.toCharacterBaseInformations())
+				})
+			} else {
+				this.logger.write(
+					`No characters found for account ${client.account?.username}`,
+					ansiColorCodes.bgYellow
+				)
+			}
 
 			await client.Send(
 				client.serialize(new CharactersListMessage(characterToBaseInfo))

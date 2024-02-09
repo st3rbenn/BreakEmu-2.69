@@ -73,7 +73,7 @@ class Experience {
   }
 
   public static getJobLevel(experience: number): number {
-    let level = 0
+    let level = 1
 
     for (let i = 0; i < this.experienceLevels.length; i++) {
       const exp = this.experienceLevels[i].jobExperience

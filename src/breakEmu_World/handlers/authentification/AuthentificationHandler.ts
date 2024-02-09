@@ -9,6 +9,9 @@ import {
 	AccountCapabilitiesMessage,
 	TrustStatusMessage,
 	AuthenticationTicketAcceptedMessage,
+	ServerSessionConstantsMessage,
+	ServerSessionConstantInteger,
+	ServerConstantTypeEnum,
 } from "../../../breakEmu_Server/IO"
 
 class AuthentificationHandler {
@@ -35,7 +38,25 @@ class AuthentificationHandler {
 		)
 		await client.Send(
 			client.serialize(
-				new ServerOptionalFeaturesMessage([3, 5, 13, 20, 124, 125, 143, 150])
+				new ServerOptionalFeaturesMessage([23])
+			)
+		)
+		await client.Send(
+			client.serialize(
+				new ServerSessionConstantsMessage([
+					new ServerSessionConstantInteger(
+						ServerConstantTypeEnum.KOH_DURATION,
+						7200000
+					),
+					new ServerSessionConstantInteger(
+						ServerConstantTypeEnum.UNKNOWN_6,
+						10
+					),
+					new ServerSessionConstantInteger(
+						ServerConstantTypeEnum.UNKNOWN_7,
+						2000
+					),
+				])
 			)
 		)
 		await client.Send(

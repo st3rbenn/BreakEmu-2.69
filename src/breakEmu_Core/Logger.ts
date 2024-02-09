@@ -74,7 +74,7 @@ class Logger {
 
 	public async onStartup(): Promise<void> {
 		await this.logo()
-    this.newLine();
+    	this.newLine();
 	}
 }
 

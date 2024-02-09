@@ -41,13 +41,6 @@ class WorldTransition extends TransitionServer {
 				ansiColorCodes.dim
 			)
 
-			// const account = await userController.getAccountByNickname(message.pseudo)
-
-			// if (!account) {
-			// 	await this.logger.writeAsync(
-			// 		`Account ${message.pseudo} not found`,
-			// 		ansiColorCodes.red
-			// 	)
 			return new WorldClient(socket, message.pseudo)
 		} catch (error) {
 			await this.logger.writeAsync(
@@ -58,12 +51,12 @@ class WorldTransition extends TransitionServer {
 		}
 	}
 
-	async handleServerStatusUpdate(world: WorldServer) {
-		await WorldTransition.getInstance().send(
-			"ServerStatusUpdateMessage",
+	async handleServerStatusUpdate(serverId: number, status: string) {
+		await this.publish(
+			"ServerStatusUpdateChannel",
 			JSON.stringify({
-				serverId: world.worldServerData.Id,
-				status: world.SERVER_STATE.toString(),
+				serverId: serverId,
+				status: status,
 			})
 		)
 	}

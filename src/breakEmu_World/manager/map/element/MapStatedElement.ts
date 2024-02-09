@@ -10,9 +10,8 @@ class MapStatedElement extends MapInteractiveElement {
     private _GROW_INTERVAL: number = 120
 
     private _character: Character
-    private _skill: InteractiveSkill
 
-    private _state: StatedElementState
+    private _state: StatedElementState = StatedElementState.Active
 
     constructor(record: InteractiveElementModel, mapInstance: MapInstance) {
         super(record, mapInstance)
@@ -20,16 +19,16 @@ class MapStatedElement extends MapInteractiveElement {
 
     public getStatedElement(): StatedElement {
         return new StatedElement(
-            this.record.identifier,
+            this.record.elementId,
             this.record.cellId,
             this.state,
             true
         )
     }
 
-    private updateState(state: StatedElementState) {
+    private async updateState(state: StatedElementState) {
         this.state = state
-        this.mapInstance.send(new StatedElementUpdatedMessage(this.getStatedElement()))
+        await this.mapInstance.send(new StatedElementUpdatedMessage(this.getStatedElement()))
     }
 
     public use(character: Character) {
@@ -59,7 +58,7 @@ class MapStatedElement extends MapInteractiveElement {
     }
 
     get skill(): InteractiveSkill {
-        return this._skill;
+        return this.skill;
     }
 
     get state(): StatedElementState {

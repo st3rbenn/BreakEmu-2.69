@@ -1,50 +1,69 @@
+import CharacterController from "../../breakEmu_API/controller/character.controller"
 import ConfigurationManager from "../../breakEmu_Core/configuration/ConfigurationManager"
+import Logger from "../../breakEmu_Core/Logger"
 import {
-  AlmanachCalendarDateMessage,
-  CharacterBaseInformations,
-  CharacterLoadingCompleteMessage,
-  CharacterStatsListMessage,
-  CharacteristicEnum,
-  CurrentMapMessage,
-  EmoteListMessage,
-  EntityDispositionInformations,
-  GameContextCreateMessage,
-  GameContextDestroyMessage,
-  GameContextEnum,
-  GameRolePlayActorInformations,
-  GameRolePlayShowActorMessage,
-  JobCrafterDirectorySettingsMessage,
-  JobDescriptionMessage,
-  JobExperienceMultiUpdateMessage,
-  ServerExperienceModificatorMessage,
-  ShortcutBarEnum,
-  SpellItem,
-  SpellListMessage,
-  StatsUpgradeResultEnum,
-  StatsUpgradeResultMessage,
-  TextInformationMessage,
-  TextInformationTypeEnum,
+	ActorAlignmentInformations,
+	ActorRestrictionsInformations,
+	AlmanachCalendarDateMessage,
+	BasicNoOperationMessage,
+	BasicTimeMessage,
+	CharacterBaseInformations,
+	CharacteristicEnum,
+	CharacterLoadingCompleteMessage,
+	CharacterStatsListMessage,
+	CurrentMapMessage,
+	EmoteListMessage,
+	EntityDispositionInformations,
+	GameContextCreateMessage,
+	GameContextDestroyMessage,
+	GameContextEnum,
+	GameMapMovementMessage,
+	GameMapNoMovementMessage,
+	GameRolePlayActorInformations,
+	GameRolePlayCharacterInformations,
+	HumanInformations,
+	HumanOption,
+	HumanOptionFollowers,
+	HumanOptionOrnament,
+	HumanOptionTitle,
+	JobCrafterDirectorySettingsMessage,
+	JobDescriptionMessage,
+	JobExperienceMultiUpdateMessage,
+	ServerExperienceModificatorMessage,
+	ShortcutBarEnum,
+	SpellItem,
+	SpellListMessage,
+	StatsUpgradeResultEnum,
+	StatsUpgradeResultMessage,
+	TextInformationMessage,
+	TextInformationTypeEnum,
 } from "../../breakEmu_Server/IO"
-import WorldClient from "../../breakEmu_World/WorldClient"
 import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
+import Entity from "../../breakEmu_World/manager/entities/Entity"
 import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
 import CharacterSpell from "../../breakEmu_World/manager/entities/spell/CharacterSpell"
 import Characteristic from "../../breakEmu_World/manager/entities/stats/characteristic"
 import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
 import Inventory from "../../breakEmu_World/manager/items/Inventory"
+import MapPoint from "../../breakEmu_World/manager/map/MapPoint"
+import PathReader from "../../breakEmu_World/manager/map/PathReader"
+import CharacterItemShortcut from "../../breakEmu_World/manager/shortcut/character/characterItemShortcut"
+import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
+import CharacterSpellShortcut from "../../breakEmu_World/manager/shortcut/character/characterSpellShortcut"
 import GeneralShortcutBar from "../../breakEmu_World/manager/shortcut/GeneralShortcutBar"
 import SpellShortcutBar from "../../breakEmu_World/manager/shortcut/SpellShortcutBar"
-import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
-import CharacterItemShortcut from "../../breakEmu_World/manager/shortcut/character/characterItemShortcut"
-import CharacterSpellShortcut from "../../breakEmu_World/manager/shortcut/character/characterSpellShortcut"
+import WorldClient from "../../breakEmu_World/WorldClient"
 import Breed from "./breed.model"
 import Experience from "./experience.model"
 import Finishmoves from "./finishmoves.model"
 import Job from "./job.model"
-import Entity from "../../breakEmu_World/manager/entities/Entity";
-import GameMap from "./map.model";
+import GameMap from "./map.model"
+import Skill from "./skill.model"
+import SkillManager from "../../breakEmu_World/manager/skills/SkillManager"
 
 class Character extends Entity {
+	private logger: Logger = new Logger("Character")
+
 	public _id: number
 	private _accountId: number
 	private _breed: Breed
@@ -60,27 +79,37 @@ class Character extends Entity {
 	private _kamas: number
 	private _guildId: number | null = null
 
+	public _map: GameMap | null = null
+
 	private _stats?: EntityStats
 	private _statsPoints: number
 	private _knownEmotes: number[]
 	private _shortcuts: Map<number, CharacterShortcut | undefined>
 	private _knownOrnaments: number[]
 	private _activeOrnament: number
-	private _jobs: Job[]
+	private _knownTitles: number[]
+	private _activeTitle: number
+	private _jobs: Map<number, Job>
 	private _spells: Map<number, CharacterSpell> = new Map()
 	private _spellShortcutBar: SpellShortcutBar
 	private _generalShortcutBar: GeneralShortcutBar
+	private _humanOptions: Map<number, HumanOption> = new Map()
+	private _skillsAllowed: Map<number, Skill> = new Map()
 
-	private _characters: Character[] = []
 	private _context: GameContextEnum | undefined
-
 	private _inventory: Inventory
 
 	private _finishmoves: Map<number, Finishmoves> = new Map()
 
 	private _client: WorldClient | undefined
 
-  // private _currantMap: Map
+	public changeMap: boolean = false
+	public isMoving: boolean = false
+	public busy: boolean = false
+	public movementKeys: number[] = []
+
+	public _point: MapPoint
+	private _movedCell: number | undefined
 
 	constructor(
 		id: number,
@@ -100,35 +129,37 @@ class Character extends Entity {
 		shortcuts: Map<number, CharacterShortcut>,
 		knownOrnaments: number[],
 		activeOrnament: number,
-		jobs: Job[],
+		jobs: Map<number, Job>,
 		finishMoves: Map<number, Finishmoves>,
+		map: GameMap | null,
 		stats?: EntityStats
 	) {
-		super(null)
-		this._id = id
-		this._accountId = accountId
-		this._breed = breed
-		this._sex = sex
-		this._cosmeticId = cosmeticId
-		this._name = name
-		this._experience = experience
-		this._level = Experience.getCharacterLevel(this.experience)
-		this._look = look
-		this._mapId = mapId
-		this._cellId = cellId
-		this._direction = direction
-		this._kamas = kamas
+		super(map)
+		this.id = id
+		this.accountId = accountId
+		this.breed = breed
+		this.sex = sex
+		this.cosmeticId = cosmeticId
+		this.name = name
+		this.experience = experience
+		this.level = Experience.getCharacterLevel(this.experience)
+		this.look = look
+		this.mapId = mapId
+		this.cellId = cellId
+		this.direction = direction
+		this.kamas = kamas
 		this._stats = stats
 		this.spells = new Map<number, CharacterSpell>()
-		this._statsPoints = statsPoints
-		this._knownEmotes = knownEmotes
-		this._shortcuts = shortcuts
+		this.statsPoints = statsPoints
+		this.knownEmotes = knownEmotes
+		this.shortcuts = shortcuts
 		this._spellShortcutBar = new SpellShortcutBar(this)
 		this._generalShortcutBar = new GeneralShortcutBar(this)
-		this._knownOrnaments = knownOrnaments
-		this._activeOrnament = activeOrnament
+		this.knownOrnaments = knownOrnaments
+		this.activeOrnament = activeOrnament
 		this._jobs = jobs
 		this._finishmoves = finishMoves
+		this.skillsAllowed = SkillManager.getInstance().getAllowedSkills(this)
 	}
 
 	public static create(
@@ -170,6 +201,7 @@ class Character extends Entity {
 			0,
 			Job.new(),
 			finishmoves,
+			GameMap.getMapById(mapId) as GameMap,
 			EntityStats.new(startLevel)
 		)
 
@@ -182,6 +214,10 @@ class Character extends Entity {
 		return this._id
 	}
 
+	public set id(id: number) {
+		this._id = id
+	}
+
 	public get client(): WorldClient | undefined {
 		return this._client
 	}
@@ -192,6 +228,10 @@ class Character extends Entity {
 
 	public get accountId(): number {
 		return this._accountId
+	}
+
+	public set accountId(accountId: number) {
+		this._accountId = accountId
 	}
 
 	public get breed(): Breed {
@@ -218,12 +258,44 @@ class Character extends Entity {
 		this._inventory = inventory
 	}
 
+	public get knownTitles(): number[] {
+		return this._knownTitles
+	}
+
+	public set knownTitles(knownTitles: number[]) {
+		this._knownTitles = knownTitles
+	}
+
+	public get activeTitle(): number {
+		return this._activeTitle
+	}
+
+	public set activeTitle(activeTitle: number) {
+		this._activeTitle = activeTitle
+	}
+
+	public get skillsAllowed(): Map<number, Skill> {
+		return this._skillsAllowed
+	}
+
+	public set skillsAllowed(skillsAllowed: Map<number, Skill>) {
+		this._skillsAllowed = skillsAllowed
+	}
+
 	public get cosmeticId(): number {
 		return this._cosmeticId
 	}
 
 	public set cosmeticId(cosmeticId: number) {
 		this._cosmeticId = cosmeticId
+	}
+
+	public get humanOptions(): Map<number, HumanOption> {
+		return this._humanOptions
+	}
+
+	public set humanOptions(humanOptions: Map<number, HumanOption>) {
+		this._humanOptions = humanOptions
 	}
 
 	public get name(): string {
@@ -240,14 +312,6 @@ class Character extends Entity {
 
 	public set experience(experience: number) {
 		this._experience = experience
-	}
-
-	public get characters(): Character[] {
-		return this._characters
-	}
-
-	public set characters(characters: Character[]) {
-		this._characters = characters
 	}
 
 	public get finishMoves(): Map<number, Finishmoves> {
@@ -325,7 +389,7 @@ class Character extends Entity {
 		) as Characteristic).base = statsPoints
 	}
 
-	public get jobs(): Job[] {
+	public get jobs(): Map<number, Job> {
 		return this._jobs
 	}
 
@@ -351,6 +415,25 @@ class Character extends Entity {
 
 	public set spells(spells: Map<number, CharacterSpell>) {
 		this._spells = spells
+	}
+
+	public get mapPoint(): MapPoint | undefined {
+		if (this._point === undefined) {
+			this._point = new MapPoint(this.cellId)
+		}
+		return this._point
+	}
+
+	public set mapPoint(point: MapPoint) {
+		this._point = point
+	}
+
+	public get movedCell(): number | undefined {
+		return this._movedCell
+	}
+
+	public set movedCell(value: number | undefined) {
+		this._movedCell = value
 	}
 
 	public get knownEmotes(): number[] {
@@ -389,62 +472,102 @@ class Character extends Entity {
 		return new CharacterBaseInformations(
 			this.id,
 			this.name,
-			this._level,
+			this.level,
 			this.look.toEntityLook(),
 			this.breed.id,
 			this.sex
 		)
 	}
 
-	getActorInformations(): GameRolePlayActorInformations {
+	public getActorInformations(): GameRolePlayCharacterInformations {
 		const entityDisposition = new EntityDispositionInformations(
 			this.cellId,
 			this.direction
 		)
 
-		return new GameRolePlayActorInformations(
+		return new GameRolePlayCharacterInformations(
 			this.id,
 			entityDisposition,
-			this.look.toEntityLook()
+			this.look.toEntityLook(),
+			this.name,
+			new HumanInformations(this.getActorRestrictions(), this.sex, Array.from(this.humanOptions.values())),
+			this.accountId,
+			this.getActorAlignementInformations()
 		)
+	}
+
+	public getActorRestrictions() {
+		return new ActorRestrictionsInformations(
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false
+		)
+	}
+
+	public getActorAlignementInformations() {
+		return new ActorAlignmentInformations(0, 0, 0, 0)
+	}
+
+	public createHumanOptions() {
+		this.humanOptions.set(1, new HumanOptionFollowers([]))
+
+		this.humanOptions.set(2, new HumanOptionOrnament(128, this.level, 0, 2))
+
+		// if (this.activeTitle > 0) {
+		// 	this.humanOptions.set(3, new HumanOptionTitle(335, ""))
+		// }
+
+		if (this.guildId !== null) {
+			// this.humanOptions.set(3, new HumanOptionGuild(this.activeTitle, ""))
+		}
 	}
 
 	public async refreshJobs() {
-		await this?.client?.Send(
-			this?.client?.serialize(
-				new JobCrafterDirectorySettingsMessage(
-					this.jobs.map((x) => x.getDirectorySettings())
-				)
-			)
-		)
-		await this?.client?.Send(
-			this?.client?.serialize(
-				new JobDescriptionMessage(this.jobs.map((x) => x.getJobDescription()))
-			)
-		)
-		await this?.client?.Send(
-			this?.client?.serialize(
-				new JobExperienceMultiUpdateMessage(
-					this.jobs.map((x) => x.getJobExperience())
-				)
-			)
-		)
-	}
+		let directorySettings = []
+		let jobDescription = []
+		let jobExperience = []
 
-	public async sendGameRolePlayActorInformations() {
-		const entityDisposition = new EntityDispositionInformations(
-			this.cellId as number,
-			this.direction as number
-		)
-		const gameRolePlayShowActorMessage = new GameRolePlayActorInformations(
-			this.id,
-			entityDisposition,
-			this.look.toEntityLook()
-		)
+		for (const job of this.jobs.values()) {
+			directorySettings.push(job.getDirectorySettings())
+		}
+
+		for (const job of this.jobs.values()) {
+			jobDescription.push(job.getJobDescription())
+		}
+
+		for (const job of this.jobs.values()) {
+			jobExperience.push(job.getJobExperience())
+		}
 
 		await this?.client?.Send(
 			this?.client?.serialize(
-				new GameRolePlayShowActorMessage(gameRolePlayShowActorMessage)
+				new JobCrafterDirectorySettingsMessage(directorySettings)
+			)
+		)
+		await this?.client?.Send(
+			this?.client?.serialize(new JobDescriptionMessage(jobDescription))
+		)
+		await this?.client?.Send(
+			this?.client?.serialize(
+				new JobExperienceMultiUpdateMessage(jobExperience)
 			)
 		)
 	}
@@ -473,20 +596,144 @@ class Character extends Entity {
 		await this.refreshEmotes()
 		await this.client?.selectedCharacter?.inventory.refresh()
 		await this.refreshShortcuts()
+		this.createHumanOptions()
 		await this.sendServerExperienceModificator()
 	}
 
-	public async refreshActorOnMap() {
-		//TODO: Send actor on map it means to all players on the map
-		console.log("refreshActorOnMap")
+	public async move(keys: number[]) {
+		if (!this.busy) {
+			const clientCellId = PathReader.readCell(keys[0] as number)
+
+			if (clientCellId === this.cellId) {
+				this.direction = PathReader.readDirection(
+					keys[keys.length - 1] as number
+				)
+				this.movedCell = PathReader.readCell(keys[keys.length - 1] as number)
+				this.isMoving = true
+				this.movementKeys = keys
+				await this.sendMap(new GameMapMovementMessage(keys, 0, this.id))
+			}
+		}
+	}
+
+	public async stopMove() {
+		this.cellId = this.movedCell as number
+		this.movedCell = 0
+		this.isMoving = false
+		this.movementKeys = []
+
+		// let element = this.map?.instance
+		// 	.getElements<MapElement>(MapElement)
+		// 	.map((x) => x)
+		// 	.find((x) => x.record.cellId === this.cellId)
+
+		// if (
+		// 	element != null &&
+		// 	element.record.skill != null &&
+		// 	element.record.skill.actionIdentifier == GenericActionEnum.Teleport
+		// ) {
+		// 	console.log(`Try to use element ${element.record.elementId}`)
+		// 	/*this.map?.instance.useInteractive(this, element.record.elementId, 0)*/
+		// }
+	}
+
+	public async noMove() {
 		await this.client?.Send(
-			this.client.serialize(
-				new GameRolePlayShowActorMessage(this.getActorInformations())
+			this.client?.serialize(
+				new GameMapNoMovementMessage(
+					this.mapPoint?.x as number,
+					this.mapPoint?.y as number
+				)
 			)
 		)
 	}
 
-  public async sendOnMap() {}
+	public async cancelMove(cellId: number) {
+		this.isMoving = false
+		this.cellId = cellId
+		this.client?.Send(this.client?.serialize(new BasicNoOperationMessage()))
+	}
+
+	public async teleport(mapId: number, cellId: number | null = null) {
+		await this.teleportPlayer(GameMap.getMapById(mapId) as GameMap, cellId)
+	}
+
+	public async teleportPlayer(
+		teleportMap: GameMap,
+		cellId: number | null = null
+	) {
+		if (this.busy) return
+
+		this.changeMap = true
+
+		if (cellId === null) {
+			cellId = teleportMap.getNearestCellId(this.cellId)
+		}
+
+		this.cellId = cellId
+		this.mapId = teleportMap.id
+
+		if (this.map !== null) {
+			await this.map.instance.removeEntity(this)
+		}
+
+		this.map = teleportMap
+		this.mapPoint = new MapPoint(cellId)
+
+		await this.currentMapMessage(this.mapId)
+	}
+
+	public async currentMapMessage(mapId: number) {
+		await this?.client?.Send(
+			this?.client?.serialize(new CurrentMapMessage(mapId))
+		)
+	}
+
+	public async onEnterMap() {
+		this.changeMap = false
+
+		await this.map?.instance.addEntity(this)
+
+		await this.map?.instance.sendMapComplementaryInformations(
+			this.client as WorldClient
+		)
+		/*this.map?.instance.sendMapFightCount(this.client)*/
+
+		const mapCharacters = this.map?.instance.getEntities<Character>(Character)
+
+		for (const player of mapCharacters as Character[]) {
+			if (player.isMoving) {
+				await this.client?.Send(
+					this.client?.serialize(
+						new GameMapMovementMessage(player.movementKeys, 0, player.id)
+					)
+				)
+				await this.client?.Send(
+					this.client?.serialize(new BasicNoOperationMessage())
+				)
+			}
+		}
+
+		await this.client?.Send(
+			this.client?.serialize(new BasicNoOperationMessage())
+		)
+		const date = new Date()
+		const unixTime = Math.round(date.getTime() / 1000)
+		await this.client?.Send(
+			this.client?.serialize(new BasicTimeMessage(unixTime, 1))
+		)
+	}
+
+	public async createContext(context: number) {
+		await this?.client?.Send(
+			this?.client?.serialize(new GameContextCreateMessage(context))
+		)
+		this._context = context
+	}
+
+	public async refreshEmotes() {
+		await this?.client?.Send(this?.client?.serialize(new EmoteListMessage([])))
+	}
 
 	public async onCharacterLoadingComplete() {
 		await this.onConnected()
@@ -524,23 +771,6 @@ class Character extends Entity {
 		)
 	}
 
-	public async teleport(mapId: number, cellId: number) {
-		await this?.client?.Send(
-			this?.client?.serialize(new CurrentMapMessage(mapId))
-		)
-	}
-
-	public async createContext(context: number) {
-		await this?.client?.Send(
-			this?.client?.serialize(new GameContextCreateMessage(context))
-		)
-		this._context = context
-	}
-
-	public async refreshEmotes() {
-		await this?.client?.Send(this?.client?.serialize(new EmoteListMessage([])))
-	}
-
 	public applyPolice(value: any, bold: boolean, underline: boolean): string {
 		if (bold) {
 			value = `<b>${value}</b>`
@@ -566,7 +796,7 @@ class Character extends Entity {
 		underline: boolean = false
 	): Promise<void> {
 		value = this.applyPolice(value, bold, underline)
-		// Remplacez la ligne suivante par votre propre logique d'envoi
+
 		await this?.client?.Send(
 			this?.client?.serialize(
 				new TextInformationMessage(0, 0, [
@@ -696,6 +926,12 @@ class Character extends Entity {
 				new StatsUpgradeResultMessage(result, nbCharacBoost)
 			)
 		)
+	}
+
+	public async disconnect() {
+		await this.destroyContext()
+		await this.map?.instance.removeEntity(this)
+		await CharacterController.getInstance().updateCharacter(this)
 	}
 
 	public static loadShortcutsFromJson(

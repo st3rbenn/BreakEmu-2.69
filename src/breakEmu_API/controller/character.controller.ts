@@ -1,14 +1,12 @@
-import { randomUUID } from "crypto"
 import Account from "../../breakEmu_API/model/account.model"
-import CharacterItem from "../../breakEmu_API/model/characterItem.model"
 import Experience from "../../breakEmu_API/model/experience.model"
 import Finishmoves from "../../breakEmu_API/model/finishmoves.model"
-import Item from "../../breakEmu_API/model/item.model"
 import Job from "../../breakEmu_API/model/job.model"
+import GameMap from "../../breakEmu_API/model/map.model"
 import Spell from "../../breakEmu_API/model/spell.model"
 import Logger from "../../breakEmu_Core/Logger"
 import ConfigurationManager from "../../breakEmu_Core/configuration/ConfigurationManager"
-import { CharacterCreationRequestMessage, StatsUpgradeResultEnum } from "../../breakEmu_Server/IO"
+import { CharacterCreationRequestMessage } from "../../breakEmu_Server/IO"
 import CharacterCreationResultEnum from "../../breakEmu_World/enum/CharacterCreationResultEnum"
 import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
 import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
@@ -17,7 +15,6 @@ import Inventory from "../../breakEmu_World/manager/items/Inventory"
 import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
 import Database from "../Database"
 import Character from "../model/character.model"
-import CharacterItemController from "./characterItem.controller"
 
 class CharacterController {
 	public _logger: Logger = new Logger("CharacterController")
@@ -76,6 +73,7 @@ class CharacterController {
 					Finishmoves.loadFromJson(
 						JSON.parse(c.finishMoves?.toString() as string)
 					),
+					GameMap.getMapById(Number(c.mapId)) as GameMap,
 					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string))
 				)
 
@@ -162,7 +160,12 @@ class CharacterController {
 				startLevel - 1
 			)
 
-			const jobs = Job.new().map((job) => job.saveAsJSON())
+			let jobs: Job[] = []
+
+			Job.new().forEach((job) => {
+				jobs.push(job)
+			})
+
 			const stats = EntityStats.new(startLevel).saveAsJSON()
 
 			const newCharacter = await this._database.prisma.character.create({
@@ -237,6 +240,13 @@ class CharacterController {
 
 	public async updateCharacter(character: Character) {
 		try {
+      const jobs: Job[] = []
+      
+      character?.jobs.forEach((job) => {
+        jobs.push(job)
+      })
+
+
 			await this._database.prisma.character.update({
 				where: {
 					id: character.id,
@@ -253,7 +263,7 @@ class CharacterController {
 					kamas: character.kamas,
 					statsPoints: character.statsPoints,
 					stats: JSON.stringify(character?.stats?.saveAsJSON()),
-					jobs: JSON.stringify(character?.jobs?.map((job) => job.saveAsJSON())),
+					jobs: JSON.stringify(jobs.map((job) => job.saveAsJSON())),
 					shortcuts: character.saveShortcutsAsJSON(),
 					spells: character.saveSpellsAsJSON(),
 					finishMoves: character.saveFinishmovesAsJSON(),

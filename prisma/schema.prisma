@@ -340,3 +340,11 @@ model map {
   cells             Json
   elements          Json
 }
+
+model mapScrollAction {
+  id          Int @id
+  rightMapId  Int
+  leftMapId   Int
+  topMapId    Int
+  bottomMapId Int
+}
