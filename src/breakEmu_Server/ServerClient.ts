@@ -26,11 +26,21 @@ abstract class ServerClient {
     return this.socket
   }
 
-  public async Send(messageData: Buffer): Promise<void> {
+  public async Send(messageData: DofusMessage): Promise<void> {
     if (ConfigurationManager.getInstance().showProtocolMessage) {
     }
 
-    if(this.socket.write(messageData)) {
+    const isMessageSend = this.socket.write(this.serialize(messageData), (error) => {
+      if (error) {
+        this.logger.writeAsync(
+          `Error sending message: ${error.stack}`,
+          ansiColorCodes.red
+        )
+      }
+    
+    })
+
+    if(isMessageSend) {
       await this.logger.writeAsync(`Message '${messages[this._messageTemp.id].name}' sent !`, ansiColorCodes.green)
     }
     // await new Promise(async (resolve, reject) => {

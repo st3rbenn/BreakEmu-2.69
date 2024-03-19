@@ -49,10 +49,10 @@ class BreedManager {
 		return this._breeds.find((b) => b.id === id) as Breed
 	}
 
-	public learnBreedSpells(character: Character) {
-		character.learnSpell(0, false)
-		character.breed.breedSpells.map((spellId) => {
-			character.learnSpell(spellId, false)
+	public async learnBreedSpells(character: Character) {
+		await character.learnSpell(0, false)
+		character.breed.breedSpells.map(async (spellId) => {
+			await character.learnSpell(spellId, false)
 		})
 	}
 }

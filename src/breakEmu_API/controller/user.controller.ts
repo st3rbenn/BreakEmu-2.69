@@ -1,24 +1,23 @@
 import { Prisma } from "@prisma/client"
+import Bank from "../../breakEmu_World/manager/items/Bank"
 import Character from "../../breakEmu_API/model/character.model"
-import CharacterItem from "../../breakEmu_API/model/characterItem.model"
 import Finishmoves from "../../breakEmu_API/model/finishmoves.model"
 import Job from "../../breakEmu_API/model/job.model"
+import GameMap from "../../breakEmu_API/model/map.model"
 import Spell from "../../breakEmu_API/model/spell.model"
 import AuthClient from "../../breakEmu_Auth/AuthClient"
-import { ansiColorCodes } from "../../breakEmu_Core/Colors"
 import Logger from "../../breakEmu_Core/Logger"
+import WorldClient from "../../breakEmu_World/WorldClient"
 import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
-import Effect from "../../breakEmu_World/manager/entities/effect/Effect"
-import EffectCollection from "../../breakEmu_World/manager/entities/effect/EffectCollection"
 import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
 import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
+import Inventory from "../../breakEmu_World/manager/items/Inventory"
+import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
 import Database from "../Database"
 import Account from "../model/account.model"
+import bankItemController from "./bankItem.controller"
 import BaseController from "./base.controller"
-import Inventory from "../../breakEmu_World/manager/items/Inventory"
-import WorldClient from "../../breakEmu_World/WorldClient"
-import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
-import GameMap from "../../breakEmu_API/model/map.model"
+import CharacterItemController from "./characterItem.controller"
 
 class UserController extends BaseController {
 	public _logger: Logger = new Logger("UserController")
@@ -138,6 +137,12 @@ class UserController extends BaseController {
 					character.stats.client = client
 				}
 
+        character.account = account
+
+        character.knownZaaps = Character.loadKnownZaapsFromJson(
+          JSON.parse(c.knownZaaps?.toString() as string)
+        )
+
 				const shrts = Character.loadShortcutsFromJson(
 					JSON.parse(c.shortcuts?.toString() as string)
 				)
@@ -150,15 +155,11 @@ class UserController extends BaseController {
 					character
 				)
 
-				let items: CharacterItem[] = []
-
-				CharacterItem.charactersItems.forEach((item) => {
-					if (item.characterId === character.id) {
-						items.push(item)
-					}
-				})
+				const items = await CharacterItemController.getInstance().getCharacterItemsByCharacterId(character.id)
+        const bankItems = await bankItemController.getInstance().getBankItems(account.id)
 
 				character.inventory = new Inventory(character, items)
+        character.bank = new Bank(character, bankItems)
 
 				account.characters.set(character.id, character)
 			}

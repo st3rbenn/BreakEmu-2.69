@@ -49,7 +49,6 @@ class EffectCollection {
 	}
 
 	public generate(perfect: boolean = false) {
-    console.log("item perfect ?: ", perfect)
 		const result: EffectCollection = new EffectCollection()
 
 		const random = new AsyncRandom()

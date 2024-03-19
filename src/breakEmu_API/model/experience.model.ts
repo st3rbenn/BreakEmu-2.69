@@ -1,94 +1,122 @@
 class Experience {
-	private _level: number
-	private _characterExp: number
-  private _jobExp: number
-  private _guildExp: number
-  private _mountExp: number
+	level: number
+	characterExp: number
+	jobExp: number
+	guildExp: number
+	mountExp: number
 
-	private static _maxLevel: number
-	private static _experienceLevels: Experience[] = []
+	nextLevel: Experience | null = null
 
-	constructor(level: number, characterExp: number, jobExp: number, guildExp: number, mountExp: number) {
-		this._level = level
-		this._characterExp = characterExp
-    this._jobExp = jobExp
-    this._guildExp = guildExp
-    this._mountExp = mountExp
+	static maxCharacterLevel: number
+	static experiences: Map<number, Experience> = new Map()
+	static maxJobLevel: number
+	static maxGuildLevel: number
+	static maxMountLevel: number
+
+	constructor(
+		level: number,
+		characterExp: number,
+		jobExp: number,
+		guildExp: number,
+		mountExp: number
+	) {
+		this.level = level
+		this.characterExp = characterExp
+		this.jobExp = jobExp
+		this.guildExp = guildExp
+		this.mountExp = mountExp
 	}
 
-	public get level(): number {
-		return this._level
+	public static set experienceLevels(
+		experienceLevels: Map<number, Experience>
+	) {
+		this.experiences = experienceLevels
+
+		// Calculer les niveaux maximaux
+		this.calculateMaxLevels()
+
+		// Calculer les niveaux suivants
+		this.calculateNextLevels()
 	}
 
-	public get characterExperience(): number {
-		return this._characterExp
+	private static calculateMaxLevels() {
+		// Réinitialiser les niveaux maximaux
+		this.maxCharacterLevel = 0
+		this.maxJobLevel = 0
+		this.maxGuildLevel = 0
+		this.maxMountLevel = 0
+
+		for (const exp of this.experiences.values()) {
+			if (exp.characterExp > 0) this.maxCharacterLevel = exp.level
+			if (exp.jobExp > 0) this.maxJobLevel = exp.level
+			if (exp.guildExp > 0) this.maxGuildLevel = exp.level
+			if (exp.mountExp > 0) this.maxMountLevel = exp.level
+		}
 	}
 
-  public get jobExperience(): number {
-    return this._jobExp
-  }
+	private static calculateNextLevels() {
+		let previousLevel = null
 
-  public get guildExperience(): number {
-    return this._guildExp
-  }
+		for (const exp of this.experiences.values()) {
+			if (previousLevel) {
+				previousLevel.nextLevel = exp
+			}
 
-  public get mountExperience(): number {
-    return this._mountExp
-  }
-
-	public static get experienceLevels(): Experience[] {
-		return this._experienceLevels
+			previousLevel = exp
+		}
 	}
 
-	public static set experienceLevels(experienceLevels: Experience[]) {
-		this._experienceLevels = experienceLevels
-
-		this._maxLevel = experienceLevels[experienceLevels.length - 1].level
-	}
-
-	public static get maxLevel(): number {
-		return this._maxLevel
+	public static getExperienceLevel(level: number): Experience {
+		return this.experiences.get(level) as Experience
 	}
 
 	public static getCharacterLevel(experience: number): number {
-		let level = 0
+		let level = 1
 
-		for (let i = 0; i < this.experienceLevels.length; i++) {
-			const exp = this.experienceLevels[i].characterExperience
-
-			if (experience >= exp) {
-				level = this.experienceLevels[i].level
+		// Itérer directement sur les valeurs de la Map sans la convertir en Array
+		for (const value of this.experiences.values()) {
+			if (experience >= value.characterExp) {
+				level = value.level
 			}
 		}
 
 		return level
 	}
 
-  public static getCharacterExperienceLevelFloor(level: number): number {
-    return this.experienceLevels[level].characterExperience
-  }
+	public static getCharacterExperienceLevelFloor(level: number): number {
+		const nextLevel = this.experiences.get(level) as Experience
+		return nextLevel.characterExp
+	}
 
-  public static getCharacterExperienceNextLevelFloor(level: number): number {
-    return this.experienceLevels[level + 1].characterExperience
-  }
+	public static getCharacterExperienceNextLevelFloor(level: number): number {
+		const nextLevel = this.experiences.get(level + 1) as Experience
+		return nextLevel.characterExp
+	}
 
-  public static getJobLevel(experience: number): number {
-    let level = 1
+	public static getJobLevel(experience: number): number {
+		let level = 1
 
-    for (let i = 0; i < this.experienceLevels.length; i++) {
-      const exp = this.experienceLevels[i].jobExperience
-
-      if (experience >= exp && exp !== 0) {
-        level = this.experienceLevels[i].level
+		// Itérer directement sur les valeurs de la Map sans la convertir en Array
+		for (const value of this.experiences.values()) {
+			if (experience >= value.jobExp) {
+				level = value.level
+			} else {
+        break
       }
-    }
+		}
 
-    return level
-  }
+		return level
+	}
 
-  public static getJobLevelFloor(level: number): number {
-    return this.experienceLevels[level].jobExperience
-  }
+	public static getJobLevelFloor(level: number): number {
+		const nextLevel = this.experiences.get(level) as Experience
+		return nextLevel.jobExp
+	}
+
+	public static getJobLevelNextFloor(level: number): number {
+		const nextLevel = this.experiences.get(level + 1) as Experience
+		return nextLevel.jobExp
+	}
 }
 
 export default Experience

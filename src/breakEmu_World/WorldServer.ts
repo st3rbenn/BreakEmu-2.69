@@ -1,13 +1,17 @@
 import { Server, Socket, createServer } from "net"
 import CharacterController from "../breakEmu_API/controller/character.controller"
-import BullManager from "../breakEmu_Core/BullManager"
+import Character from "../breakEmu_API/model/character.model"
+import GameMap from "../breakEmu_API/model/map.model"
+import World from "../breakEmu_API/model/world.model"
+import BullManager from "../breakEmu_Core/bull/TaskManager"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import WorldTransition from "../breakEmu_World/WorldTransition"
 import WorldClient from "./WorldClient"
 import WorldServerData from "./WorldServerData"
 import ServerStatusEnum from "./enum/ServerStatusEnum"
-import World from "../breakEmu_API/model/world.model"
+import SaveTask from "../breakEmu_Core/bull/tasks/SaveTask"
+import TaskManager from "../breakEmu_Core/bull/TaskManager"
 
 class WorldServer {
 	public logger: Logger = new Logger("WorldServer")
@@ -58,13 +62,19 @@ class WorldServer {
 			this.worldServerData.Id,
 			this.SERVER_STATE.toString()
 		)
-		await BullManager.getInstance().Start()
+
+		TaskManager.getInstance().saveTaskHandler().setCron("*/5 * * * *").run()
+
+		TaskManager.getInstance().elementBonusHandler()
 	}
 
 	private async saveAllCharacters(): Promise<void> {
-		this.logger.write(`Saving all characters...`)
+		await this.logger.writeAsync(`Saving all characters...`)
 		for (const client of this.clients.values()) {
 			if (client?.selectedCharacter) {
+				await this.logger.writeAsync(
+					`Saving character ${client.selectedCharacter.name}`
+				)
 				await CharacterController.getInstance().updateCharacter(
 					client.selectedCharacter
 				)
@@ -124,7 +134,6 @@ class WorldServer {
 		this.logger.write(
 			`Total connected clients: ${this.TotalConnectedClients()}`
 		)
-		console.log(this.clients.values())
 		return this.clients.size
 	}
 }

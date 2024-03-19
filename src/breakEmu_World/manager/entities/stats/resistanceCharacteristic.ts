@@ -11,30 +11,6 @@ class ResistanceCharacteristic extends LimitCharacteristic {
     return true
   }
 
-  public override get base(): number {
-    return super.base
-  }
-
-  public override set base(base: number) {
-    super.base = base
-  }
-
-  public override get additional(): number {
-    return super.additional
-  }
-
-  public override set additional(additional: number) {
-    super.additional = additional
-  }
-
-  public override get objects(): number {
-    return super.objects
-  }
-
-  public override set objects(objects: number) {
-    super.objects = objects
-  }
-
   public static new(base: number): ResistanceCharacteristic {
     return new ResistanceCharacteristic(base)
   }

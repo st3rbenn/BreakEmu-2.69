@@ -2,7 +2,10 @@ import InteractiveElementModel from "../../../../breakEmu_API/model/InteractiveE
 import Character from "../../../../breakEmu_API/model/character.model"
 import { InteractiveElement } from "../../../../breakEmu_Server/IO"
 import MapInstance from "../MapInstance"
-import { InteractiveElementSkill } from "./../../../../breakEmu_Server/IO/network/protocol"
+import {
+	InteractiveElementSkill,
+	InteractiveElementWithAgeBonus,
+} from "./../../../../breakEmu_Server/IO/network/protocol"
 import MapElement from "./MapElement"
 
 class MapInteractiveElement extends MapElement {
@@ -12,40 +15,35 @@ class MapInteractiveElement extends MapElement {
 
 	public getInteractiveElement(character: Character): InteractiveElement {
 		const interactiveElementSkills: InteractiveElementSkill[] = [
-			// new InteractiveElementSkill(
-			// 	this.record.skill.skillId,
-			// 	this.record.skill.id
-			// ),
+			new InteractiveElementSkill(
+				this.record.skill?.skillId,
+				this.record.skill?.id
+			),
 		]
 
-		character.skillsAllowed.forEach((skill) => {
-			if (skill.Id == this.record.skill.record.Id) {
-				interactiveElementSkills.push(
-					new InteractiveElementSkill(
-						this.record.skill.skillId,
-						this.record.skill.id
-					)
-				)
-			}
-		})
-
-		console.log(interactiveElementSkills)
-
-		if (interactiveElementSkills.length >= 1) {
-			return new InteractiveElement(
-				this.record.elementId,
-				this.record.skill.type,
+		if (
+			character.skillsAllowed.get(this.record?.skill?.skillId) &&
+			this.record.harvestable &&
+			!character.busy
+		) {
+			// console.log('Allowed skills: ', this.record?.skill?.skillId)
+			return new InteractiveElementWithAgeBonus(
+				this.record?.skill?.identifier,
+				this.record?.skill?.type,
 				interactiveElementSkills,
-				[new InteractiveElementSkill(0, 0)],
-				true
+				[],
+				character.mapId === this.record.mapId,
+				this.record.ageBonus
 			)
 		} else {
-			return new InteractiveElement(
-				this.record.elementId,
-				this.record.skill.type,
-				[new InteractiveElementSkill(0, 0)],
+			// console.log('Not allowed skills: ', this.record?.skill?.skillId)
+			return new InteractiveElementWithAgeBonus(
+				this.record?.skill?.identifier,
+				this.record?.skill?.type,
+				[],
 				interactiveElementSkills,
-				true
+				character.mapId === this.record.mapId,
+				this.record.ageBonus
 			)
 		}
 	}

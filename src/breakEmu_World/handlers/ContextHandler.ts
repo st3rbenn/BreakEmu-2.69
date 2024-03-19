@@ -1,10 +1,10 @@
 import Character from "../../breakEmu_API/model/character.model"
 import { GameContextEnum } from "../../breakEmu_Server/IO"
 
-
 class ContextHandler {
 	public static async handleGameContextCreateMessage(character: Character) {
 		let inFight: boolean = false
+		character.inGame = true
 
 		if (inFight) {
 			await character.destroyContext()

@@ -112,7 +112,7 @@ abstract class ItemCollection<T extends AbstractItem> {
 		this.onItemsQuantityChanged(unstackedItems)
 	}
 
-	public async addItem(item: T, quantity: number = 1) {
+	public async addItem(item: T, quantity: number = 1, characterId: number) {
 		try {
 			item.initialize()
 
@@ -120,15 +120,20 @@ abstract class ItemCollection<T extends AbstractItem> {
 
 			if (sameItem) {
 				sameItem.quantity += quantity
-				this.onItemStacked(sameItem)
 				this.onItemQuantityChanged(sameItem)
+				this.onItemStacked(sameItem)
 			} else {
-				const id = await CharacterItemController.getInstance().getIntIdFromUuid(
-					item.uId
+				const {
+					characterItem,
+					idMapping,
+				} = await CharacterItemController.getInstance().createCharacterItemWithMapping(
+					item,
+					characterId
 				)
-				this._items.set(id as number, item)
+				this._items.set(idMapping.intId as number, item)
 				this.onItemAdded(item)
 			}
+
 		} catch (error) {
 			console.log(error)
 		}
@@ -160,10 +165,15 @@ abstract class ItemCollection<T extends AbstractItem> {
 	}
 
 	public async getSameItem(item: T): Promise<T | undefined> {
-		const id = await CharacterItemController.getInstance().getIntIdFromUuid(
-			item.uId
-		)
-		return this._items.get(id as number)
+		let same: T
+
+		for (const [key, value] of this._items) {
+			if (value.record.id == item.gId) {
+				console.log("same item found")
+				same = value
+				return same
+			}
+		}
 	}
 
 	public async getObjectsItems(): Promise<ObjectItem[]> {
@@ -177,9 +187,9 @@ abstract class ItemCollection<T extends AbstractItem> {
 		return objectsItems
 	}
 
-  public async getItem(id: number): Promise<T | undefined> {
-    return this._items.get(id)
-  }
+	public async getItem(id: number): Promise<T | undefined> {
+		return this._items.get(id)
+	}
 }
 
 export default ItemCollection

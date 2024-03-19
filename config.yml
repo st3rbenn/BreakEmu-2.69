@@ -28,4 +28,5 @@ dofus:
   startKamas: 0
   startStatsPoints: 5
   XpRate: 1.5
+  jobXpRate: 1.5
   dropRate: 1.5

@@ -48,7 +48,6 @@ class ShortcutHandler {
 	): Promise<void> {
 		try {
 			const { barType, shortcut } = message
-			console.log("newShortcut", message)
 
 			if (barType === ShortcutBarEnum.GENERAL_SHORTCUT_BAR) {
 				const sh = shortcut as ShortcutObjectItem

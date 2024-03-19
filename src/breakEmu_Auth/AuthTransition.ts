@@ -45,7 +45,7 @@ class AuthTransition extends TransitionServer {
 				gameServerMessage
 			)
 
-			await client.Send(client.serialize(serverStatusUpdateMessage))
+			await client.Send(serverStatusUpdateMessage)
 		}
 	}
 
@@ -60,10 +60,10 @@ class AuthTransition extends TransitionServer {
 	}
 
 	public async startListeningForServerStatusUpdates(): Promise<void> {
-    await this.subscribe('ServerStatusUpdateChannel', (message) => {
-      this.handleServerStatusUpdateMessage(message)
-    });
-}
+		await this.subscribe("ServerStatusUpdateChannel", (message) => {
+			this.handleServerStatusUpdateMessage(message)
+		})
+	}
 }
 
 export default AuthTransition

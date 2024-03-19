@@ -1,5 +1,4 @@
-import { ansiColorCodes } from "../../breakEmu_Core/Colors"
-import Logger from "../../breakEmu_Core/Logger"
+import InteractiveElementBonus from "../../breakEmu_Core/bull/tasks/BonusTask"
 import MapInstance from "../../breakEmu_World/manager/map/MapInstance"
 import MapPoint from "../../breakEmu_World/manager/map/MapPoint"
 import MapElement from "../../breakEmu_World/manager/map/element/MapElement"
@@ -9,14 +8,20 @@ import InteractiveSkill from "./InteractiveSkill.model"
 import { InteractiveElementData } from "./map.model"
 
 class InteractiveElementModel {
-	private _id: number
-	private _elementId: number
-	private _cellId: number
-	private _mapId: number
-	private _gfxId: number
-	private _bonesId: number
+	id: number
+	elementId: number
+	cellId: number
+	mapId: number
+	gfxId: number
+	bonesId: number
+	elementType: number
+  harvestable: boolean = true
 
-	private _skill: InteractiveSkill
+	skill: InteractiveSkill
+ 
+	ageBonus: number = 0
+
+  bonusTask: InteractiveElementBonus | null = null
 
 	private _point: MapPoint
 
@@ -26,40 +31,39 @@ class InteractiveElementModel {
 	> = new Map<number, InteractiveElementModel>()
 
 	constructor(
-		id: number,
+    id: number,
 		elementId: number,
 		cellId: number,
 		mapId: number,
 		gfxId: number,
-		bonesId: number
+		bonesId: number,
+		elementType: number,
 	) {
-		this._id = id
-		this._elementId = elementId
-		this._cellId = cellId
-		this._mapId = mapId
-		this._gfxId = gfxId
-		this._bonesId = bonesId
+    this.id = id
+		this.elementId = elementId
+		this.cellId = cellId
+		this.mapId = mapId
+		this.gfxId = gfxId
+		this.bonesId = bonesId
+		this.elementType = elementType
 
-		this._point = new MapPoint(this.cellId)
-    this._skill = InteractiveSkill.getInteractiveSkill(this._elementId) as InteractiveSkill
+		this._point = new MapPoint(cellId)
+		this.skill = InteractiveSkill.getByMapIdAndIdentifier(
+      mapId,
+      elementId
+    ) as InteractiveSkill
 	}
 
 	public save(): InteractiveElementData {
 		return {
-			elementId: this._elementId,
-			cellId: this._cellId,
-			mapId: this._mapId,
-			gfxId: this._gfxId,
-			bonesId: this._bonesId,
+			id: this.id,
+			elementId: this.elementId,
+			cellId: this.cellId,
+			mapId: this.mapId,
+			gfxId: this.gfxId,
+			bonesId: this.bonesId,
+			elementType: this.elementType,
 		}
-	}
-
-	get elementId(): number {
-		return this._elementId
-	}
-
-	get cellId(): number {
-		return this._cellId
 	}
 
 	get point(): MapPoint {
@@ -67,39 +71,7 @@ class InteractiveElementModel {
 	}
 
 	get stated(): boolean {
-		return this._bonesId != -1
-	}
-
-	get gfxId(): number {
-		return this._gfxId
-	}
-
-	get bonesId(): number {
-		return this._bonesId
-	}
-
-	get mapId(): number {
-		return this._mapId
-	}
-
-	get skill(): InteractiveSkill {
-		return this._skill
-	}
-
-	set skill(value: InteractiveSkill) {
-		this._skill = value
-	}
-
-	get interactiveCells(): Map<number, InteractiveElementModel> {
-		return InteractiveElementModel.interactiveCells
-	}
-
-	get id(): number {
-		return this._id
-	}
-
-	set id(value: number) {
-		this._id = value
+		return this.bonesId != -1
 	}
 
 	public static getInteractiveCells(): Map<number, InteractiveElementModel> {
@@ -112,12 +84,48 @@ class InteractiveElementModel {
 		return this.interactiveCells.get(elementId)
 	}
 
+	public static getInteractiveCellByElementIdAndMapId(
+		elementId: number,
+		mapId: number
+	): InteractiveElementModel | undefined {
+		for (const interactiveCell of this.interactiveCells.values()) {
+			if (
+				interactiveCell.elementId === elementId &&
+				interactiveCell.mapId === mapId
+			) {
+				return interactiveCell
+			}
+		}
+	}
+
+  public static getInteractiveCellsByMapId(mapId: number): InteractiveElementModel[] {
+    const cells: InteractiveElementModel[] = []
+    for (const interactiveCell of this.interactiveCells.values()) {
+      if (interactiveCell.mapId === mapId) {
+        cells.push(interactiveCell)
+      }
+    }
+    return cells
+  }
+
 	public static addInteractiveCell(
 		id: number,
 		interactiveCell: InteractiveElementModel
 	) {
 		this.interactiveCells.set(id, interactiveCell)
 	}
+
+  public static getByElementId(elementId: number): InteractiveElementModel | undefined {
+    for (const interactiveCell of this.interactiveCells.values()) {
+      if (interactiveCell.elementId === elementId) {
+        return interactiveCell
+      }
+    }
+  }
+
+  public static getById(id: number): InteractiveElementModel | undefined {
+    return this.interactiveCells.get(id)
+  }
 
 	public getMapElement(mapInstance: MapInstance): MapElement {
 		if (this.stated) {

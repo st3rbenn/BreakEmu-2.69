@@ -3,10 +3,10 @@ import EffectCollection from "../../breakEmu_World/manager/entities/effect/Effec
 import Item from "./item.model"
 
 class ItemSet {
-	private _id: number
-	private _name: string
-	private _items: Map<number, Item>
-	private _effects: EffectCollection[]
+	id: number
+	name: string
+	items: Map<number, Item>
+	effects: EffectCollection[]
 
 	public static itemSets: Map<number, ItemSet> = new Map<number, ItemSet>()
 
@@ -16,14 +16,13 @@ class ItemSet {
 		items: number[],
 		effects: EffectCollection[]
 	) {
-		this._id = id
-		this._name = name
-		this._effects = effects
-
-		this._items = new Map<number, Item>()
+		this.id = id
+		this.name = name
+		this.effects = effects
+		this.items = new Map<number, Item>()
 
 		for (const itemId of items) {
-			this._items.set(itemId, Item.getItem(itemId))
+			this.items.set(itemId, Item.getItem(itemId))
 		}
 	}
 
@@ -45,38 +44,6 @@ class ItemSet {
 
 	public static removeItemSet(id: number): void {
 		this.itemSets.delete(id)
-	}
-
-	public get id(): number {
-		return this._id
-	}
-
-	public set id(id: number) {
-		this._id = id
-	}
-
-	public get name(): string {
-		return this._name
-	}
-
-	public set name(name: string) {
-		this._name = name
-	}
-
-	public get items(): Map<number, Item> {
-		return this._items
-	}
-
-	public set items(items: Map<number, Item>) {
-		this._items = items
-	}
-
-	public get effects(): EffectCollection[] {
-		return this._effects
-	}
-
-	public set effects(effects: EffectCollection[]) {
-		this._effects = effects
 	}
 
 	public getEffects(itemCount: number): EffectCollection {

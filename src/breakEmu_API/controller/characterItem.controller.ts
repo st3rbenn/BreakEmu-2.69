@@ -1,7 +1,10 @@
-import Logger from "../../breakEmu_Core/Logger"
 import Database from "../../breakEmu_API/Database"
-import CharacterItem from "../model/characterItem.model"
+import Logger from "../../breakEmu_Core/Logger"
 import Effect from "../../breakEmu_World/manager/entities/effect/Effect"
+import EffectCollection from "../../breakEmu_World/manager/entities/effect/EffectCollection"
+import EffectInteger from "../../breakEmu_World/manager/entities/effect/EffectInteger"
+import AbstractItem from "../../breakEmu_World/manager/items/AbstractItem"
+import CharacterItem from "../model/characterItem.model"
 
 class CharacterItemController {
 	public _logger: Logger = new Logger("CharacterItemController")
@@ -17,11 +20,14 @@ class CharacterItemController {
 		return CharacterItemController._instance
 	}
 
-	async createCharacterItemWithMapping(item: CharacterItem) {
+	async createCharacterItemWithMapping(
+		item: AbstractItem,
+		characterId: number
+	) {
 		const characterItem = await this._database.prisma.characterItem.create({
 			data: {
 				uid: item.uId,
-				characterId: item.characterId,
+				characterId: characterId,
 				appearanceId: item.appearanceId,
 				gid: item.gId,
 				position: item.position,
@@ -49,6 +55,70 @@ class CharacterItemController {
 		return mapping ? mapping.intId : null
 	}
 
+	async getCharacterItemByGid(characterId: number, gid: number) {
+		const characterItem = await this._database.prisma.characterItem.findFirst({
+			where: {
+				characterId,
+				gid,
+			},
+		})
+
+		return characterItem
+	}
+
+	async getCharacterItemsByCharacterId(characterId: number) {
+		const characterItems = await this._database.prisma.characterItem.findMany({
+			where: {
+				characterId,
+			},
+		})
+
+		let characterItemsArray: CharacterItem[] = []
+
+		for (const item of characterItems) {
+			let effects: EffectCollection = new EffectCollection([])
+			const effs = JSON.parse(
+				item.effects?.toString() as string
+			) as Effect[]
+
+			for (const eff of effs) {
+				effects.effects.set(
+					eff.effectId,
+					new EffectInteger(
+						eff.effectId,
+						eff.order,
+						eff.targetId,
+						eff.targetMask,
+						eff.duration,
+						eff.delay,
+						eff.random,
+						eff.group,
+						eff.modificator,
+						eff.trigger,
+						eff.rawTriggers,
+						eff.rawZone,
+						eff.dispellable,
+						eff.value
+					)
+				)
+			}
+			characterItemsArray.push(
+				new CharacterItem(
+					characterId,
+					item.uid,
+					item.gid,
+					item.quantity,
+					item.position,
+					item.look || "",
+					effects,
+					item.appearanceId
+				)
+			)
+		}
+
+    return characterItemsArray
+	}
+
 	async updateItem(item: CharacterItem) {
 		await this._database.prisma.characterItem.update({
 			where: { uid: item.uId },
@@ -61,12 +131,18 @@ class CharacterItemController {
 		})
 	}
 
-  async cutItem(item: CharacterItem, quantity: number) {
-    const newItem = item.clone()
-    newItem.quantity = quantity
-    item.quantity -= quantity
-    return newItem
-  }
+	async cutItem(item: CharacterItem, quantity: number) {
+		const newItem = item.clone()
+		newItem.quantity = quantity
+		item.quantity -= quantity
+		return newItem
+	}
+
+	async deleteItem(item: CharacterItem) {
+		await this._database.prisma.characterItem.delete({
+			where: { uid: item.uId },
+		})
+	}
 }
 
 export default CharacterItemController

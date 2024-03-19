@@ -1,12 +1,12 @@
 class Skill {
-	private _id: number
-	private _name: string
-	private _parentJobId: number
-	private _gatheredRessourceItem: number
-	private _interactiveId: number
-	private _levelMin: number
+	id: number
+	name: string
+	parentJobId: number
+	gatheredRessourceItem: number
+	interactiveId: number
+	levelMin: number
 
-    private static skills: Map<number, Skill> = new Map<number, Skill>()
+	private static skills: Map<number, Skill> = new Map<number, Skill>()
 
 	constructor(
 		id: number,
@@ -16,57 +16,45 @@ class Skill {
 		interactiveId: number,
 		levelMin: number
 	) {
-		this._id = id
-		this._name = name
-		this._parentJobId = parentJobId
-		this._gatheredRessourceItem = gatheredRessourceItem
-		this._interactiveId = interactiveId
-		this._levelMin = levelMin
+		this.id = id
+		this.name = name
+		this.parentJobId = parentJobId
+		this.gatheredRessourceItem = gatheredRessourceItem
+		this.interactiveId = interactiveId
+		this.levelMin = levelMin
 	}
 
-  public get Id(): number {
-    return this._id
-  }
+	public static getSkills(): Map<number, Skill> {
+		return this.skills
+	}
 
-  public get Name(): string {
-    return this._name
-  }
+	public static getSkill(id: number): Skill | undefined {
+		return this.skills.get(id)
+	}
 
-  public get ParentJobId(): number {
-    return this._parentJobId
-  }
+	public static addSkill(skill: Skill): void {
+		this.skills.set(skill.id, skill)
+	}
 
-  public get GatheredRessourceItem(): number {
-    return this._gatheredRessourceItem
-  }
+	public static getSkillByJobId(jobId: number): Skill | undefined {
+		for (const skill of Skill.getSkills().values()) {
+			if (skill.parentJobId === jobId) {
+				return skill
+			}
+		}
+	}
 
-  public get InteractiveId(): number {
-    return this._interactiveId
-  }
-
-  public get LevelMin(): number {
-    return this._levelMin
-  }
-
-  public static getSkills(): Map<number, Skill> {
-    return this.skills
-  }
-
-  public static getSkill(id: number): Skill | undefined {
-    return this.skills.get(id)
-  }
-
-  public static addSkill(skill: Skill): void {
-    this.skills.set(skill.Id, skill)
-  }
-
-  public static getSkillByJobId(jobId: number): Skill | undefined {
-    for (const skill of Skill.getSkills().values()) {
-      if (skill.ParentJobId === jobId) {
-        return skill
-      }
-    }
-  }
+	public static getSkillByElementTypeId(
+		elementTypeId: number
+	): Skill | undefined {
+		for (const skill of Skill.getSkills().values()) {
+			if (skill.interactiveId === elementTypeId) {
+				return skill
+			} else {
+				return undefined
+			}
+		}
+	}
 }
 
 export default Skill

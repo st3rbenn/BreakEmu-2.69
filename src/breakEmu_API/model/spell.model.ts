@@ -3,142 +3,91 @@ import CharacterSpell from "../../breakEmu_World/manager/entities/spell/Characte
 import Character from "./character.model"
 
 class Spell {
-  private _id: number
-  private _name: string
-  private _description: string
-  private _spellLevels: number[] = []
-  private _verbose: boolean
-  private _variant: Spell | null = null
-  private _minimumLevel: number = 1
-  private _levels: Map<number, SpellLevel> = new Map<number, SpellLevel>()
+	id: number
+	name: string
+	description: string
+	spellLevels: number[] = []
+	verbose: boolean
+	variant: Spell | null = null
+	_minimumLevel: number = 1
+	levels: Map<number, SpellLevel> = new Map<number, SpellLevel>()
 
-  private static _spells: Map<number, Spell> = new Map<number, Spell>()
+	private static _spells: Map<number, Spell> = new Map<number, Spell>()
 
-  constructor(
-    id: number,
-    name: string,
-    description: string,
-    verbose: boolean,
-  ) {
-    this._id = id
-    this._name = name
-    this._description = description
-    this._verbose = verbose
-  }
+	constructor(id: number, name: string, description: string, verbose: boolean) {
+		this.id = id
+		this.name = name
+		this.description = description
+		this.verbose = verbose
+	}
 
-  public get levels(): Map<number, SpellLevel> {
-    return this._levels
-  }
+	public addVariant(spell: Spell): void {
+		this.variant = spell
+	}
 
-  public set levels(levels: Map<number, SpellLevel>) {
-    this._levels = levels
-  }
+	public setMinimumLevel(minimumLevel: number): void {
+		this._minimumLevel = minimumLevel
+	}
 
-  public get id(): number {
-    return this._id
-  }
+	public get minimumLevel(): number {
+		return this.getMinimumLevel()
+	}
 
-  public set id(id: number) {
-    this._id = id
-  }
+	public static get getSpells(): Map<number, Spell> {
+		return this._spells
+	}
 
-  public get name(): string {
-    return this._name
-  }
+	public static addSpell(spell: Spell): void {
+		this._spells.set(spell.id, spell)
+	}
 
-  public set name(name: string) {
-    this._name = name
-  }
+	public static getSpellById(id: number): Spell | undefined {
+		return this._spells.get(id)
+	}
 
-  public get description(): string {
-    return this._description
-  }
+	public getMinimumLevel(): number {
+		let lowest = null
+		let lowestKey = null
 
-  public set description(description: string) {
-    this._description = description
-  }
+		for (let [key, value] of this.levels) {
+			if (lowest === null || value.minPlayerLevel < lowest) {
+				lowest = value.minPlayerLevel
+				lowestKey = key
+			}
+		}
 
-  public get spellLevels(): number[] {
-    return this._spellLevels
-  }
+		return lowest as number
+	}
 
-  public set spellLevels(spellLevels: number[]) {
-    this._spellLevels = spellLevels
-  }
+	public getLevelByGrade(grade: number): SpellLevel | undefined {
+    return grade === 0 ? this.getLastLevel() : grade <= this.levels.size ? Array.from(this.levels.values())[grade - 1] : this.getLastLevel()
+	}
 
-  public get verbose(): boolean {
-    return this._verbose
-  }
+	public getLastLevel(): SpellLevel | undefined {
+		return this.levels.get(this.levels.size)
+	}
 
-  public set verbose(verbose: boolean) {
-    this._verbose = verbose
-  }
+	public static loadFromJson(
+		json: any,
+		character: Character
+	): Map<number, CharacterSpell> {
+		const spells: Map<number, CharacterSpell> = new Map<
+			number,
+			CharacterSpell
+		>()
 
-  public get variant(): Spell | null {
-    return this._variant
-  }
+		for (const sp of json) {
+			const spell = Spell.getSpellById(sp.spellId)
+			if (spell) {
+				spells.set(
+					sp.spellId,
+					new CharacterSpell(sp.spellId, sp.variant, character)
+				)
+			}
+		}
 
-  public set variant(variant: Spell) {
-    this._variant = variant
-  }
-
-  public get minimumLevel(): number {
-    return this._minimumLevel
-  }
-
-  public setMinimumLevel(minimumLevel: number): void {
-    this._minimumLevel = minimumLevel
-  }
-
-  public static get getSpells(): Map<number, Spell> {
-    return this._spells
-  }
-
-  public static addSpell(spell: Spell): void {
-    this._spells.set(spell.id, spell)
-  }
-
-  public static getSpellById(id: number): Spell | undefined {
-    return this._spells.get(id)
-  }
-
-  public getMinimumLevel(): number {
-    let lowest = null;
-    let lowestKey = null;
-
-    for (let [key, value] of this.levels) {
-      if (lowest === null || value.minPlayerLevel < lowest) {
-        lowest = value.minPlayerLevel;
-        lowestKey = key;
-      }
-    }
-
-    return lowest as number
-  }
-
-  public getLevelByGrade(grade: number): SpellLevel | undefined {
-    if (grade == 0) {
-      return this.levels.get(1)
-    }
-    if (grade <= this.levels.size) {
-      return this.levels.get(grade - 1)
-    } else {
-      return this.levels.get(this.levels.size)
-    }
-  }
-
-  public static loadFromJson(json: any, character: Character): Map<number, CharacterSpell> {
-    const spells: Map<number, CharacterSpell> = new Map<number, CharacterSpell>()
-  
-    for (const sp of json) {
-      const spell = Spell.getSpellById(sp.spellId)
-      if (spell) {
-        spells.set(sp.spellId, new CharacterSpell(sp.spellId, spell.variant ? true : false, character))
-      }
-    }
-
-    return spells
-  }
+		return spells
+	}
 }
 
 export default Spell

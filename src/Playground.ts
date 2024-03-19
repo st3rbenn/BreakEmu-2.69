@@ -9,7 +9,7 @@ import * as path from "node:path"
 import GameMap from "./breakEmu_API/model/map.model"
 import Cell from "./breakEmu_World/manager/map/cell/Cell"
 import InteractiveElementModel from "./breakEmu_API/model/InteractiveElement.model"
-import { InteractiveTypeEnum } from "./breakEmu_Server/IO"
+import InteractiveSkill from "./breakEmu_API/model/InteractiveSkill.model"
 
 interface BreedRoles {
 	breedId: number
@@ -274,7 +274,7 @@ interface Element {
 	identifier: number
 }
 
-interface InteractiveSkill {
+interface interactiveSkill {
 	Id: string
 	MapId: string
 	Identifier: string
@@ -323,6 +323,21 @@ interface mapScrollActions {
 	bottomMapId: number
 }
 
+interface QueryTest {
+	identifier: number
+	mapId: number
+	elementId: number
+	actionIdentifier: number
+	cellId: number
+	animated: number
+	type: number
+	skillId: number
+	param1: string
+	param2: string
+	param3: string
+	criteria: string
+}
+
 class Playground {
 	public logger: Logger = new Logger("Playground")
 	public database: Database = Database.getInstance()
@@ -359,172 +374,42 @@ class Playground {
 		 * hydrate database.
 		 */
 
-		// if (mapVersion >= 9)
-		// {
-		//     Losmov = (Mov ? 0 : 1) | (NonWalkableDuringFight ? 2 : 0) | (NonWalkableDuringRP ? 4 : 0) |
-		//         (Los ? 0 : 8) | (Blue ? 16 : 0) | (Red ? 32 : 0) | (Visible ? 64 : 0) | (FarmCell ? 128 : 0);
-
-		//     if (mapVersion >= 10)
-		//     {
-		//         Losmov |= (HavenBagCell ? 256 : 0);
-		//     }
-		// }
-
-		/*await this.database.prisma.interactiveElement.create({
-            data: {
-                id: parseInt(monsterspawn.UId),
-                elementId: parseInt(monsterspawn.ElementId),
-                mapId: parseInt(monsterspawn.MapId),
-                elementType: parseInt(monsterspawn.ElementType),
-                gfxId: parseInt(monsterspawn.GfxId),
-                bonesId: parseInt(monsterspawn.GfxBonesId),
-                cellId: parseInt(monsterspawn.CellId),
-            }
-        })*/
-
 		try {
-			// const jsonFileName: string = "interactiveelements"
-			// const jsonFile = this.readJsonFile(jsonFileName)
-			// const data = JSON.parse(jsonFile) as interactiveElement[]
+			const jsonFileName: string = "query_result"
+			const jsonFile = this.readJsonFile(jsonFileName)
+			const data = JSON.parse(jsonFile) as QueryTest[]
 
-      const step = 1500 // Nombre de cartes à charger à chaque étape
+			const jsonFileName2: string = "interactiveelements"
+			const jsonFile2 = this.readJsonFile(jsonFileName2)
+			const interactiveElements = JSON.parse(jsonFile2) as any[]
 
-			const count = await this.database.prisma.map.count() // Nombre total de cartes
+			const allInteractiveElements = Array.from(interactiveElements.values())
 
-			let loadedMaps = 0 // Nombre de cartes déjà chargées
-
-			while (loadedMaps < count) {
-				const maps = await this.database.prisma.map.findMany({
-					take: step,
-					skip: loadedMaps,
+			for (const d of data) {
+				await this.database.prisma.interactiveElement.create({
+					data: {
+						elementId: d.identifier,
+						mapId: d.mapId,
+						cellId: d.cellId,
+						gfxId: -1,
+						elementType: d.type ? d.type : -1,
+						bonesId: d.animated == 0 || d.animated == null ? -1 : d.animated,
+					},
 				})
 
-				for (const map of maps) {
-          await this.logger.writeAsync(
-            `Edit -> ${map.id}, Elements: ${JSON.stringify(map.elements)}`,
-            ansiColorCodes.bgMagenta
-          )
-				}
+				this.logger.write(
+					`Element added -> ${d.identifier}`,
+					ansiColorCodes.bgGreen
+				)
 			}
+
+			this.logger.write(
+				`InteractiveElements -> ${interactiveElements.length}`,
+				ansiColorCodes.bgGreen
+			)
 		} catch (error) {
-			await this.logger.writeAsync(`Error: ${error}`, ansiColorCodes.bgRed)
+			this.logger.write(error, ansiColorCodes.bgRed)
 		}
-
-		// try {
-		//     /*await this.database.loadInteractiveElements()*/
-		//     const folderPath = 'src/breakEmu_API/data/output'; // Chemin vers le dossier contenant les fichiers JSON
-		//     const files = fs.readdirSync(folderPath);
-
-		//     // Filtre pour ne traiter que les fichiers .json
-		//     const jsonFiles = files.filter(file => path.extname(file) === '.json');
-
-		//     for (const fileName of jsonFiles) {
-		//         const filePath = path.join(folderPath, fileName); // Construit le chemin complet du fichier
-		//         const jsonFile = fs.readFileSync(filePath, 'utf8'); // Lit le contenu du fichier
-		//         const data = JSON.parse(jsonFile) as Map// Parse le JSON
-
-		//         // Ici, vous pouvez traiter chaque objet JSON comme vous le faisiez auparavant
-
-		//         const gameMap = new GameMap(
-		//             data.mapId,
-		//             data.subareaId,
-		//             data.mapVersion,
-		//             data.leftNeighbourId,
-		//             data.rightNeighbourId,
-		//             data.topNeighbourId,
-		//             data.bottomNeighbourId
-		//         )
-
-		//         let cells = new Map<number, Cell>()
-
-		//         for (let i = 0; i < data.cellsCount; i++) {
-		//             let losMov = 0
-
-		//             if (data.mapVersion >= 9)
-		//             {
-		//                 losMov = (data.cells[i].mov ? 0 : 1) | (data.cells[i].nonWalkableDuringFight ? 2 : 0) | (data.cells[i].nonWalkableDuringRP ? 4 : 0) |
-		//                     (data.cells[i].los ? 0 : 8) | (data.cells[i].blue ? 16 : 0) | (data.cells[i].red ? 32 : 0) | (data.cells[i].visible ? 64 : 0) | (data.cells[i].farmCell ? 128 : 0);
-
-		//                 if (data.mapVersion >= 10)
-		//                 {
-		//                     losMov |= (data.cells[i].havenbagCell ? 256 : 0);
-		//                 }
-		//             }
-
-		//             const c = new Cell(
-		//                 i,
-		//                 data.cells[i].blue,
-		//                 data.cells[i].red,
-		//                 losMov,
-		//                 data.cells[i].mapChangeData
-		//             )
-
-		//             cells.set(i, c)
-		//         }
-
-		//         gameMap.cells = cells
-
-		//         InteractiveElementModel.interactiveCells.forEach((interactiveElement) => {
-		//             // if(interactiveElement.mapId === gameMap.id) {
-		//             //     gameMap.elements.set(interactiveElement.identifier, interactiveElement)
-		//             // }
-		//         })
-
-		//         await this.logger.writeAsync(
-		//             `Add -> ${gameMap.id}`,
-		//             ansiColorCodes.bgMagenta
-		//         );
-
-		//         const mapData = gameMap.save()
-
-		//         await this.database.prisma.map.create({
-		//             data: {
-		//                 id: mapData.id,
-		//                 subAreaId: mapData.subareaId,
-		//                 version: mapData.version,
-		//                 leftNeighbourId: mapData.leftMap,
-		//                 rightNeighbourId: mapData.rightMap,
-		//                 topNeighbourId: mapData.topMap,
-		//                 bottomNeighbourId: mapData.bottomMap,
-		//                 cells: mapData.cells,
-		//                 elements: mapData.elements
-		//             }
-		//         })
-		//     }
-
-		//     console.log("Done");
-		// } catch (error) {
-		//     await this.logger.writeAsync(`Error: ${error}`, ansiColorCodes.bgRed);
-		// }
-
-		// try {
-		// 	const jsonFileName: string = "mapScrollActions"
-		// 	const jsonFile = this.readJsonFile(jsonFileName)
-		// 	const data = JSON.parse(jsonFile) as mapScrollActions[]
-
-		// 	for (const scrollAction of data) {
-		// 		await this.logger.writeAsync(
-		// 			`Add ${jsonFileName} -> ${scrollAction.id}`,
-		// 			ansiColorCodes.bgMagenta
-		// 		)
-
-		//     await this.database.prisma.mapScrollAction.create({
-		//       data: {
-		//         id: scrollAction.id,
-		//         rightMapId: scrollAction.rightMapId,
-		//         leftMapId: scrollAction.leftMapId,
-		//         topMapId: scrollAction.topMapId,
-		//         bottomMapId: scrollAction.bottomMapId
-		//       }
-		//     })
-		// 	}
-
-		// 	console.log("Done")
-		// } catch (error) {
-		// 	await this.logger.writeAsync(`Error: ${error}`, ansiColorCodes.bgRed)
-		// }
-
-		process.exit(0)
 	}
 
 	async sendDataWithVariableDelay<D>(
@@ -547,3 +432,126 @@ class Playground {
 }
 
 new Playground().main()
+
+// try {
+// 	await this.database.loadInteractiveSkills()
+// 	await this.database.loadInteractiveElements()
+// 	const interactiveElementsFile =
+// 		"src/breakEmu_API/data/interactiveelements.json"
+// 	const folderPath = "src/breakEmu_API/data/output" // Chemin vers le dossier contenant les fichiers JSON
+// 	const files = fs.readdirSync(folderPath)
+// 	const ieFile = await fs.promises.readFile(interactiveElementsFile, "utf8")
+
+// 	// Filtre pour ne traiter que les fichiers .json
+// 	const jsonFiles = files.filter((file) => path.extname(file) === ".json")
+
+// 	for (const fileName of jsonFiles) {
+// 		const filePath = path.join(folderPath, fileName) // Construit le chemin complet du fichier
+// 		const jsonFile = await fs.promises.readFile(filePath, "utf8") // Lit le contenu du fichier
+// 		const data = JSON.parse(jsonFile) as Map // Parse le JSON
+
+// 		// Ici, vous pouvez traiter chaque objet JSON comme vous le faisiez auparavant
+
+// 		const gameMap = new GameMap(
+// 			data.mapId,
+// 			data.subareaId,
+// 			data.mapVersion,
+// 			data.leftNeighbourId,
+// 			data.rightNeighbourId,
+// 			data.topNeighbourId,
+// 			data.bottomNeighbourId
+// 		)
+
+// 		//CELLS
+// 		let cells = new Map<number, Cell>()
+
+// 		for (let i = 1; i < data.cellsCount; i++) {
+// 			let losMov = 0
+
+// 			if (data.mapVersion >= 9) {
+// 				losMov =
+// 					(data.cells[i].mov ? 0 : 1) |
+// 					(data.cells[i].nonWalkableDuringFight ? 2 : 0) |
+// 					(data.cells[i].nonWalkableDuringRP ? 4 : 0) |
+// 					(data.cells[i].los ? 0 : 8) |
+// 					(data.cells[i].blue ? 16 : 0) |
+// 					(data.cells[i].red ? 32 : 0) |
+// 					(data.cells[i].visible ? 64 : 0) |
+// 					(data.cells[i].farmCell ? 128 : 0)
+
+// 				if (data.mapVersion >= 10) {
+// 					losMov |= data.cells[i].havenbagCell ? 256 : 0
+// 				}
+// 			}
+
+// 			const c = new Cell(
+// 				i,
+// 				data.cells[i].blue,
+// 				data.cells[i].red,
+// 				losMov,
+// 				data.cells[i].mapChangeData
+// 			)
+
+// 			cells.set(i, c)
+// 		}
+
+// 		gameMap.cells = cells
+
+// 		//ELEMENTS
+// 		let elements = new Map<number, InteractiveElementModel>()
+// 		const allInteractiveElements = Array.from(
+// 			InteractiveElementModel.interactiveCells.values()
+// 		)
+
+// 		const foundedElement: InteractiveElementModel[] | undefined = []
+// 		for (const layer of data.layers) {
+// 			layer.cells.forEach((cell) => {
+// 				for (let i = 0; i < cell.elementsCount; i++) {
+// 					const element = cell.elements[i]
+
+//           if(element.)
+
+// 					allInteractiveElements
+// 						.filter((ie) => ie.mapId === gameMap.id && ie.elementId === element.identifier)
+// 						.forEach((ie) => {
+//               foundedElement.push(ie)
+// 						})
+
+// 					// const test = InteractiveElementModel.getInteractiveCellByElementIdAndMapId(element.elementId, gameMap.id)
+
+// 					// if(test) {
+// 					//   this.logger.write(`Element already exist -> ${element.elementId}`, ansiColorCodes.bgRed)
+// 					// }
+// 				}
+// 			})
+// 		}
+
+// 		if (gameMap.id === 154010883) {
+// 			this.logger.write(
+// 				`foundedElement -> ${foundedElement.length}`,
+// 				ansiColorCodes.bgMagenta
+// 			)
+// 		}
+// 		// await this.logger.writeAsync(
+// 		// 	`Add -> ${gameMap.id}, nbElements: ${elements.size}, nbCells: ${cells.size}, version: ${gameMap.version}, subAreaId: ${gameMap.subareaId}`,
+// 		// 	ansiColorCodes.bgYellow
+// 		// )
+
+// 		gameMap.elements = elements
+
+// 		const mapData = gameMap.save()
+
+// 		// await this.database.prisma.map.create({
+// 		// 	data: {
+// 		// 		id: mapData.id,
+// 		// 		subAreaId: mapData.subareaId,
+// 		// 		version: mapData.version,
+// 		// 		leftNeighbourId: mapData.leftMap,
+// 		// 		rightNeighbourId: mapData.rightMap,
+// 		// 		topNeighbourId: mapData.topMap,
+// 		// 		bottomNeighbourId: mapData.bottomMap,
+// 		// 		cells: mapData.cells,
+// 		// 		elements: mapData.elements,
+// 		// 	},
+// 		// })
+// 	}

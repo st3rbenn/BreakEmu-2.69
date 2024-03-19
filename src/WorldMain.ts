@@ -3,10 +3,11 @@ import World from "./breakEmu_API/model/world.model"
 import { ansiColorCodes } from "./breakEmu_Core/Colors"
 import Logger from "./breakEmu_Core/Logger"
 import ConfigurationManager from "./breakEmu_Core/configuration/ConfigurationManager"
+import { ServerStatusEnum } from "./breakEmu_Server/IO"
 import WorldServer from "./breakEmu_World/WorldServer"
 import WorldServerManager from "./breakEmu_World/WorldServerManager"
 import WorldTransition from "./breakEmu_World/WorldTransition"
-import { ServerStatusEnum } from "./breakEmu_Server/IO"
+import CommandHandler from "./breakEmu_World/handlers/chat/command/CommandHandler"
 
 class Main {
 	public logger: Logger = new Logger("Main")
@@ -19,6 +20,8 @@ class Main {
 			292,
 			ServerStatusEnum.STARTING.toString()
 		)
+
+		CommandHandler.loadCommandHandlers()
 
 		const dbInit = await Database.getInstance().initialize(true)
 		if (dbInit) {

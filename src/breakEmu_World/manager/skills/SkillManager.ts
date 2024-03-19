@@ -1,9 +1,8 @@
 import Character from "../../../breakEmu_API/model/character.model"
-import Job from "../../../breakEmu_API/model/job.model"
 import Skill from "../../../breakEmu_API/model/skill.model"
 
 class SkillManager {
-	public SKILL_DURATION = 35
+	public static SKILL_DURATION = 35
 
 	public static instance: SkillManager
 
@@ -19,18 +18,18 @@ class SkillManager {
 		let skills: Map<number, Skill> = new Map<number, Skill>()
 
 		Skill.getSkills().forEach((skill: Skill) => {
-			if (skill.ParentJobId != 1) {
+			if (skill.parentJobId != 1) {
 
-        const job = character.jobs.get(skill.ParentJobId)
+        const job = character.jobs.get(skill.parentJobId)
 
         if (job) {
-          if (skill.LevelMin <= job.level) {
-            skills.set(skill.Id, skill)
+          if (skill.levelMin <= job.level) {
+            skills.set(skill.id, skill)
           }
         }
 			} else {
-				skills.set(skill.Id, skill)
-			}
+        skills.set(skill.id, skill)
+      }
 		})
 
 		return skills

@@ -27,6 +27,8 @@ interface IDofusInfo {
   startKamas: number
   startStatsPoints: number
   XpRate: number
+  jobXpRate: number
+  dropRate: number
 }
 
 interface IDatabaseCredentials {

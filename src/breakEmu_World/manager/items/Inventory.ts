@@ -21,18 +21,23 @@ import {
 } from "../../../breakEmu_Server/IO"
 import ItemEffectsManager from "../effect/ItemEffectsManager"
 import ItemCollection from "./collections/ItemCollections"
+import Logger from "../../../breakEmu_Core/Logger"
 
 class Inventory extends ItemCollection<CharacterItem> {
 	public maxKamas: number = 2000000000
 	public itemCastEffect: EffectsEnum = EffectsEnum.Effect_CastSpell_1175
 
-	private _character: Character
+	private logger: Logger
+	private character: Character
 	public _currentWeight: number = 0
 	public hasWeaponEquiped: boolean = this.getWeapon() !== null
+	full: boolean = false
 
 	constructor(character: Character, items: CharacterItem[] = []) {
 		super(items)
 		this.character = character
+
+		this.logger = new Logger(`Inventory-${this.character?.name}`)
 	}
 
 	public _isChangingStuff: boolean = false
@@ -68,93 +73,119 @@ class Inventory extends ItemCollection<CharacterItem> {
 		return weight
 	}
 
-  public set currentWeight(value: number) {
-    this._currentWeight = value
-  }
-
 	public async onItemAdded(item: CharacterItem): Promise<void> {
-		const it = await item.getObjectItem()
-		await this.character.client?.Send(
-			this.character.client?.serialize(new ObjectAddedMessage(it, 0))
-		)
-		await this.refreshWeight()
+		try {
+			const it = await item.getObjectItem()
+			await this.character.client?.Send(new ObjectAddedMessage(it, 0))
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public async onItemsAdded(items: CharacterItem[]): Promise<void> {
-		for (const item of items) {
-			await this.onItemAdded(item)
-		}
+		try {
+			for (const item of items) {
+				await this.onItemAdded(item)
+			}
 
-		await this.refreshWeight()
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public async onItemStacked(item: CharacterItem): Promise<void> {
-		await item.save()
-		await this.updateItemQuantity(item)
-		await this.refreshWeight()
+		try {
+			await item.save()
+			await this.updateItemQuantity(item)
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public async onItemsStackeds(items: CharacterItem[]): Promise<void> {
-		for (const item of items) {
-			await this.onItemStacked(item)
-		}
+		try {
+			for (const item of items) {
+				await this.onItemStacked(item)
+			}
 
-		await this.refreshWeight()
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public async onItemRemoved(item: CharacterItem): Promise<void> {
-		const id = await CharacterItemController.getInstance().getIntIdFromUuid(
-			item.uId
-		)
-		await this.character.client?.Send(
-			this.character.client?.serialize(
+		try {
+			const id = await CharacterItemController.getInstance().getIntIdFromUuid(
+				item.uId
+			)
+			await this.character.client?.Send(
 				new ObjectMovementMessage(id as number, -1)
 			)
-		)
-		await this.refreshWeight()
+
+			await CharacterItemController.getInstance().deleteItem(item)
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public async onItemsRemoved(items: CharacterItem[]): Promise<void> {
-		for (const item of items) {
-			await this.onItemRemoved(item)
-		}
+		try {
+			for (const item of items) {
+				await this.onItemRemoved(item)
+			}
 
-		await this.refreshWeight()
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public async onItemUnstacked(item: CharacterItem): Promise<void> {
-		await item.save()
-		await this.updateItemQuantity(item)
-		await this.refreshWeight()
+		try {
+			await item.save()
+			await this.updateItemQuantity(item)
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public async onItemsUnstackeds(items: CharacterItem[]): Promise<void> {
-		for (const item of items) {
-			await this.onItemUnstacked(item)
-		}
+		try {
+			for (const item of items) {
+				await this.onItemUnstacked(item)
+			}
 
-		await this.refreshWeight()
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 	public async onItemQuantityChanged(item: CharacterItem): Promise<void> {
-		await item.save()
-		await this.updateItemQuantity(item)
-		await this.refreshWeight()
-	}
-	public async onItemsQuantityChanged(items: CharacterItem[]): Promise<void> {
-		for (const item of items) {
+		try {
 			await item.save()
 			await this.updateItemQuantity(item)
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
 		}
-
-		await this.refreshWeight()
 	}
+	public async onItemsQuantityChanged(items: CharacterItem[]): Promise<void> {
+		try {
+			for (const item of items) {
+				await item.save()
+				await this.updateItemQuantity(item)
+			}
 
-	public get character(): Character {
-		return this._character
-	}
-
-	public set character(character: Character) {
-		this._character = character
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public getWeapon(): CharacterItem | null {
@@ -176,56 +207,90 @@ class Inventory extends ItemCollection<CharacterItem> {
 	}
 
 	public async refresh() {
-		const objectItem: ObjectItem[] = await this.getObjectsItems()
+		try {
+      const objectItem: ObjectItem[] = await this.getObjectsItems()
 
 		await this.character.client?.Send(
-			this.character.client?.serialize(
-				new InventoryContentMessage(objectItem, this.character.kamas)
-			)
+			new InventoryContentMessage(objectItem, this.character.kamas)
 		)
 
 		await this.refreshWeight()
+    } catch(error) {
+      this.logger.write(error as any)
+    }
 	}
 
 	public async refreshKamas() {
-		await this.character.client?.Send(
-			this.character.client?.serialize(
-				new KamasUpdateMessage(this.character.kamas)
-			)
-		)
+		try {
+      await this.character.client?.Send(
+        new KamasUpdateMessage(this.character.kamas)
+      )
+    } catch (error) {
+      this.logger.write(error as any)
+    }
 	}
 
 	public async refreshWeight() {
 		await this.character.client?.Send(
-			this.character.client?.serialize(
-				new InventoryWeightMessage(this.currentWeight, this.character.stats?.currentMaxWeight)
+			new InventoryWeightMessage(
+				this.currentWeight,
+				this.character.stats?.currentMaxWeight
 			)
 		)
 	}
 
-	public async addNewItem(gid: number, quantity: number, perfect: boolean) {
-		let template = Item.getItem(gid)
+	public async addNewItem(
+		gid: number,
+		quantity: number = 1,
+		perfect: boolean = false
+	) {
+		try {
+			let template = Item.getItem(gid)
 
-		if (template !== null) {
-			let obj = new CharacterItem(
-				this.character.id,
-				randomUUID(),
-				gid,
-				quantity,
-				CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
-				"",
-				template.effects.generate(perfect),
-				template.appearanceId
-			)
+			if (template !== null) {
+				if (
+					this.currentWeight + template.realWeight * quantity >
+					(this.character.stats?.currentMaxWeight as number)
+				) {
+					this.character.inventory.full = true
+					await this.onError(ObjectErrorEnum.INVENTORY_FULL)
+					return
+				}
 
-			await CharacterItemController.getInstance().createCharacterItemWithMapping(
-				obj
-			)
+				let obj = new CharacterItem(
+					this.character.id,
+					randomUUID(),
+					gid,
+					quantity,
+					CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
+					"",
+					template.effects.generate(perfect),
+					template.appearanceId
+				)
 
-			super.addItem(obj)
-			return obj
-		} else {
-			return null
+				await this.addItem(obj, quantity, this.character.id)
+				return obj
+			} else {
+				return null
+			}
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
+	public async changeItemQuantity(item: CharacterItem, quantity: number) {
+		try {
+			if (item.quantity + quantity < 1) {
+				await this.removeItem(item, item.quantity)
+			} else {
+				item.quantity += quantity
+				await this.updateItemQuantity(item)
+			}
+
+			await item.save()
+			await this.refresh()
+		} catch (error) {
+			this.logger.write(error as any)
 		}
 	}
 
@@ -234,77 +299,84 @@ class Inventory extends ItemCollection<CharacterItem> {
 		position: CharacterInventoryPositionEnum,
 		quantity: number
 	) {
-		this._isChangingStuff = true
-		if (
-			position != CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
-		) {
-			if (this.character.level < item.record.level) {
-				await this.onError(ObjectErrorEnum.LEVEL_TOO_LOW)
-				return
-			}
-
-			//TODO: Check Item Criteria
-
+		try {
+			this._isChangingStuff = true
 			if (
-				item.positionEnum ==
-					CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED &&
-				this.dofusPositions.includes(item.position) &&
-				this.dofusPositions.includes(position)
-			) {
-				return
-			}
-
-			if (
-				this.checkStacks(item, position, this.ringPositions) &&
-				item.hasSet()
-			) {
-				await this.onError(ObjectErrorEnum.CANNOT_EQUIP_HERE)
-				return
-			}
-
-			if (
-				this.checkStacks(item, position, this.dofusPositions) &&
-				item.positionEnum ==
-					CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
-			) {
-				await this.onError(ObjectErrorEnum.CANNOT_EQUIP_HERE)
-				return
-			}
-
-			if (!this.isChangingStuff) {
-				await this.character.replyError(
-					"Vous êtes en train de changer d'équipement, veuillez patienter"
-				)
-				return
-			}
-
-			await this.equipItem(item, position, quantity)
-		} else {
-			if (
-				item.positionEnum ==
+				position !=
 				CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
 			) {
-				await this.onError(ObjectErrorEnum.CANNOT_EQUIP_HERE)
-				return
+				if (this.character.level < item.record.level) {
+					await this.onError(ObjectErrorEnum.LEVEL_TOO_LOW)
+					return
+				}
+
+				//TODO: Check Item Criteria
+
+				if (
+					item.positionEnum ==
+						CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED &&
+					this.dofusPositions.includes(item.position) &&
+					this.dofusPositions.includes(position)
+				) {
+					return
+				}
+
+				if (
+					this.checkStacks(item, position, this.ringPositions) &&
+					item.hasSet()
+				) {
+					await this.onError(ObjectErrorEnum.CANNOT_EQUIP_HERE)
+					return
+				}
+
+				if (
+					this.checkStacks(item, position, this.dofusPositions) &&
+					item.positionEnum ==
+						CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+				) {
+					await this.onError(ObjectErrorEnum.CANNOT_EQUIP_HERE)
+					return
+				}
+
+				if (!this.isChangingStuff) {
+					await this.character.replyError(
+						"Vous êtes en train de changer d'équipement, veuillez patienter"
+					)
+					return
+				}
+
+				await this.equipItem(item, position, quantity)
 			} else {
-				await this.unequipItem(item, quantity)
+				if (
+					item.positionEnum ==
+					CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+				) {
+					await this.onError(ObjectErrorEnum.CANNOT_EQUIP_HERE)
+					return
+				} else {
+					await this.unequipItem(item, quantity)
+				}
 			}
+
+			await item.save()
+			await this.onObjectMoved(item, position)
+			await this.refreshWeight()
+			await CharacterController.getInstance().updateCharacter(this.character)
+			await this.character.refreshActorOnMap()
+			await this.character.refreshStats()
+
+			this._isChangingStuff = false
+		} catch (error) {
+			this.logger.write(error as any)
 		}
-
-		await item.save()
-		await this.onObjectMoved(item, position)
-		await this.refreshWeight()
-		await CharacterController.getInstance().updateCharacter(this.character)
-		await this.character.refreshActorOnMap()
-		await this.character.refreshStats()
-
-		this._isChangingStuff = false
 	}
 
 	public async onError(error: ObjectErrorEnum) {
-		await this.character.client?.Send(
-			this.character.client?.serialize(new ObjectErrorMessage(error))
-		)
+		try {
+			await this.character.client?.Send(new ObjectErrorMessage(error))
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public checkStacks(
@@ -325,44 +397,48 @@ class Inventory extends ItemCollection<CharacterItem> {
 	public async equipItem(
 		item: CharacterItem,
 		position: CharacterInventoryPositionEnum,
-		quantity: number
+		quantity: number = 1
 	) {
-		const alreadyEquiped = this.getEquipedItem(position)
-		const lastPosition = item.positionEnum
+		try {
+			const alreadyEquiped = this.getEquipedItem(position)
+			const lastPosition = item.positionEnum
 
-		if (alreadyEquiped != null) {
-			await this.unequipItem(alreadyEquiped, quantity)
-			await this.onObjectMoved(
-				alreadyEquiped,
-				CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
-			)
+			if (alreadyEquiped != null) {
+				await this.unequipItem(alreadyEquiped, quantity)
+				await this.onObjectMoved(
+					alreadyEquiped,
+					CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+				)
+			}
+
+			if (item.quantity == 1) {
+				item.positionEnum = position
+			} else {
+				const newItem = await CharacterItemController.getInstance().cutItem(
+					item,
+					quantity
+				)
+
+				await this.addItem(newItem, quantity, item.characterId)
+				await this.updateItemQuantity(item)
+			}
+
+			await item.save()
+			await this.onItemMoved(item, lastPosition)
+
+			// let equipedItems = await this.getEquipedItems()
+			// for (const equipedItem of equipedItems) {
+			// 	if (equipedItem.gId != item.gId) {
+			// 		await this.setItemPosition(
+			// 			equipedItem,
+			// 			CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
+			// 			equipedItem.quantity
+			// 		)
+			// 	}
+			// }
+		} catch (error) {
+			console.log(error as any)
 		}
-
-		if (item.quantity == 1) {
-			item.positionEnum = position
-		} else {
-			const newItem = await CharacterItemController.getInstance().cutItem(
-				item,
-				quantity
-			)
-
-			await this.addItem(newItem)
-			await this.updateItemQuantity(item)
-		}
-
-		await item.save()
-		await this.onItemMoved(item, lastPosition)
-
-		// let equipedItems = await this.getEquipedItems()
-		// for (const equipedItem of equipedItems) {
-		// 	if (equipedItem.gId != item.gId) {
-		// 		await this.setItemPosition(
-		// 			equipedItem,
-		// 			CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
-		// 			equipedItem.quantity
-		// 		)
-		// 	}
-		// }
 	}
 
 	public async getEquipedItems(): Promise<CharacterItem[]> {
@@ -413,15 +489,17 @@ class Inventory extends ItemCollection<CharacterItem> {
 	}
 
 	public async updateItemQuantity(item: CharacterItem) {
-		const id = await CharacterItemController.getInstance().getIntIdFromUuid(
-			item.uId
-		)
-		if (id) {
-			await this.character.client?.Send(
-				this.character.client?.serialize(
+		try {
+			const id = await CharacterItemController.getInstance().getIntIdFromUuid(
+				item.uId
+			)
+			if (id) {
+				await this.character.client?.Send(
 					new ObjectQuantityMessage(id, item.quantity)
 				)
-			)
+			}
+		} catch (error) {
+			this.logger.write(error as any)
 		}
 	}
 
@@ -429,43 +507,47 @@ class Inventory extends ItemCollection<CharacterItem> {
 		item: CharacterItem,
 		lastPosition: CharacterInventoryPositionEnum
 	) {
-		const flag =
-			lastPosition !=
-			CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
-		const flag2 = item.isEquiped()
+		try {
+			const flag =
+				lastPosition !=
+				CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+			const flag2 = item.isEquiped()
 
-		if (flag2 && !flag) {
-			await ItemEffectsManager.getInstance().addEffects(
-				this.character,
-				item.effects
-			)
-		}
-
-		if (!flag2 && flag) {
-			await ItemEffectsManager.getInstance().removeEffects(
-				this.character,
-				item.effects
-			)
-		}
-
-		await this.updateLook(item, flag2)
-
-		if (item.record.hasSet) {
-			const itemSetEquiped = await this.coutnItemSetEquiped(item)
-
-			if (flag2) {
-				await this.applyItemSetEffects(
-					item.record.itemSet,
-					itemSetEquiped,
-					flag2
-				)
-			} else {
-				await this.applyItemSetEffects(
-					item.record.itemSet,
-					itemSetEquiped,
-					flag2
+			if (flag2 && !flag) {
+				await ItemEffectsManager.getInstance().addEffects(
+					this.character,
+					item.effects
 				)
 			}
+
+			if (!flag2 && flag) {
+				await ItemEffectsManager.getInstance().removeEffects(
+					this.character,
+					item.effects
+				)
+			}
+
+			await this.updateLook(item, flag2)
+
+			if (item.record.hasSet) {
+				const itemSetEquiped = await this.coutnItemSetEquiped(item)
+
+				if (flag2) {
+					await this.applyItemSetEffects(
+						item.record.itemSet as ItemSet,
+						itemSetEquiped,
+						flag2
+					)
+				} else {
+					await this.applyItemSetEffects(
+						item.record.itemSet as ItemSet,
+						itemSetEquiped,
+						flag2
+					)
+				}
+			}
+		} catch (error) {
+			this.logger.write(error as any)
 		}
 	}
 
@@ -474,57 +556,63 @@ class Inventory extends ItemCollection<CharacterItem> {
 		count: number,
 		equipped: boolean
 	): Promise<void> {
-		if (equipped && count >= 2) {
-			if (count >= 3) {
-        console.log(`itemSet Equiped and count >= 3`)
-				await ItemEffectsManager.getInstance().removeEffects(
-					this.character,
-					itemSet.getEffects(count - 1)
-				)
-			}
+		try {
+			if (equipped && count >= 2) {
+				if (count >= 3) {
+					console.log(`itemSet Equiped and count >= 3`)
+					await ItemEffectsManager.getInstance().removeEffects(
+						this.character,
+						itemSet.getEffects(count - 1)
+					)
+				}
 
-      console.log(`itemSet Equiped and count >= 2`)
+				console.log(`itemSet Equiped and count >= 2`)
 
-			await ItemEffectsManager.getInstance().addEffects(
-				this.character,
-				itemSet.getEffects(count)
-			)
-		} else if (!equipped && count >= 1) {
-      console.log(`itemSet not Equiped and count >= 1`)
-			await ItemEffectsManager.getInstance().removeEffects(
-				this.character,
-				itemSet.getEffects(count + 1)
-			)
-
-			if (count >= 2) {
 				await ItemEffectsManager.getInstance().addEffects(
 					this.character,
 					itemSet.getEffects(count)
 				)
-			}
-		}
+			} else if (!equipped && count >= 1) {
+				console.log(`itemSet not Equiped and count >= 1`)
+				await ItemEffectsManager.getInstance().removeEffects(
+					this.character,
+					itemSet.getEffects(count + 1)
+				)
 
-		// if ((equipped && count >= 2) || (!equipped && count >= 1)) {
-		// 	await this.onSetUpdated(itemSet, count)
-		// }
+				if (count >= 2) {
+					await ItemEffectsManager.getInstance().addEffects(
+						this.character,
+						itemSet.getEffects(count)
+					)
+				}
+			}
+
+			if ((equipped && count >= 2) || (!equipped && count >= 1)) {
+				await this.onSetUpdated(itemSet, count)
+			}
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public async onSetUpdated(itemSet: ItemSet, count: number) {
-		const allItemsSetId = Array.from(itemSet.items.keys())
+		try {
+			const allItemsSetId = Array.from(itemSet.items.keys())
 
-		const objectEffects = itemSet.getEffects(count).getObjectEffects()
+			const objectEffects = itemSet.getEffects(count).getObjectEffects()
 
-		let test: any[] = []
+			let test: any[] = []
 
-		objectEffects.map((effect) => {
-			test.push(effect)
-		})
+			objectEffects.map((effect) => {
+				test.push(effect)
+			})
 
-		await this.character.client?.Send(
-			this.character.client?.serialize(
+			await this.character.client?.Send(
 				new SetUpdateMessage(itemSet.id, allItemsSetId, test)
 			)
-		)
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public async coutnItemSetEquiped(itemSet: CharacterItem): Promise<number> {
@@ -558,16 +646,18 @@ class Inventory extends ItemCollection<CharacterItem> {
 		item: CharacterItem,
 		newPosition: CharacterInventoryPositionEnum
 	) {
-		const id = await CharacterItemController.getInstance().getIntIdFromUuid(
-			item.uId
-		)
+		try {
+			const id = await CharacterItemController.getInstance().getIntIdFromUuid(
+				item.uId
+			)
 
-		if (id) {
-			await this.character.client?.Send(
-				this.character.client?.serialize(
+			if (id) {
+				await this.character.client?.Send(
 					new ObjectMovementMessage(id, newPosition)
 				)
-			)
+			}
+		} catch (error) {
+			this.logger.write(error as any)
 		}
 	}
 }

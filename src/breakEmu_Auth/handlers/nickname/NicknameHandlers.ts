@@ -3,11 +3,11 @@ import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
 import Logger from "../../../breakEmu_Core/Logger"
 import ConfigurationManager from "../../../breakEmu_Core/configuration/ConfigurationManager"
 import {
-  DofusMessage,
-  NicknameAcceptedMessage,
-  NicknameChoiceRequestMessage,
-  NicknameErrorEnum,
-  NicknameRefusedMessage,
+	DofusMessage,
+	NicknameAcceptedMessage,
+	NicknameChoiceRequestMessage,
+	NicknameErrorEnum,
+	NicknameRefusedMessage,
 } from "../../../breakEmu_Server/IO"
 import AuthClient from "../../AuthClient"
 import AuthentificationHandler from "../auth/AuthentificationHandler"
@@ -62,7 +62,7 @@ class NicknameHandlers {
 
 			client?.account?.setPseudo(nickname as string)
 
-			await client.Send(client.serialize(new NicknameAcceptedMessage()))
+			await client.Send(new NicknameAcceptedMessage())
 
 			return true
 		} catch (error) {
@@ -97,7 +97,7 @@ class NicknameHandlers {
 		error: NicknameErrorEnum,
 		client: AuthClient
 	): Promise<void> {
-		await client.Send(client.serialize(new NicknameRefusedMessage(error)))
+		await client.Send(new NicknameRefusedMessage(error))
 	}
 }
 

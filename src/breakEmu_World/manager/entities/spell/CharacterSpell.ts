@@ -4,41 +4,21 @@ import Spell from "../../../../breakEmu_API/model/spell.model"
 import SpellLevel from "../../../../breakEmu_API/model/spellLevel.model"
 
 class CharacterSpell {
-	private _spell: Spell | null = null
-	private _spellId: number
-	private _variant: boolean
+	private spell: Spell | null = null
+	private spellId: number
+	private variant: boolean
 
-  private _character: Character
+	private character: Character
+
+	public isSpellSelected: boolean = false
 
 	constructor(spellId: number, variant: boolean = false, character: Character) {
-		this._spellId = spellId
-		this._variant = variant
-		this._spell = Spell.getSpellById(spellId) as Spell
-    this._character = character
-	}
+		this.spellId = spellId
+		this.variant = variant
+		this.spell = Spell.getSpellById(spellId) as Spell
+		this.character = character
 
-	public get spellId(): number {
-		return this._spellId
-	}
-
-	public set spellId(spellId: number) {
-		this._spellId = spellId
-	}
-
-	public get variant(): boolean {
-		return this._variant
-	}
-
-	public set variant(variant: boolean) {
-		this._variant = variant
-	}
-
-	public get spell(): Spell | null {
-		return this._spell
-	}
-
-	public set spell(spell: Spell) {
-		this._spell = spell
+    this.isSpellSelected = this.learned()
 	}
 
 	public get baseSpell(): Spell {
@@ -51,10 +31,7 @@ class CharacterSpell {
 	}
 
 	public learned() {
-		return (
-    (this.baseSpell?.getMinimumLevel() as number) <=
-			this._character.level
-		)
+		return this.baseSpell?.getMinimumLevel() <= this.character.level
 	}
 
 	public variantSpell(): Spell {
@@ -80,19 +57,26 @@ class CharacterSpell {
 		return index
 	}
 
-	public getSpellItem(character: Character) {
-		return new SpellItem(
+	public getSpellItem(character: Character): SpellItem {
+		const spellItem = new SpellItem(
 			this.variant ? (this.baseSpell.variant?.id as number) : this.baseSpell.id,
-			this.spell?.getLevelByGrade(this.getGrade(character))?.minPlayerLevel as number + 1
+			this.spell?.getLevelByGrade(this.getGrade(character))
+				?.minPlayerLevel as number
 		)
+
+		if (spellItem.spellLevel == 0) {
+			spellItem.spellLevel = 1
+		}
+
+		return spellItem
 	}
 
-  public saveAsJson() {
-    return {
-      spellId: this.spellId,
-      variant: this.variant
-    }
-  }
+	public saveAsJson() {
+		return {
+			spellId: this.spellId,
+			variant: this.variant,
+		}
+	}
 }
 
 export default CharacterSpell

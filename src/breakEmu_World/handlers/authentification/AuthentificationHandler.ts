@@ -24,47 +24,37 @@ class AuthentificationHandler {
 		)
 		const date = new Date()
 		await client.Send(
-			client.serialize(new AuthenticationTicketAcceptedMessage())
+			new AuthenticationTicketAcceptedMessage()
 		)
 		await client.Send(
-			client.serialize(
-				new BasicTimeMessage(date.getTime(), date.getTimezoneOffset())
-			)
+			new BasicTimeMessage(date.getTime(), date.getTimezoneOffset())
 		)
 		await client.Send(
-			client.serialize(
-				new ServerSettingsMessage(false, true, "fr", 0, 0, 0, 200)
-			)
+			new ServerSettingsMessage(false, true, "fr", 0, 0, 0, 200)
 		)
 		await client.Send(
-			client.serialize(
-				new ServerOptionalFeaturesMessage([23])
-			)
+			new ServerOptionalFeaturesMessage([3, 5, 13, 20, 23, 124, 125, 143, 150])
 		)
 		await client.Send(
-			client.serialize(
-				new ServerSessionConstantsMessage([
-					new ServerSessionConstantInteger(
-						ServerConstantTypeEnum.KOH_DURATION,
-						7200000
-					),
-					new ServerSessionConstantInteger(
-						ServerConstantTypeEnum.UNKNOWN_6,
-						10
-					),
-					new ServerSessionConstantInteger(
-						ServerConstantTypeEnum.UNKNOWN_7,
-						2000
-					),
-				])
-			)
+      new ServerSessionConstantsMessage([
+        new ServerSessionConstantInteger(
+          ServerConstantTypeEnum.KOH_DURATION,
+          7200000
+        ),
+        new ServerSessionConstantInteger(
+          ServerConstantTypeEnum.UNKNOWN_6,
+          10
+        ),
+        new ServerSessionConstantInteger(
+          ServerConstantTypeEnum.UNKNOWN_7,
+          2000
+        ),
+      ])
 		)
 		await client.Send(
-			client.serialize(
-				new AccountCapabilitiesMessage(true, true, client.account?.id, 1)
-			)
+			new AccountCapabilitiesMessage(true, true, client.account?.id, 1)
 		)
-		await client.Send(client.serialize(new TrustStatusMessage(true, true)))
+		await client.Send(new TrustStatusMessage(true, true))
 	}
 }
 

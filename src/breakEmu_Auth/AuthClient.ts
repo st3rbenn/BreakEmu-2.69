@@ -41,36 +41,26 @@ class AuthClient extends ServerClient {
 			if (AuthServer.getInstance().ServerState === ServerStatus.Maintenance) {
 				this.logger.write("Sending Maintenance message")
 				await this.Send(
-					this.serialize(new SystemMessageDisplayMessage(true, 13, []))
+					new SystemMessageDisplayMessage(true, 13, [])
 				)
 
 				this.OnClose()
 				return
 			}
 
-			if (ConfigurationManager.getInstance().showProtocolMessage) {
-				await this.logger.writeAsync("Sending ProtocolRequired message")
-			}
+			
 			await this.Send(
-				this.serialize(
-					new ProtocolRequired(
-						ConfigurationManager.getInstance().dofusProtocolVersion
-					)
-				)
+				new ProtocolRequired(
+          ConfigurationManager.getInstance().dofusProtocolVersion
+        )
 			)
-
-			if (ConfigurationManager.getInstance().showProtocolMessage) {
-				await this.logger.writeAsync("Sending HelloConnectMessage message")
-			}
 
 			this._RSAKeyHandler.generateKeyPair()
 			const attrs = this._RSAKeyHandler.getAttribute()
 			const encryptedPublicKey = this._RSAKeyHandler.encryptedPublicKey
 
 			await this.Send(
-				this.serialize(
-					new HelloConnectMessage(attrs.salt, Array.from(encryptedPublicKey))
-				)
+				new HelloConnectMessage(attrs.salt, Array.from(encryptedPublicKey))
 			)
 
 			this.Socket.on("data", async (data) => await this.handleData(data, attrs))
@@ -104,7 +94,7 @@ class AuthClient extends ServerClient {
 				await NicknameHandlers.handleNicknameChoiceRequestMessage(message, this)
 				break
 			case BasicPingMessage.id:
-				await this.Send(this.serialize(new BasicPongMessage()))
+				await this.Send(new BasicPongMessage())
 				break
 			case ServerSelectionMessage.id:
 				await ServerListHandler.handleServerSelectionMessage(this)

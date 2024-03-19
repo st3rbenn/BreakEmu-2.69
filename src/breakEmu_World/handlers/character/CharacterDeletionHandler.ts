@@ -35,11 +35,9 @@ class CharacterDeletionHandler {
 			)
 
 			await client.Send(
-				client.serialize(
-					new CharacterDeletionErrorMessage(
-						CharacterDeletionErrorEnum.DEL_ERR_NO_REASON
-					)
-				)
+				new CharacterDeletionErrorMessage(
+          CharacterDeletionErrorEnum.DEL_ERR_NO_REASON
+        )
 			)
 			return
 		}
@@ -52,14 +50,12 @@ class CharacterDeletionHandler {
 		}
 
 		await client.Send(
-			client.serialize(
-				new CharacterDeletionPrepareMessage(
-					t.characterId,
-					t.characterName,
-					t.secretQuestion,
-					t.needSecretAnswer
-				)
-			)
+			new CharacterDeletionPrepareMessage(
+        t.characterId,
+        t.characterName,
+        t.secretQuestion,
+        t.needSecretAnswer
+      )
 		)
 	}
 
@@ -82,11 +78,9 @@ class CharacterDeletionHandler {
 			)
 
 			await client.Send(
-				client.serialize(
-					new CharacterDeletionErrorMessage(
-						CharacterDeletionErrorEnum.DEL_ERR_NO_REASON
-					)
-				)
+				new CharacterDeletionErrorMessage(
+          CharacterDeletionErrorEnum.DEL_ERR_NO_REASON
+        )
 			)
 			return
 		}

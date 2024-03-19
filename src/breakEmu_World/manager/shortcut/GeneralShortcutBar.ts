@@ -67,7 +67,7 @@ class GeneralShortcutBar extends ShortcutBar {
 			if (this.character.client) {
 				const message = new ShortcutBarRemovedMessage(this.barEnum, slotId)
 				await this.character.client.Send(
-					this.character.client.serialize(message)
+					message
 				)
 			}
 		}

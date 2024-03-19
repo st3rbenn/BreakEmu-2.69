@@ -1,16 +1,22 @@
-version: "3.2"
+version: "3.3"
 services:
-  rabbitmq:
-    image: rabbitmq:3.8-management-alpine
-    container_name: 'rabbitmq'
-    ports:
-        - 5673:5672
-        - 15673:15672
+  redis:
+    image: redis:6.0.7
+    container_name: redis
+    restart: always
     volumes:
-        - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
-        - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
-    networks:
-        - rabbitmq_nodejs
-networks:
-  rabbitmq_nodejs:
-    driver: bridge
+      - redis_volume_data:/data
+    ports:
+      - 6379:6379
+  redis_insight:
+    image: redislabs/redisinsight:latest
+    container_name: redis_insight
+    restart: always
+    ports:
+      - 8001:8001
+    volumes:
+      - redis_insight_volume_data:/db
+
+volumes:
+  redis_volume_data:
+  redis_insight_volume_data:

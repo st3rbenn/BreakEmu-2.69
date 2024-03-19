@@ -11,14 +11,13 @@ import CharacterCreationResultEnum from "../../breakEmu_World/enum/CharacterCrea
 import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
 import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
 import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
-import Inventory from "../../breakEmu_World/manager/items/Inventory"
 import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
 import Database from "../Database"
 import Character from "../model/character.model"
 
 class CharacterController {
 	public _logger: Logger = new Logger("CharacterController")
-	public _database: Database = Database.getInstance()
+	public database: Database = Database.getInstance()
 
 	private static _instance: CharacterController
 
@@ -38,7 +37,7 @@ class CharacterController {
 		accountId: number
 	): Promise<Character[] | undefined> {
 		try {
-			const characters = await this._database.prisma.character.findMany({
+			const characters = await this.database.prisma.character.findMany({
 				where: {
 					userId: accountId,
 				},
@@ -76,6 +75,9 @@ class CharacterController {
 					GameMap.getMapById(Number(c.mapId)) as GameMap,
 					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string))
 				)
+
+				character.spawnMapId = c.spawnMapId
+				character.spawnCellId = c.spawnCellId
 
 				const shrts = Character.loadShortcutsFromJson(
 					JSON.parse(c.shortcuts?.toString() as string)
@@ -120,7 +122,7 @@ class CharacterController {
 				)
 			}
 
-			const characterWithSameName = await this._database.prisma.character.findFirst(
+			const characterWithSameName = await this.database.prisma.character.findFirst(
 				{
 					where: {
 						name: message.name,
@@ -155,20 +157,17 @@ class CharacterController {
 				verifiedColors
 			)
 
-			const startLevel = ConfigurationManager.getInstance().startLevel
-			const startLevelExp = Experience.getCharacterExperienceLevelFloor(
-				startLevel - 1
-			)
+			const startLevel = Experience.experiences.get(ConfigurationManager.getInstance().startLevel) as Experience
 
 			let jobs: Job[] = []
 
-			Job.new().forEach((job) => {
-				jobs.push(job)
-			})
+			// Job.new().forEach((job) => {
+			// 	jobs.push(job)
+			// })
 
-			const stats = EntityStats.new(startLevel).saveAsJSON()
+			const stats = EntityStats.new(startLevel.level).saveAsJSON()
 
-			const newCharacter = await this._database.prisma.character.create({
+			const newCharacter = await this.database.prisma.character.create({
 				data: {
 					userId: account.id as number,
 					name: message.name as string,
@@ -176,7 +175,7 @@ class CharacterController {
 					colors: this.serializeColors(message.colors as number[]),
 					cosmeticId: message.cosmeticId as number,
 					sex: message.sex as boolean,
-					experience: startLevelExp,
+					experience: startLevel.characterExp,
 					look: ContextEntityLook.convertToString(look),
 					cellId: ConfigurationManager.getInstance().startCellId.toString(),
 					mapId: ConfigurationManager.getInstance().startMapId.toString(),
@@ -186,10 +185,11 @@ class CharacterController {
 					stats: JSON.stringify(stats),
 					jobs: JSON.stringify(jobs),
 					shortcuts: JSON.stringify([]),
+					knownZaaps: JSON.stringify([]),
 				},
 			})
 
-			const character = Character.create(
+			const character = await Character.create(
 				newCharacter.id,
 				account.id,
 				newCharacter.breed_id,
@@ -201,20 +201,20 @@ class CharacterController {
 				ConfigurationManager.getInstance().startCellId,
 				newCharacter.direction,
 				newCharacter.kamas,
-				Finishmoves.getFinishmovesByFree(true)
+				Finishmoves.getFinishmovesByFree(true),
+        startLevel,
 			)
-			character.inventory = new Inventory(character)
 
 			return successCallback(character)
 		} catch (error) {
-			this._logger.write(`Error while creating character: ${error}`)
+			this._logger.write(`Error while creating character: ${(error as any).stack}`)
 			return failureCallback(CharacterCreationResultEnum.ERR_NO_REASON)
 		}
 	}
 
 	public async deleteCharacter(characterId: number, accountId: number) {
 		try {
-			const character = await this._database.prisma.character.findFirst({
+			const character = await this.database.prisma.character.findFirst({
 				where: {
 					id: characterId,
 					userId: accountId,
@@ -225,7 +225,7 @@ class CharacterController {
 				return false
 			}
 
-			await this._database.prisma.character.delete({
+			await this.database.prisma.character.delete({
 				where: {
 					id: characterId,
 				},
@@ -240,14 +240,13 @@ class CharacterController {
 
 	public async updateCharacter(character: Character) {
 		try {
-      const jobs: Job[] = []
-      
-      character?.jobs.forEach((job) => {
-        jobs.push(job)
-      })
+			const jobs: Job[] = []
 
+			character?.jobs.forEach((job) => {
+				jobs.push(job)
+			})
 
-			await this._database.prisma.character.update({
+			await this.database.prisma.character.update({
 				where: {
 					id: character.id,
 				},
@@ -267,6 +266,9 @@ class CharacterController {
 					shortcuts: character.saveShortcutsAsJSON(),
 					spells: character.saveSpellsAsJSON(),
 					finishMoves: character.saveFinishmovesAsJSON(),
+					knownZaaps: character.saveKnownZaapsAsJSON(),
+					spawnMapId: character.spawnMapId,
+					spawnCellId: character.spawnCellId,
 				},
 			})
 		} catch (error) {

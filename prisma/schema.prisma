@@ -51,9 +51,13 @@ model character {
   direction     Int             @default(1)
   kamas         Int             @default(0)
   statsPoints   Int             @default(0)
+  spawnMapId    Int             @default(0)
+  spawnCellId   Int             @default(0)
+  bankKamas     Int             @default(0)
   shortcuts     Json?
   spells        Json?
   finishMoves   Json?
+  knownZaaps    Json?
   created_at    DateTime        @default(now())
   updated_at    DateTime        @updatedAt
   deleted_at    DateTime?
@@ -228,6 +232,19 @@ model item {
   look           String? @db.Text
 }
 
+model bankItem {
+  accountId    Int
+  itemId       String
+  gId          Int
+  position     Int
+  quantity     Int
+  effects      Json
+  appearanceId Int
+  look         String? @db.Text
+
+  @@id([accountId, itemId])
+}
+
 model weapon {
   id               Int     @id
   name             String  @db.Text
@@ -289,7 +306,7 @@ model characterItemIdMapper {
 }
 
 model interactiveSkill {
-  id               Int    @id
+  id               Int    @id @default(autoincrement())
   mapId            Int
   identifier       Int
   actionIdentifier String
@@ -320,7 +337,7 @@ model monsterSpawn {
 }
 
 model interactiveElement {
-  id          Int @id
+  id          Int @id @default(autoincrement())
   elementId   Int
   mapId       Int
   cellId      Int

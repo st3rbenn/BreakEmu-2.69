@@ -28,7 +28,7 @@ class SpellShortcutBar extends ShortcutBar {
         // Envoyer une notification de suppression au serveur
         if (this.character.client) {
             const message = new ShortcutBarRemovedMessage(this.barEnum, slotId);
-            await this.character.client.Send(this.character.client.serialize(message));
+            await this.character.client.Send(message);
         }
     }
 }
@@ -127,6 +127,16 @@ class SpellShortcutBar extends ShortcutBar {
     }
 
     return shortcuts
+  }
+
+  public getShortcutBySpellId(spellId: number): CharacterSpellShortcut | undefined {
+    for (const shortcut of this.shortcuts.values()) {
+      if (shortcut instanceof CharacterSpellShortcut && shortcut.spellId === spellId) {
+        return shortcut
+      }
+    }
+
+    return undefined
   }
 }
 

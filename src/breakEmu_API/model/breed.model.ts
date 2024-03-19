@@ -6,20 +6,20 @@ interface StatUpgradeCost {
 }
 
 class Breed {
-	private _id: number
-	private _name: string
-	private _maleLook: string
-	private _femaleLook: string
-	private _maleColors: number[]
-	private _femaleColors: number[]
-	private _spForIntelligence: { cost: number; until: number }[]
-	private _spForAgility: { cost: number; until: number }[]
-	private _spForStrength: { cost: number; until: number }[]
-	private _spForVitality: { cost: number; until: number }[]
-	private _spForWisdom: { cost: number; until: number }[]
-	private _spForChance: { cost: number; until: number }[]
-	private _startLifePoints: number
-	private _breedSpells: number[] = []
+	id: number
+	name: string
+	maleLook: string
+	femaleLook: string
+	maleColors: number[]
+	femaleColors: number[]
+	spForIntelligence: { cost: number; until: number }[]
+	spForAgility: { cost: number; until: number }[]
+	spForStrength: { cost: number; until: number }[]
+	spForVitality: { cost: number; until: number }[]
+	spForWisdom: { cost: number; until: number }[]
+	spForChance: { cost: number; until: number }[]
+	startLifePoints: number
+	breedSpells: number[] = []
 
 	private static _Breeds: Breed[] = []
 
@@ -39,80 +39,20 @@ class Breed {
 		startLifePoints: number,
 		breedSpellsId: string
 	) {
-		this._id = id
-		this._name = name
-		this._maleLook = maleLook
-		this._femaleLook = femaleLook
-		this._maleColors = maleColors.split(",").map(Number)
-		this._femaleColors = femaleColors.split(",").map(Number)
-		this._spForIntelligence = spForIntelligence
-		this._spForAgility = spForAgility
-		this._spForStrength = spForStrength
-		this._spForVitality = spForVitality
-		this._spForWisdom = spForWisdom
-		this._spForChance = spForChance
-		this._startLifePoints = startLifePoints
-		this._breedSpells = breedSpellsId.split(",").map(Number)
-	}
-
-	public get id(): number {
-		return this._id
-	}
-
-	public get name(): string {
-		return this._name
-	}
-
-	public get maleLook(): string {
-		return this._maleLook
-	}
-
-	public get femaleLook(): string {
-		return this._femaleLook
-	}
-
-	public get maleColors(): number[] {
-		return this._maleColors
-	}
-
-	public get femaleColors(): number[] {
-		return this._femaleColors
-	}
-
-	public get spForIntelligence(): { cost: number; until: number }[] {
-		return this._spForIntelligence
-	}
-
-	public get spForAgility(): { cost: number; until: number }[] {
-		return this._spForAgility
-	}
-
-	public get spForStrength(): { cost: number; until: number }[] {
-		return this._spForStrength
-	}
-
-	public get spForVitality(): { cost: number; until: number }[] {
-		return this._spForVitality
-	}
-
-	public get spForWisdom(): { cost: number; until: number }[] {
-		return this._spForWisdom
-	}
-
-	public get spForChance(): { cost: number; until: number }[] {
-		return this._spForChance
-	}
-
-	public get startLifePoints(): number {
-		return this._startLifePoints
-	}
-
-	public get breedSpells(): number[] {
-		return this._breedSpells
-	}
-
-	public set breedSpells(breedSpells: number[]) {
-		this._breedSpells = breedSpells
+		this.id = id
+		this.name = name
+		this.maleLook = maleLook
+		this.femaleLook = femaleLook
+		this.maleColors = maleColors.split(",").map(Number)
+		this.femaleColors = femaleColors.split(",").map(Number)
+		this.spForIntelligence = spForIntelligence
+		this.spForAgility = spForAgility
+		this.spForStrength = spForStrength
+		this.spForVitality = spForVitality
+		this.spForWisdom = spForWisdom
+		this.spForChance = spForChance
+		this.startLifePoints = startLifePoints
+		this.breedSpells = breedSpellsId.split(",").map(Number)
 	}
 
 	public getStatUpgradeCost(statId: StatsBoostEnum): StatUpgradeCost[] {

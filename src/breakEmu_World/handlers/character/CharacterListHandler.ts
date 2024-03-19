@@ -33,7 +33,7 @@ class CharacterListHandler {
 			}
 
 			await client.Send(
-				client.serialize(new CharactersListMessage(characterToBaseInfo))
+				new CharactersListMessage(characterToBaseInfo)
 			)
 		} catch (error) {
 			await this.logger.writeAsync(

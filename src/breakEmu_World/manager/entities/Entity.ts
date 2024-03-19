@@ -10,13 +10,13 @@ import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
 import Logger from "../../../breakEmu_Core/Logger"
 
 abstract class Entity {
-	private _logger: Logger = new Logger("Entity")
-	abstract _id: number
-	abstract _name: string
-	abstract _cellId: number
-	abstract _point: MapPoint
-	abstract _map: Map | null
-	abstract _direction: DirectionsEnum
+	private logger: Logger = new Logger("Entity")
+	abstract id: number
+	abstract name: string
+	abstract cellId: number
+	abstract point: MapPoint
+	map: Map | null
+	abstract direction: DirectionsEnum
 
 	constructor(map: Map | null = null) {
 		this.map = map
@@ -26,7 +26,7 @@ abstract class Entity {
 
 	public async sendMap(message: DofusMessage) {
 		if (this.map !== null && this.map.instance !== null) {
-			await this._logger.writeAsync(
+			await this.logger.writeAsync(
 				`Sending message to map ${this.map.id}...`,
 				ansiColorCodes.green
 			)
@@ -38,14 +38,6 @@ abstract class Entity {
 		await this.sendMap(
 			new GameRolePlayShowActorMessage(this.getActorInformations())
 		)
-	}
-
-	get map(): Map | null {
-		return this._map
-	}
-
-	set map(value: Map | null) {
-		this._map = value
 	}
 }
 

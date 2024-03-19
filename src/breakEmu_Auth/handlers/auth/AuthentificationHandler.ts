@@ -8,11 +8,11 @@ import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
 import Logger from "../../../breakEmu_Core/Logger"
 import ConfigurationManager from "../../../breakEmu_Core/configuration/ConfigurationManager"
 import {
-  BinaryBigEndianReader,
-  CredentialsAcknowledgementMessage,
-  DofusMessage,
-  IdentificationMessage,
-  IdentificationSuccessMessage,
+	BinaryBigEndianReader,
+	CredentialsAcknowledgementMessage,
+	DofusMessage,
+	IdentificationMessage,
+	IdentificationSuccessMessage,
 } from "../../../breakEmu_Server/IO"
 import ServerListHandler from "../server/ServerListHandler"
 
@@ -91,9 +91,7 @@ class AuthentificationHandler {
 					"Sending CredentialsAknowledgementMessage message"
 				)
 			}
-			await client.Send(
-				client.serialize(new CredentialsAcknowledgementMessage())
-			)
+			await client.Send(new CredentialsAcknowledgementMessage())
 			await this.handleIdentificationSuccessMessage(client)
 			await ServerListHandler.handleServersListMessage(client)
 		}
@@ -106,8 +104,8 @@ class AuthentificationHandler {
 		const subscriptionEndDateUnix = Math.floor(Date.now() * 1000) + 31536000
 
 		const identificationSuccessMessage = new IdentificationSuccessMessage(
-			client.account?.is_admin,
-			client.account?.is_admin,
+			client.account?.is_admin(),
+			client.account?.is_admin(),
 			client.account?.pseudo,
 			(client.account?.tagNumber as number).toString(),
 			wasArleadyConnected,
@@ -124,7 +122,7 @@ class AuthentificationHandler {
 			)
 		}
 
-		await client.Send(client.serialize(identificationSuccessMessage))
+		await client.Send(identificationSuccessMessage)
 	}
 }
 

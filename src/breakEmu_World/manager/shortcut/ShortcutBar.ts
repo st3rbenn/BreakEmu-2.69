@@ -52,9 +52,7 @@ abstract class ShortcutBar {
 	public refreshShortcut(shortcut: CharacterShortcut | undefined): void {
 		if (shortcut) {
 			this.character.client?.Send(
-				this.character.client.serialize(
-					new ShortcutBarRefreshMessage(this.barEnum, shortcut.getShortcut())
-				)
+				new ShortcutBarRefreshMessage(this.barEnum, shortcut.getShortcut())
 			)
 		}
 	}
@@ -83,9 +81,7 @@ abstract class ShortcutBar {
 		}
 
 		this.character.client?.Send(
-			this.character.client?.serialize(
-				new ShortcutBarContentMessage(this.barEnum, sht)
-			)
+			new ShortcutBarContentMessage(this.barEnum, sht)
 		)
 	}
 

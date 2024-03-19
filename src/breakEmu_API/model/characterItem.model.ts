@@ -12,11 +12,6 @@ import CharacterItemController from "../controller/characterItem.controller"
 class CharacterItem extends AbstractItem {
 	private _characterId: number
 
-	private static _charactersItems: Map<number, CharacterItem> = new Map<
-		number,
-		CharacterItem
-	>()
-
 	constructor(
 		characterId: number,
 		uid: string,
@@ -83,37 +78,8 @@ class CharacterItem extends AbstractItem {
 		this._characterId = value
 	}
 
-	public static get charactersItems(): Map<number, CharacterItem> {
-		return this._charactersItems
-	}
-
-	public static getCharacterItems(characterId: number): CharacterItem[] {
-		const result: CharacterItem[] = []
-
-		for (const characterItem of this._charactersItems.values()) {
-			if (characterItem.characterId === characterId) {
-				result.push(characterItem)
-			}
-		}
-
-		return result
-	}
-
 	public canBeExchanged(): boolean {
 		return this.record.exchangeable
-	}
-
-	public static async addItem(characterItem: CharacterItem): Promise<void> {
-    const id = await CharacterItemController.getInstance().getIntIdFromUuid(characterItem.uId)
-		this._charactersItems.set(id as number, characterItem)
-	}
-
-	public static removeItem(uId: number): void {
-		this._charactersItems.delete(uId)
-	}
-
-	public static getItem(uId: number): CharacterItem {
-		return this._charactersItems.get(uId) as CharacterItem
 	}
 
   public hasSet(): boolean {

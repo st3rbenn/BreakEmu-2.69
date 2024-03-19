@@ -17,26 +17,22 @@ class CharacterSelectionHandler {
 	) {
 		character.client = client
 		await client.Send(
-			client.serialize(
-				new CharacterSelectedSuccessMessage(
-					character?.toCharacterBaseInformations(),
-					false
-				)
-			)
+			new CharacterSelectedSuccessMessage(
+        character?.toCharacterBaseInformations(),
+        false
+      )
 		)
 		await client.Send(
-			client.serialize(new NotificationListMessage([2147483647]))
+      new NotificationListMessage([2147483647])
 		)
-		await client.Send(client.serialize(new CharacterCapabilitiesMessage(4095)))
-		await client.Send(client.serialize(new SequenceNumberRequestMessage()))
+		await client.Send(new CharacterCapabilitiesMessage(4095))
+		await client.Send(new SequenceNumberRequestMessage())
 
 		client.selectedCharacter = character as Character
 
 		await character?.refreshAll()
 
 		// await character.inventory?.addNewItem(8464, 1, false)
-
-		await character?.onCharacterLoadingComplete()
 	}
 }
 

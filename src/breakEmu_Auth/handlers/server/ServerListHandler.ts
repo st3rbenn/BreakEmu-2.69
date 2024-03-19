@@ -26,7 +26,7 @@ class ServerListHandler {
 		)
 
 		client.Send(
-			client.serialize(new ServersListMessage(gameServerInformationArray, true))
+			new ServersListMessage(gameServerInformationArray, true)
 		)
 	}
 
@@ -35,26 +35,22 @@ class ServerListHandler {
 
 		if (server.length <= 0) {
 			await client.Send(
-				client.serialize(
-					new SelectedServerRefusedMessage(
-						server[0].worldServerData?.Id,
-						ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_NO_REASON,
-						0
-					)
-				)
+				new SelectedServerRefusedMessage(
+          server[0].worldServerData?.Id,
+          ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_NO_REASON,
+          0
+        )
 			)
 			return
 		}
 
 		if (server[0].SERVER_STATE != ServerStatusEnum.ONLINE) {
 			await client.Send(
-				client.serialize(
-					new SelectedServerRefusedMessage(
-						server[0].worldServerData?.Id,
-						ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_DUE_TO_STATUS,
-						0
-					)
-				)
+				new SelectedServerRefusedMessage(
+          server[0].worldServerData?.Id,
+          ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_DUE_TO_STATUS,
+          0
+        )
 			)
 			return
 		}
@@ -64,13 +60,11 @@ class ServerListHandler {
 			(client.account?.role as number)
 		) {
 			await client.Send(
-				client.serialize(
-					new SelectedServerRefusedMessage(
-						server[0].worldServerData?.Id,
-						ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_ACCOUNT_RESTRICTED,
-						0
-					)
-				)
+				new SelectedServerRefusedMessage(
+          server[0].worldServerData?.Id,
+          ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_ACCOUNT_RESTRICTED,
+          0
+        )
 			)
 			return
 		}
@@ -95,7 +89,7 @@ class ServerListHandler {
 			token
 		)
 
-		await client.Send(client.serialize(selectedServerDataMessage))
+		await client.Send(selectedServerDataMessage)
 
 		await AuthTransition.getInstance().sendAccountTransferMessage(
 			client.account?.pseudo as string

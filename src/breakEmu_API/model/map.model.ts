@@ -11,21 +11,24 @@ import SubArea from "./SubArea.model"
 import MapScrollAction from "./mapScrollAction.model"
 
 class GameMap {
-	private _id: number
-	private _subareaId: number
-	private _version: number
+	id: number
+	subareaId: number
+	version: number
 
-	private _subArea: SubArea
+	_instance: MapInstance
 
-	private _instance: MapInstance
+	subArea: SubArea
 
-	private _leftMap: number
-	private _rightMap: number
-	private _topMap: number
-	private _bottomMap: number
+	leftMap: number
+	rightMap: number
+	topMap: number
+	bottomMap: number
 
-	private _cells: Map<number, Cell> = new Map<number, Cell>()
-	private _elements: Map<number, InteractiveElementModel> = new Map<
+	hasZaap: boolean = false
+	zaapCell: MapPoint | undefined
+
+	cells: Map<number, Cell> = new Map<number, Cell>()
+	elements: Map<number, InteractiveElementModel> = new Map<
 		number,
 		InteractiveElementModel
 	>()
@@ -41,63 +44,24 @@ class GameMap {
 		topMap: number,
 		bottomMap: number
 	) {
-		this._id = id
-		this._subareaId = subareaId
-		this._version = version
-		this._leftMap = leftMap
-		this._rightMap = rightMap
-		this._topMap = topMap
-		this._bottomMap = bottomMap
-
-		this._instance = new MapInstance(this)
-	}
-
-	get id(): number {
-		return this._id
-	}
-
-	get subareaId(): number {
-		return this._subareaId
-	}
-
-	get version(): number {
-		return this._version
-	}
-
-	get subArea(): SubArea {
-		return this._subArea
+		this.id = id
+		this.subareaId = subareaId
+		this.version = version
+		this.leftMap = leftMap
+		this.rightMap = rightMap
+		this.topMap = topMap
+		this.bottomMap = bottomMap
 	}
 
 	get instance(): MapInstance {
+		if (!this._instance) {
+			this._instance = new MapInstance(this)
+		}
 		return this._instance
 	}
 
-	get leftMap(): number {
-		return this._leftMap
-	}
-
-	get rightMap(): number {
-		return this._rightMap
-	}
-
-	get topMap(): number {
-		return this._topMap
-	}
-
-	get bottomMap(): number {
-		return this._bottomMap
-	}
-
-	get cells(): Map<number, Cell> {
-		return this._cells
-	}
-
-	set cells(value: Map<number, Cell>) {
-		this._cells = value
-	}
-
-	get elements(): Map<number, InteractiveElementModel> {
-		return this._elements
+	set instance(value: MapInstance) {
+		this._instance = value
 	}
 
 	static getMapById(id: number): GameMap | undefined {
@@ -244,7 +208,18 @@ class GameMap {
 		return this.randomWalkableCell().id
 	}
 
-	public findNearMapBorder() {}
+	public isCellBlocked(cellId: number): boolean {
+		if (cellId < 0 || cellId > 559) return false
+		const cell = this.cells.get(cellId)
+		if (cell) {
+			return cell.isWalkable()
+		}
+		return false
+	}
+
+	public unblockCell(): Cell {
+		return this.randomWalkableCell()
+	}
 
 	public getFirstElementByType(
 		interactiveType: InteractiveTypeEnum
@@ -323,11 +298,13 @@ export interface CellData {
 }
 
 export interface InteractiveElementData {
+	id: number
 	elementId: number
 	cellId: number
 	mapId: number
 	gfxId: number
 	bonesId: number
+	elementType: number
 }
 
 export interface MapData {

@@ -7,6 +7,7 @@ import {
 import WorldServerManager from "../../../breakEmu_World/WorldServerManager"
 import WorldClient from "../../WorldClient"
 import WorldServer from "../../WorldServer"
+import CharacterListHandler from "../character/CharacterListHandler"
 
 class ServerListHandler {
 	public static async handleServerListRequestMessage(client: WorldClient) {
@@ -19,7 +20,7 @@ class ServerListHandler {
 			token.toString()
 		)
 
-		await client.Send(client.serialize(reloginTokenStatusMessage))
+		await client.Send(reloginTokenStatusMessage)
 
 		const gameServerInformationArray = await WorldServerManager.getInstance().gameServerInformation(
 			WorldServer.getInstance(),
@@ -27,9 +28,7 @@ class ServerListHandler {
 		)
 
 		await client.Send(
-			client.serialize(
-				new ServersListMessage([gameServerInformationArray], true)
-			)
+			new ServersListMessage([gameServerInformationArray], true)
 		)
 	}
 
@@ -46,7 +45,8 @@ class ServerListHandler {
 			token
 		)
 
-		await client.Send(client.serialize(selectedServerDataMessage))
+		await client.Send(selectedServerDataMessage)
+    await CharacterListHandler.handleCharactersListMessage(client)
 	}
 }
 

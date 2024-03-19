@@ -6,6 +6,7 @@ import {
 	CharacteristicEnum,
 	CharacterCharacteristicValue,
 	StatsBoostEnum,
+	SpellModifierMessage,
 } from "../../../../breakEmu_Server/IO"
 import BreedManager from "../../../../breakEmu_World/manager/breed/BreedManager"
 import ApCharacteristic from "./apCharacteristic"
@@ -123,7 +124,7 @@ class EntityStats {
 
 	public initialize(): void {
 		this.lifePoints = this.maxLifePoints
-		this.energy = this.maxEnergyPoints
+		this.energy = this._maxEnergyPoints
 
 		let dodgePALost = this.getCharacteristic(
 			CharacteristicEnum.DODGE_PALOST_PROBABILITY
@@ -171,9 +172,98 @@ class EntityStats {
 			0
 		)
 
+		const commonCharacteristics = [
+			CharacteristicEnum.AGILITY,
+			CharacteristicEnum.AIR_DAMAGE_BONUS,
+			CharacteristicEnum.AIR_ELEMENT_REDUCTION,
+			CharacteristicEnum.CHANCE,
+			CharacteristicEnum.WATER_DAMAGE_BONUS,
+			CharacteristicEnum.WATER_ELEMENT_REDUCTION,
+			CharacteristicEnum.INTELLIGENCE,
+			CharacteristicEnum.FIRE_DAMAGE_BONUS,
+			CharacteristicEnum.FIRE_ELEMENT_REDUCTION,
+			CharacteristicEnum.STRENGTH,
+			CharacteristicEnum.EARTH_DAMAGE_BONUS,
+			CharacteristicEnum.EARTH_ELEMENT_REDUCTION,
+			CharacteristicEnum.ALL_DAMAGES_BONUS,
+			CharacteristicEnum.DAMAGES_BONUS_PERCENT,
+			CharacteristicEnum.CRITICAL_DAMAGE_BONUS,
+			CharacteristicEnum.CRITICAL_DAMAGE_REDUCTION,
+			CharacteristicEnum.CRITICAL_HIT,
+			CharacteristicEnum.INITIATIVE,
+			CharacteristicEnum.GLYPH_POWER,
+			CharacteristicEnum.RUNE_POWER,
+			CharacteristicEnum.PERMANENT_DAMAGE_PERCENT,
+			CharacteristicEnum.HEAL_BONUS,
+			CharacteristicEnum.NEUTRAL_DAMAGE_BONUS,
+			CharacteristicEnum.NEUTRAL_ELEMENT_REDUCTION,
+			CharacteristicEnum.NEUTRAL_ELEMENT_RESIST_PERCENT,
+			CharacteristicEnum.PUSH_DAMAGE_BONUS,
+			CharacteristicEnum.PUSH_DAMAGE_REDUCTION,
+			CharacteristicEnum.RANGE,
+			CharacteristicEnum.REFLECT,
+			CharacteristicEnum.TRAP_BONUS,
+			CharacteristicEnum.TRAP_BONUS_PERCENT,
+			CharacteristicEnum.VITALITY,
+			CharacteristicEnum.WISDOM,
+			CharacteristicEnum.MELEE_DAMAGE_DONE_PERCENT,
+			CharacteristicEnum.MELEE_DAMAGE_RECEIVED_PERCENT,
+			CharacteristicEnum.RANGED_DAMAGE_DONE_PERCENT,
+			CharacteristicEnum.RANGED_DAMAGE_RECEIVED_PERCENT,
+			CharacteristicEnum.SPELL_DAMAGE_DONE_PERCENT,
+			CharacteristicEnum.SPELL_DAMAGE_RECEIVED_PERCENT,
+			CharacteristicEnum.WEAPON_DAMAGE_DONE_PERCENT,
+			CharacteristicEnum.WEAPON_DAMAGE_RECEIVED_PERCENT,
+			CharacteristicEnum.WEAPON_DAMAGES_BONUS_PERCENT,
+			CharacteristicEnum.WEIGHT,
+		]
+
+		const resistanceCharacteristics = [
+			CharacteristicEnum.AIR_ELEMENT_RESIST_PERCENT,
+			CharacteristicEnum.EARTH_ELEMENT_RESIST_PERCENT,
+			CharacteristicEnum.FIRE_ELEMENT_RESIST_PERCENT,
+			CharacteristicEnum.WATER_ELEMENT_RESIST_PERCENT,
+		]
+
+		const dodgeCharacteristics = [
+			CharacteristicEnum.DODGE_PALOST_PROBABILITY,
+			CharacteristicEnum.DODGE_PMLOST_PROBABILITY,
+		]
+
+		const relativeCharacteristics = [
+			CharacteristicEnum.PAATTACK,
+			CharacteristicEnum.PMATTACK,
+			CharacteristicEnum.TACKLE_BLOCK,
+			CharacteristicEnum.TACKLE_EVADE,
+			CharacteristicEnum.PROSPECTING,
+		]
+
+		commonCharacteristics.forEach((charEnum) => {
+			stats.setCharacteristic(charEnum, Characteristic.zero())
+		})
+
+		resistanceCharacteristics.forEach((charEnum) => {
+			stats.setCharacteristic(charEnum, ResistanceCharacteristic.zero())
+		})
+
+		dodgeCharacteristics.forEach((charEnum) => {
+			stats.setCharacteristic(charEnum, PointDodgeCharacteristic.zero())
+		})
+
+		relativeCharacteristics.forEach((charEnum) => {
+			if (charEnum === CharacteristicEnum.PROSPECTING) {
+				stats.setCharacteristic(
+					charEnum,
+					RelativeCharacteristic.new(BreedManager._breedDefaultProspection)
+				)
+			}
+
+			stats.setCharacteristic(charEnum, PointDodgeCharacteristic.zero())
+		})
+
 		stats.setCharacteristic(
 			CharacteristicEnum.STATS_POINTS,
-			ApCharacteristic.new(ConfigurationManager.getInstance().startStatsPoints)
+			new Characteristic(5)
 		)
 
 		stats.setCharacteristic(
@@ -184,224 +274,16 @@ class EntityStats {
 			CharacteristicEnum.MOVEMENT_POINTS,
 			MpCharacteristic.new(ConfigurationManager.getInstance().startMp)
 		)
-		stats.setCharacteristic(CharacteristicEnum.AGILITY, Characteristic.zero())
-		stats.setCharacteristic(
-			CharacteristicEnum.AIR_DAMAGE_BONUS,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.AIR_ELEMENT_REDUCTION,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.AIR_ELEMENT_RESIST_PERCENT,
-			ResistanceCharacteristic.zero()
-		)
-
-		stats.setCharacteristic(
-			CharacteristicEnum.ALL_DAMAGES_BONUS,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.DAMAGES_BONUS_PERCENT,
-			Characteristic.zero()
-		)
-
-		stats.setCharacteristic(CharacteristicEnum.CHANCE, Characteristic.zero())
-		stats.setCharacteristic(
-			CharacteristicEnum.CRITICAL_DAMAGE_BONUS,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.CRITICAL_DAMAGE_REDUCTION,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.CRITICAL_HIT,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.INITIATIVE,
-			Characteristic.zero()
-		)
-
-		stats.setCharacteristic(
-			CharacteristicEnum.DODGE_PALOST_PROBABILITY,
-			PointDodgeCharacteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.DODGE_PMLOST_PROBABILITY,
-			PointDodgeCharacteristic.zero()
-		)
-
-		stats.setCharacteristic(
-			CharacteristicEnum.EARTH_DAMAGE_BONUS,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.EARTH_ELEMENT_REDUCTION,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.EARTH_ELEMENT_RESIST_PERCENT,
-			ResistanceCharacteristic.zero()
-		)
-
-		stats.setCharacteristic(
-			CharacteristicEnum.FIRE_DAMAGE_BONUS,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.FIRE_ELEMENT_REDUCTION,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.FIRE_ELEMENT_RESIST_PERCENT,
-			ResistanceCharacteristic.zero()
-		)
-
-		stats.setCharacteristic(
-			CharacteristicEnum.GLYPH_POWER,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.RUNE_POWER,
-			Characteristic.zero()
-		)
-
-		stats.setCharacteristic(
-			CharacteristicEnum.PERMANENT_DAMAGE_PERCENT,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.HEAL_BONUS,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.INTELLIGENCE,
-			Characteristic.zero()
-		)
-
-		stats.setCharacteristic(
-			CharacteristicEnum.NEUTRAL_DAMAGE_BONUS,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.NEUTRAL_ELEMENT_REDUCTION,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.NEUTRAL_ELEMENT_RESIST_PERCENT,
-			Characteristic.zero()
-		)
-
-		stats.setCharacteristic(
-			CharacteristicEnum.PROSPECTING,
-			RelativeCharacteristic.new(BreedManager._breedDefaultProspection)
-		)
-
-		stats.setCharacteristic(
-			CharacteristicEnum.PUSH_DAMAGE_BONUS,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.PUSH_DAMAGE_REDUCTION,
-			Characteristic.zero()
-		)
 
 		stats.setCharacteristic(
 			CharacteristicEnum.RANGE,
 			RangeCharacteristic.zero()
 		)
-		stats.setCharacteristic(CharacteristicEnum.REFLECT, Characteristic.zero())
-
-		stats.setCharacteristic(CharacteristicEnum.STRENGTH, Characteristic.zero())
 
 		stats.setCharacteristic(
 			CharacteristicEnum.SUMMONABLE_CREATURES_BOOST,
 			new Characteristic(this._baseSummonsLimit)
 		)
-		stats.setCharacteristic(
-			CharacteristicEnum.TRAP_BONUS,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.TRAP_BONUS_PERCENT,
-			Characteristic.zero()
-		)
-
-		stats.setCharacteristic(CharacteristicEnum.VITALITY, Characteristic.zero())
-
-		stats.setCharacteristic(
-			CharacteristicEnum.WATER_DAMAGE_BONUS,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.WATER_ELEMENT_REDUCTION,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.WATER_ELEMENT_RESIST_PERCENT,
-			ResistanceCharacteristic.zero()
-		)
-
-		stats.setCharacteristic(
-			CharacteristicEnum.WEAPON_DAMAGES_BONUS_PERCENT,
-			Characteristic.zero()
-		)
-
-		stats.setCharacteristic(CharacteristicEnum.WISDOM, Characteristic.zero())
-
-		stats.setCharacteristic(
-			CharacteristicEnum.TACKLE_BLOCK,
-			RelativeCharacteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.TACKLE_EVADE,
-			RelativeCharacteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.PAATTACK,
-			RelativeCharacteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.PMATTACK,
-			RelativeCharacteristic.zero()
-		)
-
-		stats.setCharacteristic(
-			CharacteristicEnum.MELEE_DAMAGE_DONE_PERCENT,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.MELEE_DAMAGE_RECEIVED_PERCENT,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.RANGED_DAMAGE_DONE_PERCENT,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.RANGED_DAMAGE_RECEIVED_PERCENT,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.SPELL_DAMAGE_DONE_PERCENT,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.SPELL_DAMAGE_RECEIVED_PERCENT,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.WEAPON_DAMAGE_DONE_PERCENT,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(
-			CharacteristicEnum.WEAPON_DAMAGE_RECEIVED_PERCENT,
-			Characteristic.zero()
-		)
-		stats.setCharacteristic(CharacteristicEnum.WEIGHT, Characteristic.zero())
 		stats.initialize()
 
 		return stats
@@ -594,6 +476,8 @@ class EntityStats {
 			0
 		)
 
+		const spellModifiers: SpellModifierMessage[] = []
+
 		const stats = new CharacterCharacteristicsInformations(
 			character.experience,
 			Experience.getCharacterExperienceLevelFloor(character.level),
@@ -603,7 +487,7 @@ class EntityStats {
 			alignementInfos,
 			this.getCharacterCharacteristic(),
 			0,
-			[],
+			spellModifiers,
 			0
 		)
 
@@ -618,53 +502,381 @@ class EntityStats {
 			CharacterCharacteristic
 		>()
 
-		if (selected == null) {
-			this._characteristics.forEach(
-				(value: Characteristic, key: CharacteristicEnum) => {
+		this.characteristics.forEach(
+			(value: Characteristic, key: CharacteristicEnum) => {
+				if (selected === null || selected.includes(key)) {
 					result.set(key, value.characterCharacteristicDetailed(key))
 				}
-			)
-		} else {
-			let characteristics = this._characteristics.keys()
-
-			for (let i = 0; i < selected.length; i++) {
-				if (characteristics.next().value == selected[i]) {
-					result.set(
-						selected[i],
-						this._characteristics
-							.get(selected[i])
-							?.characterCharacteristicDetailed(
-								selected[i]
-							) as CharacterCharacteristic
-					)
-				}
 			}
-		}
+		)
 
-		const lifePoint = CharacteristicEnum.LIFE_POINTS
-		const maxLifePoint = CharacteristicEnum.MAX_LIFE_POINTS
-		const maxEnergyPoint = CharacteristicEnum.MAX_ENERGY_POINTS
-		const energyPoint = CharacteristicEnum.ENERGY_POINTS
+		const staticCharacteristics: [CharacteristicEnum, number][] = [
+			[CharacteristicEnum.LIFE_POINTS, this.lifePoints],
+			[CharacteristicEnum.MAX_LIFE_POINTS, this.maxLifePoints],
+			[CharacteristicEnum.MAX_ENERGY_POINTS, this.maxEnergyPoints],
+			[CharacteristicEnum.ENERGY_POINTS, this.energy],
+		]
 
-		result.set(
-			lifePoint,
-			new CharacterCharacteristicValue(lifePoint, this.lifePoints)
-		)
-		result.set(
-			maxLifePoint,
-			new CharacterCharacteristicValue(maxLifePoint, this.maxLifePoints)
-		)
-		result.set(
-			maxEnergyPoint,
-			new CharacterCharacteristicValue(maxEnergyPoint, this.maxEnergyPoints)
-		)
-		result.set(
-			energyPoint,
-			new CharacterCharacteristicValue(energyPoint, this.energy)
-		)
+		staticCharacteristics.forEach(([enumVal, value]) => {
+			result.set(enumVal, new CharacterCharacteristicValue(enumVal, value))
+		})
 
 		return Array.from(result.values())
 	}
+
+	// public static new(level: number): EntityStats {
+	// 	let stats = new EntityStats(
+	// 		BreedManager._breedDefaultLife,
+	// 		BreedManager._breedDefaultLife,
+	// 		level * 100,
+	// 		level * 100,
+	// 		0
+	// 	)
+
+	//   const commonCharacteristics = [
+	//     CharacteristicEnum.AGILITY,
+	//     CharacteristicEnum.AIR_DAMAGE_BONUS,
+	//     CharacteristicEnum.AIR_ELEMENT_REDUCTION,
+	//     CharacteristicEnum.CHANCE,
+	//     CharacteristicEnum.WATER_DAMAGE_BONUS,
+	//     CharacteristicEnum.WATER_ELEMENT_REDUCTION,
+	//     CharacteristicEnum.INTELLIGENCE,
+	//     CharacteristicEnum.FIRE_DAMAGE_BONUS,
+	//     CharacteristicEnum.FIRE_ELEMENT_REDUCTION,
+	//     CharacteristicEnum.STRENGTH,
+	//     CharacteristicEnum.EARTH_DAMAGE_BONUS,
+	//     CharacteristicEnum.EARTH_ELEMENT_REDUCTION,
+	//     CharacteristicEnum.ALL_DAMAGES_BONUS,
+	//     CharacteristicEnum.DAMAGES_BONUS_PERCENT,
+	//     CharacteristicEnum.CRITICAL_DAMAGE_BONUS,
+	//     CharacteristicEnum.CRITICAL_DAMAGE_REDUCTION,
+	//     CharacteristicEnum.CRITICAL_HIT,
+	//     CharacteristicEnum.INITIATIVE,
+	//     CharacteristicEnum.GLYPH_POWER,
+	//     CharacteristicEnum.RUNE_POWER,
+	//     CharacteristicEnum.PERMANENT_DAMAGE_PERCENT,
+	//     CharacteristicEnum.HEAL_BONUS,
+	//     CharacteristicEnum.NEUTRAL_DAMAGE_BONUS,
+	//     CharacteristicEnum.NEUTRAL_ELEMENT_REDUCTION,
+	//     CharacteristicEnum.NEUTRAL_ELEMENT_RESIST_PERCENT,
+	//     CharacteristicEnum.PUSH_DAMAGE_BONUS,
+	//     CharacteristicEnum.PUSH_DAMAGE_REDUCTION,
+	//     CharacteristicEnum.RANGE,
+	//     CharacteristicEnum.REFLECT,
+	//     CharacteristicEnum.TRAP_BONUS,
+	//     CharacteristicEnum.TRAP_BONUS_PERCENT,
+	//     CharacteristicEnum.VITALITY,
+	//     CharacteristicEnum.WISDOM,
+	//     CharacteristicEnum.MELEE_DAMAGE_DONE_PERCENT,
+	//     CharacteristicEnum.MELEE_DAMAGE_RECEIVED_PERCENT,
+	//     CharacteristicEnum.RANGED_DAMAGE_DONE_PERCENT,
+	//     CharacteristicEnum.RANGED_DAMAGE_RECEIVED_PERCENT,
+	//     CharacteristicEnum.SPELL_DAMAGE_DONE_PERCENT,
+	//     CharacteristicEnum.SPELL_DAMAGE_RECEIVED_PERCENT,
+	//     CharacteristicEnum.WEAPON_DAMAGE_DONE_PERCENT,
+	//     CharacteristicEnum.WEAPON_DAMAGE_RECEIVED_PERCENT,
+	//     CharacteristicEnum.WEAPON_DAMAGES_BONUS_PERCENT,
+	//     CharacteristicEnum.WEIGHT,
+	// ];
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.STATS_POINTS,
+	// 		new Characteristic(5)
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.ACTION_POINTS,
+	// 		ApCharacteristic.new(ConfigurationManager.getInstance().startAp)
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.MOVEMENT_POINTS,
+	// 		MpCharacteristic.new(ConfigurationManager.getInstance().startMp)
+	// 	)
+	// 	stats.setCharacteristic(CharacteristicEnum.AGILITY, Characteristic.zero())
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.AIR_DAMAGE_BONUS,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.AIR_ELEMENT_REDUCTION,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.AIR_ELEMENT_RESIST_PERCENT,
+	// 		ResistanceCharacteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.ALL_DAMAGES_BONUS,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.DAMAGES_BONUS_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(CharacteristicEnum.CHANCE, Characteristic.zero())
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.CRITICAL_DAMAGE_BONUS,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.CRITICAL_DAMAGE_REDUCTION,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.CRITICAL_HIT,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.INITIATIVE,
+	// 		Characteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.DODGE_PALOST_PROBABILITY,
+	// 		PointDodgeCharacteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.DODGE_PMLOST_PROBABILITY,
+	// 		PointDodgeCharacteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.EARTH_DAMAGE_BONUS,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.EARTH_ELEMENT_REDUCTION,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.EARTH_ELEMENT_RESIST_PERCENT,
+	// 		ResistanceCharacteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.FIRE_DAMAGE_BONUS,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.FIRE_ELEMENT_REDUCTION,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.FIRE_ELEMENT_RESIST_PERCENT,
+	// 		ResistanceCharacteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.GLYPH_POWER,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.RUNE_POWER,
+	// 		Characteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.PERMANENT_DAMAGE_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.HEAL_BONUS,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.INTELLIGENCE,
+	// 		Characteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.NEUTRAL_DAMAGE_BONUS,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.NEUTRAL_ELEMENT_REDUCTION,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.NEUTRAL_ELEMENT_RESIST_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.PROSPECTING,
+	// 		RelativeCharacteristic.new(BreedManager._breedDefaultProspection)
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.PUSH_DAMAGE_BONUS,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.PUSH_DAMAGE_REDUCTION,
+	// 		Characteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.RANGE,
+	// 		RangeCharacteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(CharacteristicEnum.REFLECT, Characteristic.zero())
+
+	// 	stats.setCharacteristic(CharacteristicEnum.STRENGTH, Characteristic.zero())
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.SUMMONABLE_CREATURES_BOOST,
+	// 		new Characteristic(this._baseSummonsLimit)
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.TRAP_BONUS,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.TRAP_BONUS_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(CharacteristicEnum.VITALITY, Characteristic.zero())
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.WATER_DAMAGE_BONUS,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.WATER_ELEMENT_REDUCTION,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.WATER_ELEMENT_RESIST_PERCENT,
+	// 		ResistanceCharacteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.WEAPON_DAMAGES_BONUS_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(CharacteristicEnum.WISDOM, Characteristic.zero())
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.TACKLE_BLOCK,
+	// 		RelativeCharacteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.TACKLE_EVADE,
+	// 		RelativeCharacteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.PAATTACK,
+	// 		RelativeCharacteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.PMATTACK,
+	// 		RelativeCharacteristic.zero()
+	// 	)
+
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.MELEE_DAMAGE_DONE_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.MELEE_DAMAGE_RECEIVED_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.RANGED_DAMAGE_DONE_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.RANGED_DAMAGE_RECEIVED_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.SPELL_DAMAGE_DONE_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.SPELL_DAMAGE_RECEIVED_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.WEAPON_DAMAGE_DONE_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(
+	// 		CharacteristicEnum.WEAPON_DAMAGE_RECEIVED_PERCENT,
+	// 		Characteristic.zero()
+	// 	)
+	// 	stats.setCharacteristic(CharacteristicEnum.WEIGHT, Characteristic.zero())
+	// 	stats.initialize()
+
+	// 	return stats
+	// }
+
+	// public getCharacterCharacteristic(
+	// 	selected: CharacteristicEnum[] | null = null
+	// ): CharacterCharacteristic[] {
+	// 	let result: Map<CharacteristicEnum, CharacterCharacteristic> = new Map<
+	// 		CharacteristicEnum,
+	// 		CharacterCharacteristic
+	// 	>()
+
+	// 	if (selected == null) {
+	// 		this.characteristics.forEach(
+	// 			(value: Characteristic, key: CharacteristicEnum) => {
+	// 				result.set(key, value.characterCharacteristicDetailed(key))
+	// 			}
+	// 		)
+	// 	} else {
+	// 		let characteristics = this._characteristics.keys()
+
+	// 		for (let i = 0; i < selected.length; i++) {
+	// 			if (characteristics.next().value == selected[i]) {
+	// 				result.set(
+	// 					selected[i],
+	// 					this._characteristics
+	// 						.get(selected[i])
+	// 						?.characterCharacteristicDetailed(
+	// 							selected[i]
+	// 						) as CharacterCharacteristic
+	// 				)
+	// 			}
+	// 		}
+
+	// 		return Array.from(result.values())
+	// 	}
+
+	// 	const lifePointEnum = CharacteristicEnum.LIFE_POINTS
+	// 	const maxLifePointEnum = CharacteristicEnum.MAX_LIFE_POINTS
+	// 	const maxEnergyPointEnum = CharacteristicEnum.MAX_ENERGY_POINTS
+	// 	const energyPointEnum = CharacteristicEnum.ENERGY_POINTS
+
+	// 	const lifePoint = this.lifePoints
+	// 	const maxLifePoint = this.maxLifePoints
+	// 	const maxEnergyPoint = this.maxEnergyPoints
+	// 	const energyPoint = this.energy
+
+	// 	result.set(
+	// 		lifePointEnum,
+	// 		new CharacterCharacteristicValue(lifePointEnum, lifePoint)
+	// 	)
+	// 	result.set(
+	// 		maxLifePointEnum,
+	// 		new CharacterCharacteristicValue(maxLifePointEnum, maxLifePoint)
+	// 	)
+	// 	result.set(
+	// 		maxEnergyPointEnum,
+	// 		new CharacterCharacteristicValue(maxEnergyPointEnum, maxEnergyPoint)
+	// 	)
+	// 	result.set(
+	// 		energyPointEnum,
+	// 		new CharacterCharacteristicValue(energyPointEnum, energyPoint)
+	// 	)
+
+	// 	return Array.from(result.values())
+	// }
 }
 
 export default EntityStats

@@ -1,41 +1,102 @@
 import Experience from "../../breakEmu_API/model/experience.model"
-import Skill from "./skill.model"
 import {
+	CharacteristicEnum,
 	JobCrafterDirectorySettings,
 	JobDescription,
 	JobExperience,
+	JobExperienceUpdateMessage,
+	JobLevelUpMessage,
 	JobTypeEnum,
-	SkillActionDescription,
+	TextInformationTypeEnum,
 } from "../../breakEmu_Server/IO"
+import SkillManager from "../../breakEmu_World/manager/skills/SkillManager"
+import Character from "./character.model"
 
 interface JobJSON {
-	[jobId: number]: {
-		jobId: number
-		experience: number
-	}
+	jobId: number
+	experience: number
 }
 
 class Job {
-	private _jobId: number
-	private _experience: number
-	private _level: number
+	jobId: number
+	experience: number
+	level: number
+
+	static MAX_LEVEL = 200
+	static WEIGHT_BONUS_PER_LEVEL = 12
+	static WEIGHT_BONUS_DECREASE = 1 / 200
 
 	constructor(jobId: number, experience: number) {
-		this._jobId = jobId
-		this._experience = experience
-		this._level = Experience.getJobLevel(experience)
+		this.jobId = jobId
+		this.experience = experience
 	}
 
-	public get jobId(): number {
-		return this._jobId
+	public async setExperience(experience: number, character: Character) {
+		this.experience += experience
+		const nextLevelFloor = Experience.getJobLevelNextFloor(this.level)
+
+		await character.client?.Send(
+			new JobExperienceUpdateMessage(this.getJobExperience())
+		)
+
+		if (this.experience >= nextLevelFloor && this.level < Job.MAX_LEVEL) {
+			this.level = Experience.getJobLevel(this.experience)
+			await this.onLevelUp(character, this.level - 1, this.level)
+		}
 	}
 
-	public get experience(): number {
-		return this._experience
+	public async onLevelUp(
+		character: Character,
+		lastLevel: number,
+		newLevel: number
+	) {
+		await character.client?.Send(
+			new JobExperienceUpdateMessage(this.getJobExperience())
+		)
+		await character.client?.Send(
+			new JobLevelUpMessage(this.level, this.getJobDescription())
+		)
+
+		character.stats.currentMaxWeight =
+			character.stats.currentMaxWeight +
+			this.getWeightBonus(lastLevel, newLevel)
+		await character.inventory.refreshWeight()
+
+		character.skillsAllowed = SkillManager.getInstance().getAllowedSkills(
+			character
+		)
 	}
 
-	public get level(): number {
-		return this._level
+	public async onLevelDown(
+		character: Character,
+		lastLevel: number,
+		newLevel: number
+	) {
+		await character.client?.Send(
+			new JobLevelUpMessage(this.level, this.getJobDescription())
+		)
+
+		character.stats.currentMaxWeight =
+			character.stats.currentMaxWeight -
+			this.getWeightBonus(lastLevel, newLevel)
+		await character.inventory.refreshWeight()
+
+		character.skillsAllowed = SkillManager.getInstance().getAllowedSkills(
+			character
+		)
+	}
+
+	public getWeightBonus(lastLevel: number, newLevel: number): number {
+		let sum = 0
+
+		for (let i = lastLevel; i < newLevel; i++) {
+			sum += Math.max(
+				1,
+				Math.floor(Job.WEIGHT_BONUS_PER_LEVEL - i * Job.WEIGHT_BONUS_DECREASE)
+			)
+		}
+
+		return sum
 	}
 
 	public getDirectorySettings(): JobCrafterDirectorySettings {
@@ -50,9 +111,9 @@ class Job {
 		const jobExp = {
 			jobId: this.jobId,
 			jobLevel: this.level,
-			jobXP: this.experience,
+			jobXP: Math.round(this.experience),
 			jobXpLevelFloor: Experience.getJobLevelFloor(this.level),
-			jobXpNextLevelFloor: Experience.getJobLevelFloor(this.level + 1),
+			jobXpNextLevelFloor: Experience.getJobLevelNextFloor(this.level),
 		}
 
 		return new JobExperience(
@@ -80,9 +141,7 @@ class Job {
 	}
 
 	public saveAsJSON(): JobJSON {
-		const jobJSON: JobJSON = {}
-
-		jobJSON[this.jobId] = {
+		let jobJSON = {
 			jobId: this.jobId,
 			experience: this.experience,
 		}
@@ -92,11 +151,9 @@ class Job {
 
 	public static loadFromJson(jobsJSON: any): Map<number, Job> {
 		const jobs: Map<number, Job> = new Map<number, Job>()
-		jobsJSON.forEach((job: any) => {
-			const j = new Job(
-				(Object.values(job)[0] as any).jobId,
-				(Object.values(job)[0] as any).experience
-			)
+		jobsJSON.map((job: JobJSON) => {
+			const j = new Job(job.jobId, job.experience)
+			j.level = Experience.getJobLevel(j.experience)
 			jobs.set(j.jobId, j)
 		})
 

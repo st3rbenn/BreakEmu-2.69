@@ -1,11 +1,11 @@
-import {CellData} from "../../../../breakEmu_API/model/map.model";
+import { CellData } from "../../../../breakEmu_API/model/map.model"
 
 class Cell {
-	private _id: number
-	private _blue: boolean
-	private _red: boolean
-	private _losMov: number
-	private _mapChangeData: number
+	id: number
+	blue: boolean
+	red: boolean
+	losMov: number
+	mapChangeData: number
 
 	constructor(
 		id: number,
@@ -14,37 +14,16 @@ class Cell {
 		losMov: number,
 		mapChangeData: number
 	) {
-		this._id = id
-		this._blue = blue
-		this._red = red
-		this._losMov = losMov
-		this._mapChangeData = mapChangeData
+		this.id = id
+		this.blue = blue
+		this.red = red
+		this.losMov = losMov
+		this.mapChangeData = mapChangeData
 	}
 
-	public get id(): number {
-		return this._id
+	public isWalkable(): boolean {
+		return (this.losMov & 1) == 0
 	}
-
-	public get blue(): boolean {
-		return this._blue
-	}
-
-	public get red(): boolean {
-		return this._red
-	}
-
-	public get losMov(): number {
-		return this._losMov
-	}
-
-	public get mapChangeData(): number {
-		return this._mapChangeData
-	}
-
-  public isWalkable(): boolean {
-    return (this.losMov & 1) == 0
-  }
-
 
 	public save(): CellData {
 		return {
@@ -52,7 +31,7 @@ class Cell {
 			blue: this.blue,
 			red: this.red,
 			losMov: this.losMov,
-			mapChangeData: this.mapChangeData
+			mapChangeData: this.mapChangeData,
 		}
 	}
 }

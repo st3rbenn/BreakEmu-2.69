@@ -14,6 +14,8 @@ class DofusConfiguration extends ServerConfiguration {
   public startKamas: number = 0
   public startStatsPoints: number = 0
   public XpRate: number = 0
+  public jobXpRate: number = 0
+  public dropRate: number = 0
 }
 
 export default DofusConfiguration

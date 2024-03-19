@@ -1,8 +1,10 @@
+import Characteristic from "../../../../breakEmu_World/manager/entities/stats/characteristic"
 import Logger from "../../../../breakEmu_Core/Logger"
 import {
 	StatsUpgradeRequestMessage,
 	StatsBoostEnum,
 	StatsUpgradeResultEnum,
+	CharacteristicEnum,
 } from "../../../../breakEmu_Server/IO"
 import WorldClient from "../../../WorldClient"
 
@@ -40,7 +42,10 @@ class StatsHandler {
 
 				if (
 					num2 >= 1 &&
-					(boostPoint as number) <= client.selectedCharacter.statsPoints
+					(boostPoint as number) <=
+						(client.selectedCharacter.stats.getCharacteristic(
+							CharacteristicEnum.STATS_POINTS
+						) as Characteristic).base
 				) {
 					const upgradeCosts = client.selectedCharacter.breed.getStatUpgradeCost(
 						statId
@@ -81,7 +86,9 @@ class StatsHandler {
 					}
 
 					characteristic.base = num
-					client.selectedCharacter.statsPoints -= (boostPoint as number) - num2
+					;(client.selectedCharacter.stats.getCharacteristic(
+						CharacteristicEnum.STATS_POINTS
+					) as Characteristic).base -= (boostPoint as number) - num2
 					client.selectedCharacter.onStatUpgradeResult(
 						StatsUpgradeResultEnum.SUCCESS,
 						message.boostPoint as number

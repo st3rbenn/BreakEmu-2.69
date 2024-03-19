@@ -1,7 +1,6 @@
 import InteractiveElementModel from "../../../../breakEmu_API/model/InteractiveElement.model";
-import {GenericActionEnum} from "../../../../breakEmu_Server/IO";
-import MapInstance from "../MapInstance";
 import Character from "../../../../breakEmu_API/model/character.model";
+import MapInstance from "../MapInstance";
 
 abstract class MapElement {
     public record: InteractiveElementModel
