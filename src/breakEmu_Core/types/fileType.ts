@@ -29,6 +29,7 @@ interface IDofusInfo {
   XpRate: number
   jobXpRate: number
   dropRate: number
+  itemStarter: number[]
 }
 
 interface IDatabaseCredentials {

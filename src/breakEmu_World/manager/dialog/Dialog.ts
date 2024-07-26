@@ -4,7 +4,7 @@ import Logger from "../../../breakEmu_Core/Logger"
 abstract class Dialog {
 	abstract logger: Logger
 
-	abstract character: Character
+	public character: Character
 	abstract open(): Promise<void>
 	abstract close(): Promise<void>
 

@@ -16,6 +16,7 @@ class DofusConfiguration extends ServerConfiguration {
   public XpRate: number = 0
   public jobXpRate: number = 0
   public dropRate: number = 0
+  public itemStarter: number[] = []
 }
 
 export default DofusConfiguration

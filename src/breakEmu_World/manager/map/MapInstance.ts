@@ -14,6 +14,7 @@ import {
 	InteractiveUseErrorMessage,
 	InteractiveUsedMessage,
 	MapComplementaryInformationsDataMessage,
+	MapFightCountMessage,
 	MapObstacle,
 	StatedElement,
 } from "../../../breakEmu_Server/IO"
@@ -26,6 +27,7 @@ import MapStatedElement from "./element/MapStatedElement"
 import GatherElementHandler from "./element/interactiveElement/GatherElementHandler"
 import IInteractiveElementHandler from "./element/interactiveElement/IInteractiveElementHandler"
 import ZaapHandler from "./element/interactiveElement/ZaapHandler"
+import BankHandler from "./element/interactiveElement/BankHandler"
 
 class MapInstance {
 	/*get monsterGroupCount(): number {
@@ -45,6 +47,7 @@ class MapInstance {
 		// Les autres types de récolte peuvent également être mappés au GatherElementHandler
 		[InteractiveTypeEnum.TYPE_ZAAP]: new ZaapHandler(),
 		[InteractiveTypeEnum.TYPE_ZAAPI]: new ZaapHandler(),
+		[InteractiveTypeEnum.TYPE_BANK]: new BankHandler(),
 		// Ajoutez d'autres mappings au besoin
 	}
 
@@ -90,17 +93,17 @@ class MapInstance {
 
 	public async addEntity(entity: Entity) {
 		try {
-			console.log(
-				`Add entity: (${entity.name}) on map: (${this.record.id}) at cell: (${entity.cellId})`
-			)
 			if (this.entities.has(entity.id)) {
 				return
 			}
-
-			this.entities.set(entity.id, entity)
+			console.log(
+				`Add entity: (${entity.name}) on map: (${this.record.id}) at cell: (${entity.cellId})`
+			)
 
 			let actorInformations = entity.getActorInformations()
 			await this.send(new GameRolePlayShowActorMessage(actorInformations))
+
+			this.entities.set(entity.id, entity)
 		} catch (error) {
 			console.log(error)
 		}
@@ -137,6 +140,10 @@ class MapInstance {
 
 			const statedElements = this.getStatedElements()
 
+
+      // console.log("interactiveElements", interactiveElements)
+      // console.log("statedElements", statedElements)
+
 			const houses: HouseInformations[] = []
 			const obstacles: MapObstacle[] = []
 			const fightCommonInformations: FightCommonInformations[] = []
@@ -148,7 +155,7 @@ class MapInstance {
 				entities,
 				interactiveElements,
 				statedElements,
-				obstacles,
+				this.record.getMapObstacles(),
 				fightCommonInformations,
 				false,
 				new FightStartingPositions([0], [0])
@@ -190,7 +197,7 @@ class MapInstance {
 		skillInstanceUid: number
 	) {
 		try {
-			const element = this.getElements<MapElement>(MapElement as any).find(
+			let element = this.getElements<MapElement>(MapElement as any).find(
 				(element: MapElement) => element.record.elementId === elementId
 			)
 
@@ -207,15 +214,12 @@ class MapInstance {
 				)
 				return
 			}
-
 			if (!element.caneUse(character) && character.busy) {
 				await character.client?.Send(
 					new InteractiveUseErrorMessage(elementId, skillInstanceUid)
 				)
 				return
 			}
-
-			console.log("TYPE", element?.record?.skill?.type)
 
 			await character.sendMap(
 				new InteractiveUsedMessage(
@@ -231,7 +235,7 @@ class MapInstance {
 			const handler = this.handlers[type as InteractiveTypeEnum]
 
 			if (handler) {
-				await handler.handle(element, character)
+				await handler.handle(character, element)
 			} else if (
 				type === 0 &&
 				element?.record?.skill?.param1 !== undefined &&
@@ -253,12 +257,73 @@ class MapInstance {
 		}
 	}
 
+	public async forceUseInteractiveElement(
+		character: Character,
+		elementId: number,
+		skillInstanceUid: number,
+		mapId: number
+	) {
+		try {
+			const map = GameMap.getMapById(mapId)!
+			const element = map.instance
+				.getElements<MapElement>(MapElement as any)
+				.find((element: MapElement) => element.record.elementId === elementId)
+
+			if (!element) {
+				await character.client?.Send(
+					new InteractiveUseErrorMessage(elementId, skillInstanceUid)
+				)
+			} else {
+				await character.sendMap(
+					new InteractiveUsedMessage(
+						character.id,
+						element.record.elementId,
+						element.record.skill.skillId,
+						element instanceof MapStatedElement
+							? SkillManager.SKILL_DURATION
+							: 0,
+						true
+					)
+				)
+			}
+
+			const type = element?.record.skill?.type
+			const handler = this.handlers[type as InteractiveTypeEnum]
+
+			if (handler) {
+				await handler.handle(character, element)
+			} else if (
+				type === 0 &&
+				element?.record.skill?.param1 !== undefined &&
+				element?.record.skill?.param2 !== undefined
+			) {
+				// Traitement spécifique pour le type 0
+				await character.teleport(
+					parseInt(element?.record.skill?.param1),
+					parseInt(element?.record.skill?.param2)
+				)
+			} else {
+				// Gérer l'erreur ou le cas par défaut
+				await character.client?.Send(
+					new InteractiveUseErrorMessage(elementId, skillInstanceUid)
+				)
+			}
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
 	public async refresh(interactiveElement: InteractiveElement) {
 		try {
 			await this.send(new InteractiveElementUpdatedMessage(interactiveElement))
 		} catch (error) {
 			console.log(error)
 		}
+	}
+
+	public async sendMapFightCount(client: WorldClient, fightCount: number) {
+		//TODO: Implement this
+		await client.Send(new MapFightCountMessage(fightCount))
 	}
 
 	public async isCharacterBlocked(character: Character): Promise<boolean> {

@@ -6,7 +6,7 @@ import IInteractiveElementHandler from "./IInteractiveElementHandler"
 
 class ZaapHandler implements IInteractiveElementHandler {
 	private static logger: Logger = new Logger("ZaapHandler")
-	async handle(element: MapElement, character: Character): Promise<void> {
+	async handle(character: Character, element: MapElement): Promise<void> {
 		try {
       await character.setDialog(new ZaapDialog(character, element))
 		} catch (error) {

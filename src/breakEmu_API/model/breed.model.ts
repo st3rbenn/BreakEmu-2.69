@@ -111,6 +111,8 @@ class Breed {
 
 		return sp
 	}
+
+  public static learnStartSpells(breedId: number): any {}
 }
 
 export default Breed

@@ -110,10 +110,14 @@ class Job {
 	public getJobExperience(): JobExperience {
 		const jobExp = {
 			jobId: this.jobId,
-			jobLevel: this.level,
+			jobLevel: this.level > 0 ? this.level : 1,
 			jobXP: Math.round(this.experience),
-			jobXpLevelFloor: Experience.getJobLevelFloor(this.level),
-			jobXpNextLevelFloor: Experience.getJobLevelNextFloor(this.level),
+			jobXpLevelFloor: Experience.getJobLevelFloor(
+				this.level > 0 ? this.level : 1
+			),
+			jobXpNextLevelFloor: Experience.getJobLevelNextFloor(
+				this.level > 0 ? this.level : 1
+			),
 		}
 
 		return new JobExperience(

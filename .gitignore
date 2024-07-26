@@ -13,6 +13,8 @@ src/breakEmu_Core/public.pem
 src/breakEmu_Core/signature.bin
 src/breakEmu_API/data/*
 
+src/breakEmu_Tool/BreakMap/node_modules
+
 dist
 .idea
 venv

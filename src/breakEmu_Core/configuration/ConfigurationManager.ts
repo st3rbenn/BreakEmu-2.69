@@ -154,7 +154,8 @@ class ConfigurationManager extends DofusConfiguration {
 				startStatsPoints: this.startStatsPoints,
 				XpRate: this.XpRate,
         jobXpRate: this.jobXpRate,
-        dropRate: this.dropRate
+        dropRate: this.dropRate,
+        itemStarter: this.itemStarter,
 			},
 			debug: {
 				showDebugMessages: this.showDebugMessages,

@@ -50,7 +50,7 @@ class BreedManager {
 	}
 
 	public async learnBreedSpells(character: Character) {
-		await character.learnSpell(0, false)
+		await character.learnSpell(0, true)
 		character.breed.breedSpells.map(async (spellId) => {
 			await character.learnSpell(spellId, false)
 		})

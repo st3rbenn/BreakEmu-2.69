@@ -1,17 +1,13 @@
 import { Server, Socket, createServer } from "net"
 import CharacterController from "../breakEmu_API/controller/character.controller"
-import Character from "../breakEmu_API/model/character.model"
-import GameMap from "../breakEmu_API/model/map.model"
 import World from "../breakEmu_API/model/world.model"
-import BullManager from "../breakEmu_Core/bull/TaskManager"
+import TaskManager from "../breakEmu_Core/bull/TaskManager"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
 import WorldTransition from "../breakEmu_World/WorldTransition"
+import ServerStatusEnum from "./enum/ServerStatusEnum"
 import WorldClient from "./WorldClient"
 import WorldServerData from "./WorldServerData"
-import ServerStatusEnum from "./enum/ServerStatusEnum"
-import SaveTask from "../breakEmu_Core/bull/tasks/SaveTask"
-import TaskManager from "../breakEmu_Core/bull/TaskManager"
 
 class WorldServer {
 	public logger: Logger = new Logger("WorldServer")
@@ -53,7 +49,7 @@ class WorldServer {
 
 		this._server.on("error", (err) => {
 			this.logger.write(
-				`Error starting server: ${err.message}`,
+				`Error starting server: ${err.stack}`,
 				ansiColorCodes.red
 			)
 		})
@@ -122,11 +118,11 @@ class WorldServer {
 	}
 
 	public async removeClient(client: WorldClient): Promise<void> {
+		await client.selectedCharacter?.disconnect()
 		await this.logger.writeAsync(
 			`Client ${client.account?.pseudo} disconnected`,
 			ansiColorCodes.red
 		)
-		await client.selectedCharacter?.disconnect()
 		this.clients.delete(client?.account?.id as number)
 	}
 

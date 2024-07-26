@@ -95,7 +95,7 @@ class GeneralShortcutBar extends ShortcutBar {
 		this.shortcuts.set(shortcut.slotId, shortcut)
 
 		// Rafraîchir l'état du raccourci
-		this.refreshShortcut(shortcut)
+		await this.refreshShortcut(shortcut)
 	}
 
 	public async getItemShortcut(itemId: number) {

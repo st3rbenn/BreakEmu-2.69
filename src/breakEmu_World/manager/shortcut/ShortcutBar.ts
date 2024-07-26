@@ -49,9 +49,9 @@ abstract class ShortcutBar {
 
 	public abstract addShortcut(shortcut: CharacterShortcut): void
 
-	public refreshShortcut(shortcut: CharacterShortcut | undefined): void {
+	public async refreshShortcut(shortcut: CharacterShortcut | undefined): Promise<void> {
 		if (shortcut) {
-			this.character.client?.Send(
+			await this.character.client?.Send(
 				new ShortcutBarRefreshMessage(this.barEnum, shortcut.getShortcut())
 			)
 		}
@@ -80,7 +80,7 @@ abstract class ShortcutBar {
 			}
 		}
 
-		this.character.client?.Send(
+		await this.character.client?.Send(
 			new ShortcutBarContentMessage(this.barEnum, sht)
 		)
 	}

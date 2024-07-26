@@ -30,7 +30,7 @@ class Logger {
 	}
 
 	public warn(msg: string): void {
-		this.logger.warn(msg)
+		this.write(msg, ansiColorCodes.yellow)
 	}
 
 	public write(message: string, color?: string): void {
@@ -42,11 +42,11 @@ class Logger {
 	}
 
 	private async supressLoggerLevel(msg: string, color?: string): Promise<void> {
-    this.write(`\r\x1b[K${msg}`, color) // Assuming this.write is your existing synchronous method
+		this.write(`\r\x1b[K${msg}`, color) // Assuming this.write is your existing synchronous method
 	}
 
 	public async writeAsync(message: string, color?: string): Promise<void> {
-    if (color) {
+		if (color) {
 			this.logger.info(this.Colorize(message, color))
 		} else {
 			this.logger.info(message)
@@ -114,22 +114,22 @@ class Logger {
 	// 	await new Promise((resolve) => setTimeout(resolve, 10))
 	// }
 
-  updateProgress(max: number, loaded: number) {
-    this.totalParameters = max;
-    this.loadedParameters = loaded;
-    const progressPercent = (this.loadedParameters / this.totalParameters) * 100;
+	updateProgress(max: number, loaded: number) {
+		this.totalParameters = max
+		this.loadedParameters = loaded
+		const progressPercent = (this.loadedParameters / this.totalParameters) * 100
 
-    // Efface la ligne actuelle et positionne le curseur au début
-    process.stdout.clearLine(0);
-    process.stdout.cursorTo(0);
+		// Efface la ligne actuelle et positionne le curseur au début
+		process.stdout.clearLine(0)
+		process.stdout.cursorTo(0)
 
-    process.stdout.write(`Loading progress: ${progressPercent.toFixed(2)}%`);
+		process.stdout.write(`Loading progress: ${progressPercent.toFixed(2)}%`)
 
-    // Si tu souhaites passer à la ligne une fois le chargement terminé
-    if (loaded >= max) {
-        process.stdout.write('\n');
-    }
-}
+		// Si tu souhaites passer à la ligne une fois le chargement terminé
+		if (loaded >= max) {
+			process.stdout.write("\n")
+		}
+	}
 }
 
 export default Logger

@@ -1,21 +1,37 @@
-import Logger from "../../../../breakEmu_Core/Logger"
-import WorldClient from "../../../WorldClient"
-import { PlayerStatusUpdateMessage, PlayerStatusUpdateRequestMessage, PlayerStatusEnum } from "../../../../breakEmu_Server/IO"
 import { ansiColorCodes } from "../../../../breakEmu_Core/Colors"
+import Logger from "../../../../breakEmu_Core/Logger"
+import {
+	PlayerStatusEnum,
+	PlayerStatusUpdateMessage,
+	PlayerStatusUpdateRequestMessage,
+} from "../../../../breakEmu_Server/IO"
+import WorldClient from "../../../WorldClient"
 
 class PlayerStatusHandler {
-  private static logger: Logger = new Logger("PlayerStatusHandler")
+	private static logger: Logger = new Logger("PlayerStatusHandler")
 
-  public static async handlePlayerStatusMessage(
-    client: WorldClient,
-    message: PlayerStatusUpdateRequestMessage
-  ) {
-    this.logger.write(`PlayerStatusHandler: ${client?.account?.pseudo}`, ansiColorCodes.bgMagenta)
+	public static async handlePlayerStatusMessage(
+		client: WorldClient,
+		message: PlayerStatusUpdateRequestMessage
+	) {
+		const messagePlayerStatus =
+			PlayerStatusEnum[message?.status?.statusId as number]
+		this.logger.write(
+			`PlayerStatusHandler: ${messagePlayerStatus}`,
+			ansiColorCodes.bgMagenta
+		)
 
-    const messagePlayerStatus = PlayerStatusEnum[message?.status?.statusId as number]
+		await client.Send(
+			new PlayerStatusUpdateMessage(
+				client.account.id,
+				client.selectedCharacter.id,
+				message.status
+			)
+		)
 
-    this.logger.write(`PlayerStatusHandler: ${messagePlayerStatus}`, ansiColorCodes.bgMagenta)
-  }
+		client.selectedCharacter.status = message?.status
+			?.statusId as PlayerStatusEnum
+	}
 }
 
 export default PlayerStatusHandler

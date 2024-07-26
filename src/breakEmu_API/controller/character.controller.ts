@@ -26,11 +26,12 @@ class CharacterController {
 	MaxCharacterSlots: number = 5
 
 	public static getInstance(): CharacterController {
-		if (!CharacterController._instance) {
-			CharacterController._instance = new CharacterController()
+		if (!this._instance) {
+			console.log("Creating new instance of CharacterController")
+			this._instance = new CharacterController()
 		}
 
-		return CharacterController._instance
+		return this._instance
 	}
 
 	public async getCharactersByAccountId(
@@ -53,7 +54,7 @@ class CharacterController {
 				const character = new Character(
 					c.id,
 					c.userId,
-					BreedManager.getInstance().getBreedById(c.breed_id),
+					c.breed_id,
 					c.sex,
 					c.cosmeticId,
 					c.name,
@@ -73,7 +74,12 @@ class CharacterController {
 						JSON.parse(c.finishMoves?.toString() as string)
 					),
 					GameMap.getMapById(Number(c.mapId)) as GameMap,
-					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string))
+					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string)),
+					c.finishedAchievements?.toString().split(",").map(Number) || [],
+					c.almostFinishedAchievements?.toString().split(",").map(Number) || [],
+					c.finishedAchievementObjectives?.toString().split(",").map(Number) ||
+						[],
+					c.untakenAchievementsReward?.toString().split(",").map(Number) || []
 				)
 
 				character.spawnMapId = c.spawnMapId
@@ -157,7 +163,9 @@ class CharacterController {
 				verifiedColors
 			)
 
-			const startLevel = Experience.experiences.get(ConfigurationManager.getInstance().startLevel) as Experience
+			const startLevel = Experience.experiences.get(
+				ConfigurationManager.getInstance().startLevel
+			) as Experience
 
 			let jobs: Job[] = []
 
@@ -165,7 +173,8 @@ class CharacterController {
 			// 	jobs.push(job)
 			// })
 
-			const stats = EntityStats.new(startLevel.level).saveAsJSON()
+			const stats = EntityStats.new(startLevel.level)
+			stats.saveAsJSON()
 
 			const newCharacter = await this.database.prisma.character.create({
 				data: {
@@ -202,12 +211,15 @@ class CharacterController {
 				newCharacter.direction,
 				newCharacter.kamas,
 				Finishmoves.getFinishmovesByFree(true),
-        startLevel,
+				startLevel,
+				stats
 			)
 
 			return successCallback(character)
 		} catch (error) {
-			this._logger.write(`Error while creating character: ${(error as any).stack}`)
+			this._logger.write(
+				`Error while creating character: ${(error as any).stack}`
+			)
 			return failureCallback(CharacterCreationResultEnum.ERR_NO_REASON)
 		}
 	}
@@ -269,6 +281,10 @@ class CharacterController {
 					knownZaaps: character.saveKnownZaapsAsJSON(),
 					spawnMapId: character.spawnMapId,
 					spawnCellId: character.spawnCellId,
+          finishedAchievements: character.finishedAchievements,
+          almostFinishedAchievements: character.almostFinishedAchievements,
+          finishedAchievementObjectives: character.finishedAchievementObjectives,
+          untakenAchievementsReward: character.untakenAchievementsReward
 				},
 			})
 		} catch (error) {

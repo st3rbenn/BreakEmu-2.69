@@ -1,6 +1,7 @@
 import {
 	DirectionsEnum,
 	InteractiveTypeEnum,
+	MapObstacle,
 	MapScrollEnum,
 } from "../../breakEmu_Server/IO"
 import MapInstance from "../../breakEmu_World/manager/map/MapInstance"
@@ -26,6 +27,9 @@ class GameMap {
 
 	hasZaap: boolean = false
 	zaapCell: MapPoint | undefined
+
+	blueCells: Map<number, Cell> = new Map<number, Cell>()
+	redCells: Map<number, Cell> = new Map<number, Cell>()
 
 	cells: Map<number, Cell> = new Map<number, Cell>()
 	elements: Map<number, InteractiveElementModel> = new Map<
@@ -231,6 +235,31 @@ class GameMap {
 			}
 		})
 		return element
+	}
+  
+  public getFirstElementByCellId(cellId: number): InteractiveElementModel | undefined {
+    return this.elements.get(cellId)
+  }
+
+  public getCell(cellId: number): Cell | undefined {
+    return this.cells.get(cellId)
+  }
+
+  public getCellByPoint(point: MapPoint): Cell | undefined {
+    return this.cells.get(point.cellId)
+  }
+
+  public getCellByPointId(pointId: number): Cell | undefined {
+    return this.cells.get(pointId)
+  }
+
+  public getCellByElement(element: InteractiveElementModel): Cell | undefined {
+    return this.cells.get(element.cellId)
+  }
+
+	public getMapObstacles(): MapObstacle[] {
+		let obstacles: MapObstacle[] = []
+		return []
 	}
 
 	static getNeighbourCellId(

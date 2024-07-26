@@ -1,6 +1,7 @@
 import { Socket } from "net"
 import { ansiColorCodes } from "../breakEmu_Core/Colors"
 import Logger from "../breakEmu_Core/Logger"
+import MessageQueue from "../breakEmu_Core/MessageQueue"
 import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
 import {
   BinaryBigEndianReader,
@@ -11,124 +12,95 @@ import {
 } from "./IO"
 
 abstract class ServerClient {
-  public abstract logger: Logger
-  private socket: Socket
+	public abstract logger: Logger
+	public socket: Socket
 
-  private _messageTemp: any
+	private _messageTemp: any
 
-  private MAX_DOFUS_MESSAGE_HEADER_SIZE: number = 10
+	private MAX_DOFUS_MESSAGE_HEADER_SIZE: number = 10
 
-  constructor(socket: Socket) {
-    this.socket = socket
-  }
+	constructor(socket: Socket) {
+		this.socket = socket
+	}
 
-  public get Socket(): Socket {
-    return this.socket
-  }
+	public get Socket(): Socket {
+		return this.socket
+	}
 
-  public async Send(messageData: DofusMessage): Promise<void> {
-    if (ConfigurationManager.getInstance().showProtocolMessage) {
-    }
+	public async Send(messageData: DofusMessage): Promise<void> {
+    await MessageQueue.getInstance().enqueue(messageData, this)
+	}
 
-    const isMessageSend = this.socket.write(this.serialize(messageData), (error) => {
-      if (error) {
-        this.logger.writeAsync(
-          `Error sending message: ${error.stack}`,
-          ansiColorCodes.red
-        )
-      }
-    
-    })
+	public setupEventHandlers() {
+		this.Socket.on("end", () => this.OnClose())
+		this.Socket.on("error", (error) => {
+			this.logger.write(`Error: ${error.message}`, ansiColorCodes.red)
+		})
+	}
 
-    if(isMessageSend) {
-      await this.logger.writeAsync(`Message '${messages[this._messageTemp.id].name}' sent !`, ansiColorCodes.green)
-    }
-    // await new Promise(async (resolve, reject) => {
-    // 	if (!this.socket || !this.socket.writable) {
-    // 		throw new Error("Socket is not writable")
-    // 	}
+	abstract OnClose(): void
 
-    // 	try {
+	public serialize(message: DofusMessage): Buffer {
+		const headerWriter = new BinaryBigEndianWriter({
+			maxBufferLength: this.MAX_DOFUS_MESSAGE_HEADER_SIZE,
+		})
+		const messageWriter = new BinaryBigEndianWriter({
+			maxBufferLength: 10240,
+		})
 
-    // 	} catch (error) {
-    // 		await this.logger.writeAsync(
-    // 			`Error sending message: ${error}`,
-    // 			ansiColorCodes.red
-    // 		)
-    // 		reject(error)
-    // 	}
-    // })
-  }
+		if (!(message?.id in messages)) {
+			throw `Undefined message (id: ${message.id}, name: ${
+				messages[message.id].name
+			})`
+		}
 
-  public setupEventHandlers() {
-    this.Socket.on("end", () => this.OnClose())
-    this.Socket.on("error", (error) => {
-      this.logger.write(`Error: ${error.message}`, ansiColorCodes.red)
-    })
-  }
+		// @ts-ignore
+		message.serialize(messageWriter)
 
-  abstract OnClose(): void
+		DofusNetworkMessage.writeHeader(headerWriter, message.id, messageWriter)
 
-  public serialize(message: DofusMessage): Buffer {
-    const headerWriter = new BinaryBigEndianWriter({
-      maxBufferLength: this.MAX_DOFUS_MESSAGE_HEADER_SIZE,
-    })
-    const messageWriter = new BinaryBigEndianWriter({
-      maxBufferLength: 10240,
-    })
+		this._messageTemp = message
 
-    if (!(message?.id in messages)) {
-      throw `Undefined message (id: ${message.id}, name: ${messages[message.id].name
-      })`
-    }
+		return Buffer.concat([headerWriter.getUint8Array(), messageWriter.getUint8Array()])
+	}
 
-    // @ts-ignore
-    message.serialize(messageWriter)
+	public deserialize(data: Buffer): DofusMessage | null {
+		let messageId // Déclarer messageId en dehors du bloc try
 
-    DofusNetworkMessage.writeHeader(headerWriter, message.id, messageWriter)
+		try {
+			const reader = new BinaryBigEndianReader({
+				maxBufferLength: data.length,
+			}).writeBuffer(data)
 
-    this._messageTemp = message
+			const header = DofusNetworkMessage.readHeader(reader)
+			messageId = header.messageId // Affecter la valeur à messageId
+			const instanceId = header.instanceId
+			const payloadSize = header.payloadSize
 
-    return Buffer.concat([headerWriter.getBuffer(), messageWriter.getBuffer()])
-  }
+			if (
+				!(messageId in messages) &&
+				ConfigurationManager.getInstance().showProtocolMessage
+			) {
+				this.logger.writeAsync(
+					`Undefined message (id: ${messageId})`,
+					ansiColorCodes.red
+				)
+			}
 
-  public deserialize(data: Buffer): DofusMessage | null {
-    let messageId // Déclarer messageId en dehors du bloc try
+			const message = new messages[messageId]()
+			message.deserialize(reader)
 
-    try {
-      const reader = new BinaryBigEndianReader({
-        maxBufferLength: data.length,
-      }).writeBuffer(data)
+			return message
+		} catch (error) {
+			// Utiliser messageId ici
+			this.logger.writeAsync(
+				`Error while deserializing message with ID ${messageId}: ${error}`,
+				ansiColorCodes.red
+			)
 
-      const header = DofusNetworkMessage.readHeader(reader)
-      messageId = header.messageId // Affecter la valeur à messageId
-      const instanceId = header.instanceId
-      const payloadSize = header.payloadSize
-
-      if (
-        !(messageId in messages) &&
-        ConfigurationManager.getInstance().showProtocolMessage
-      ) {
-        this.logger.writeAsync(
-          `Undefined message (id: ${messageId})`,
-          ansiColorCodes.red
-        )
-      }
-
-      const message = new messages[messageId]()
-      message.deserialize(reader)
-
-      return message
-    } catch (error) {
-      // Utiliser messageId ici
-      this.logger.writeAsync(
-        `Error while deserializing message with ID ${messageId}: ${error}`,
-        ansiColorCodes.red
-      )
-
-      return null
-    }
-  }
+			return null
+		}
+	}
 }
 
 export default ServerClient

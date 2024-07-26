@@ -10,20 +10,26 @@ import AuthServer from "./AuthServer"
 import ServerStatus from "./enum/ServerStatus"
 
 import {
-  BasicPingMessage,
-  BasicPongMessage,
-  DofusMessage,
-  HelloConnectMessage,
-  IdentificationMessage,
-  NicknameChoiceRequestMessage,
-  ProtocolRequired,
-  ServerSelectionMessage,
-  SystemMessageDisplayMessage,
-  messages
+	BasicPingMessage,
+	BasicPongMessage,
+	DofusMessage,
+	HelloConnectMessage,
+	IdentificationMessage,
+	NicknameChoiceRequestMessage,
+	ProtocolRequired,
+	ServerSelectionMessage,
+	SystemMessageDisplayMessage,
+	messages,
 } from "../breakEmu_Server/IO"
 import AuthentificationHandler from "./handlers/auth/AuthentificationHandler"
 import NicknameHandlers from "./handlers/nickname/NicknameHandlers"
 import ServerListHandler from "./handlers/server/ServerListHandler"
+
+export type Attributes = {
+  publicKey: string
+  privateKey: string
+  salt: string
+}
 
 class AuthClient extends ServerClient {
 	public logger: Logger = new Logger("AuthClient")
@@ -40,19 +46,16 @@ class AuthClient extends ServerClient {
 		try {
 			if (AuthServer.getInstance().ServerState === ServerStatus.Maintenance) {
 				this.logger.write("Sending Maintenance message")
-				await this.Send(
-					new SystemMessageDisplayMessage(true, 13, [])
-				)
+				await this.Send(new SystemMessageDisplayMessage(true, 13, []))
 
 				this.OnClose()
 				return
 			}
 
-			
 			await this.Send(
 				new ProtocolRequired(
-          ConfigurationManager.getInstance().dofusProtocolVersion
-        )
+					ConfigurationManager.getInstance().dofusProtocolVersion
+				)
 			)
 
 			this._RSAKeyHandler.generateKeyPair()
@@ -72,7 +75,7 @@ class AuthClient extends ServerClient {
 		}
 	}
 
-	public async handleData(data: Buffer, attrs: any): Promise<void> {
+	public async handleData(data: Buffer, attrs: Attributes): Promise<void> {
 		const message = this.deserialize(data) as DofusMessage
 
 		if (ConfigurationManager.getInstance().showProtocolMessage) {

@@ -170,4 +170,8 @@ export default class BigEndianWriter extends ExtendedBuffer implements BinaryWri
 
         return this;
     }
+
+    public getUint8Array(): Uint8Array {
+        return new Uint8Array(this.buffer);
+    }
 }

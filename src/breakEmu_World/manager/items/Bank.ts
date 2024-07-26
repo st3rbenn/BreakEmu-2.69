@@ -5,9 +5,12 @@ import ItemCollection from "./collections/ItemCollections";
 class Bank extends ItemCollection<BankItem> {
   character: Character;
 
-  constructor(character: Character, items: BankItem[] = []) {
+  kamas: number = 0;
+
+  constructor(character: Character, items: BankItem[] = [], kamas: number = 0) {
     super(items);
     this.character = character;
+    this.kamas = kamas;
   }
 
 

@@ -1,16 +1,13 @@
+import { compareSync } from "bcrypt"
+import AuthClient from "../../breakEmu_Auth/AuthClient"
 import Logger from "../../breakEmu_Core/Logger"
+import {
+  IdentificationFailedMessage,
+  IdentificationFailureReasonEnum,
+  NicknameRegistrationMessage
+} from "../../breakEmu_Server/IO"
 import Database from "../Database"
 import BaseController from "./base.controller"
-import AuthClient from "../../breakEmu_Auth/AuthClient"
-import {
-	IdentificationFailedMessage,
-	IdentificationFailureReasonEnum,
-	NicknameAcceptedMessage,
-	NicknameErrorEnum,
-	NicknameRefusedMessage,
-	NicknameRegistrationMessage,
-} from "../../breakEmu_Server/IO"
-import { genSaltSync, hashSync, compareSync } from "bcrypt"
 
 class AuthController extends BaseController {
 	public _logger: Logger = new Logger("AuthController")
@@ -30,15 +27,16 @@ class AuthController extends BaseController {
 				where: {
 					username,
 				},
+        include: {
+          characters: true
+        }
 			})
 
 			if (!user) {
 				await this.AuthClient.Send(
-					this.AuthClient.serialize(
-						new IdentificationFailedMessage(
-							IdentificationFailureReasonEnum.WRONG_CREDENTIALS
-						)
-					)
+					new IdentificationFailedMessage(
+            IdentificationFailureReasonEnum.WRONG_CREDENTIALS
+          )
 				)
 
 				await this._logger.writeAsync(`User ${username} not found`)
@@ -49,11 +47,9 @@ class AuthController extends BaseController {
 
 			if (!isPasswordValid) {
 				await this.AuthClient.Send(
-					this.AuthClient.serialize(
-						new IdentificationFailedMessage(
-							IdentificationFailureReasonEnum.WRONG_CREDENTIALS
-						)
-					)
+					new IdentificationFailedMessage(
+            IdentificationFailureReasonEnum.WRONG_CREDENTIALS
+          )
 				)
 
 				await this._logger.writeAsync(`Wrong password for user ${username}`)
@@ -62,11 +58,9 @@ class AuthController extends BaseController {
 
 			if (!user.is_verified) {
 				await this.AuthClient.Send(
-					this.AuthClient.serialize(
-						new IdentificationFailedMessage(
-							IdentificationFailureReasonEnum.EMAIL_UNVALIDATED
-						)
-					)
+					new IdentificationFailedMessage(
+            IdentificationFailureReasonEnum.EMAIL_UNVALIDATED
+          )
 				)
 
 				await this._logger.writeAsync(`Email of user ${username} not verified`)
@@ -75,18 +69,16 @@ class AuthController extends BaseController {
 
 			if (!user.pseudo) {
 				await this.AuthClient.Send(
-					this.AuthClient.serialize(new NicknameRegistrationMessage())
+					new NicknameRegistrationMessage()
 				)
 				return user;
 			}
 
 			if (user.is_banned) {
 				await this.AuthClient.Send(
-					this.AuthClient.serialize(
-						new IdentificationFailedMessage(
-							IdentificationFailureReasonEnum.BANNED
-						)
-					)
+					new IdentificationFailedMessage(
+            IdentificationFailureReasonEnum.BANNED
+          )
 				)
 
 				await this._logger.writeAsync(`User ${username} is banned`)

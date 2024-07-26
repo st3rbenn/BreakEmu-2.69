@@ -24,6 +24,10 @@ import Skill from "./model/skill.model"
 import Spell from "./model/spell.model"
 import SpellLevel from "./model/spellLevel.model"
 import World from "./model/world.model"
+import Achievement from "./model/achievement.model"
+import AchievementReward from "./model/achievementReward.model"
+import AchievementObjective from "./model/achievementObjective.model"
+import AchievementManager from "../breakEmu_World/manager/achievement/AchievementManager"
 
 interface test {
 	id: number
@@ -180,9 +184,10 @@ class Database {
 				this.loadItems(),
 				this.loadItemSets(),
 				// this.loadCharactersItems(),
+				this.loadAchievements(),
 				this.loadMapScrollActions(),
 				this.loadInteractiveElements(),
-				this.loadMaps(),
+				this.loadMaps()
 			])
 
 			await Promise.resolve()
@@ -695,6 +700,71 @@ class Database {
 				ansiColorCodes.red
 			)
 		}
+	}
+
+	async loadAchievements(): Promise<void> {
+		const achievements = await this.prisma.achievement.findMany()
+
+		for (const achiev of achievements) {
+			const objectives = await this.prisma.achievementObjective.findMany({
+				where: {
+					achievementId: achiev.id,
+				},
+			})
+
+			const rewards = await this.prisma.achievementReward.findMany({
+				where: {
+					achievementId: achiev.id,
+				},
+			})
+
+			const objectivesMap = new Map<number, AchievementObjective>()
+			const rewardsMap = new Map<number, AchievementReward>()
+
+			for (const obj of objectives) {
+				const objective = new AchievementObjective(
+					obj.id,
+					obj.order,
+					obj.criterion
+				)
+
+				objectivesMap.set(obj.id, objective)
+			}
+
+			for (const rew of rewards) {
+				const reward = new AchievementReward(
+					rew.id,
+					rew.criteria,
+					rew.kamasRatio,
+					rew.experienceRatio,
+					rew.kamasScaleWithPlayerLevel,
+					rew.itemsReward?.toString().split(",").map(Number) || [],
+					rew.itemsQuantityReward?.toString().split(",").map(Number) || [],
+					rew.emotesReward?.toString().split(",").map(Number) || [],
+					rew.titlesReward?.toString().split(",").map(Number) || [],
+					rew.ornamentsReward?.toString().split(",").map(Number) || []
+				)
+
+				rewardsMap.set(rew.id, reward)
+			}
+
+			const res = new Achievement(
+				achiev.id,
+				achiev.categoryId,
+				achiev.points,
+				achiev.level,
+				achiev.order,
+				achiev.accountLinked,
+				objectivesMap,
+				rewardsMap
+			)
+
+			AchievementManager.achievements.set(achiev.id, res)
+		}
+
+		await this.logger.writeAsync(
+			`Loaded ${AchievementManager.achievements.size} achievements`
+		)
 	}
 
 	async loadMaps(): Promise<void> {

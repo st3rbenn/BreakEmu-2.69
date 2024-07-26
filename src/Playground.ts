@@ -10,6 +10,17 @@ import GameMap from "./breakEmu_API/model/map.model"
 import Cell from "./breakEmu_World/manager/map/cell/Cell"
 import InteractiveElementModel from "./breakEmu_API/model/InteractiveElement.model"
 import InteractiveSkill from "./breakEmu_API/model/InteractiveSkill.model"
+import CriterionManager from "./breakEmu_World/manager/achievement/objective/objectiveCriterion/CriterionManager"
+import AchievementObjective from "./breakEmu_API/model/achievementObjective.model"
+import AchievementObjectiveHandler from "./breakEmu_World/manager/achievement/objective/AchievementObjectiveHandler"
+import Character from "./breakEmu_API/model/character.model"
+import CharacterShortcut from "./breakEmu_World/manager/shortcut/character/CharacterShortcut"
+import Job from "./breakEmu_API/model/job.model"
+import Finishmoves from "./breakEmu_API/model/finishmoves.model"
+import EntityStats from "./breakEmu_World/manager/entities/stats/entityStats"
+import ContextEntityLook from "./breakEmu_World/manager/entities/look/ContextEntityLook"
+import Achievement from "./breakEmu_API/model/achievement.model"
+import AchievementManager from "./breakEmu_World/manager/achievement/AchievementManager"
 
 interface BreedRoles {
 	breedId: number
@@ -338,6 +349,43 @@ interface QueryTest {
 	criteria: string
 }
 
+interface Achievement {
+	id: number
+	name: string
+	categoryId: number
+	description: string
+	iconId: number
+	points: number
+	level: number
+	order: number
+	accountLinked: boolean
+	objectiveIds: number[]
+	rewardIds: number[]
+}
+
+interface AchievementObjectives {
+	id: number
+	achievementId: number
+	order: number
+	name: string
+	criterion: string
+}
+
+interface AchievementReward {
+	id: number
+	achievementId: number
+	criteria: string
+	kamasRatio: number
+	experienceRatio: number
+	kamasScaleWithPlayerLevel: boolean
+	itemsReward: number[]
+	itemsQuantityReward: number[]
+	emotesReward: number[]
+	spellsReward: number[]
+	titlesReward: number[]
+	ornamentsReward: number[]
+}
+
 class Playground {
 	public logger: Logger = new Logger("Playground")
 	public database: Database = Database.getInstance()
@@ -375,41 +423,170 @@ class Playground {
 		 */
 
 		try {
-			const jsonFileName: string = "query_result"
-			const jsonFile = this.readJsonFile(jsonFileName)
-			const data = JSON.parse(jsonFile) as QueryTest[]
+			// const achievementJson: string = "achievements"
+			// const jsonFile = this.readJsonFile(achievementJson)
+			// const achievementData = JSON.parse(jsonFile) as Achievement[]
 
-			const jsonFileName2: string = "interactiveelements"
-			const jsonFile2 = this.readJsonFile(jsonFileName2)
-			const interactiveElements = JSON.parse(jsonFile2) as any[]
+			// const achievementObjectivesJson: string = "achievementObjectives"
+			// const jsonFile2 = this.readJsonFile(achievementObjectivesJson)
+			// const achievementObjectivesData = JSON.parse(
+			// 	jsonFile2
+			// ) as AchievementObjective[]
 
-			const allInteractiveElements = Array.from(interactiveElements.values())
+			// const achievementRewardsJson: string = "AchievementRewards"
+			// const jsonFile3 = this.readJsonFile(achievementRewardsJson)
+			// const achievementRewardsData = JSON.parse(
+			// 	jsonFile3
+			// ) as AchievementReward[]
 
-			for (const d of data) {
-				await this.database.prisma.interactiveElement.create({
-					data: {
-						elementId: d.identifier,
-						mapId: d.mapId,
-						cellId: d.cellId,
-						gfxId: -1,
-						elementType: d.type ? d.type : -1,
-						bonesId: d.animated == 0 || d.animated == null ? -1 : d.animated,
-					},
-				})
+			// achievementData.forEach(async (achievement) => {
+			// 	await this.database.prisma.achievement.create({
+			// 		data: {
+			// 			id: achievement.id,
+			// 			name: achievement.name,
+			// 			categoryId: achievement.categoryId,
+			// 			description: achievement.description,
+			// 			points: achievement.points,
+			// 			level: achievement.level,
+			// 			order: achievement.order,
+			// 			accountLinked: achievement.accountLinked,
+			// 			objectiveIds: achievement.objectiveIds,
+			// 			rewardIds: achievement.rewardIds,
+			// 		},
+			// 	})
 
-				this.logger.write(
-					`Element added -> ${d.identifier}`,
-					ansiColorCodes.bgGreen
+			// 	this.logger.write(
+			// 		`Add achievement -> ${achievement.name} with id: ${achievement.id}`,
+			// 		ansiColorCodes.bgGreen
+			// 	)
+			// })
+
+			// achievementObjectivesData.forEach(async (objective) => {
+			// 	await this.database.prisma.achievementObjective.create({
+			// 		data: {
+			// 			id: objective.id,
+			// 			achievementId: objective.achievementId,
+			// 			order: objective.order,
+			// 			criterion: objective.criterion,
+			// 		},
+			// 	})
+
+			//   this.logger.write(
+			// 		`Add achievement -> ${objective.name} with id: ${objective.id}`,
+			// 		ansiColorCodes.bgGreen
+			// 	)
+			// })
+
+			// achievementRewardsData.forEach(async (reward) => {
+			// 	await this.database.prisma.achievementReward.create({
+			// 		data: {
+			// 			id: reward.id,
+			// 			achievementId: reward.achievementId,
+			// 			criteria: reward.criteria,
+			// 			kamasRatio: reward.kamasRatio,
+			// 			experienceRatio: reward.experienceRatio,
+			// 			kamasScaleWithPlayerLevel: reward.kamasScaleWithPlayerLevel,
+			// 			itemsReward: reward.itemsReward,
+			// 			itemsQuantityReward: reward.itemsQuantityReward,
+			// 			emotesReward: reward.emotesReward,
+			// 			spellsReward: reward.spellsReward,
+			// 			titlesReward: reward.titlesReward,
+			// 			ornamentsReward: reward.ornamentsReward,
+			// 		},
+			// 	})
+
+			// 	this.logger.write(
+			// 		`Add achievement rewards -> id: ${reward.id}`,
+			// 		ansiColorCodes.bgGreen
+			// 	)
+			// })
+
+			// const achievementData = await this.database.prisma.achievement.findMany()
+
+			// for (const achiev of achievementData) {
+			// 	const isObjectivesExistInDB = await this.database.prisma.achievementObjective.findMany(
+			// 		{
+			// 			where: {
+			// 				achievementId: achiev.id,
+			// 			},
+			// 		}
+			// 	)
+
+			// 	if (isObjectivesExistInDB.length === 0) {
+			// 		this.logger.write(
+			// 			`No objectives found for achievement -> ${achiev.id} excepted: ${achiev.objectiveIds?.toString()}`,
+			// 			ansiColorCodes.bgRed
+			// 		)
+			// 	}
+			// }
+			await this.database.loadExperiences()
+			await this.database.loadAchievements()
+
+			const character = await this.database.prisma.character.findFirst({
+				where: {
+					id: 478,
+				},
+			})
+
+			if (character) {
+				const charac = new Character(
+					character.id,
+					character.userId,
+					character.breed_id,
+					character.sex,
+					character.cosmeticId,
+					character.name,
+					Number(character.experience),
+					new ContextEntityLook(0, [], [], [], []),
+					Number(character.mapId),
+					Number(character.cellId),
+					character.direction,
+					character.kamas,
+					character.statsPoints,
+					[],
+					new Map<number, CharacterShortcut>(),
+					[],
+					0,
+					Job.loadFromJson(JSON.parse(character.jobs?.toString() as string)),
+					Finishmoves.loadFromJson(
+						JSON.parse(character.finishMoves?.toString() as string)
+					),
+					GameMap.getMapById(Number(character.mapId)) as GameMap,
+					EntityStats.loadFromJSON(
+						JSON.parse(character.stats?.toString() as string)
+					)
 				)
+
+				const achiev = AchievementManager.achievements.get(3)
+
+				if (achiev) {
+					let objective = achiev.objectives.values().next()
+						.value as AchievementObjective
+
+					const objHandler = new AchievementObjectiveHandler(
+						objective ? objective.id : 0,
+						charac,
+						objective,
+						achiev
+					)
+					const objCriterions = new CriterionManager(
+						objHandler
+					).generateCriterion()
+
+					objCriterions.forEach((c) => {
+						console.log("is valid -> ", c.criterionFulfilled())
+					})
+				}
 			}
 
-			this.logger.write(
-				`InteractiveElements -> ${interactiveElements.length}`,
-				ansiColorCodes.bgGreen
-			)
+			// this.logger.write("finish ✨")
 		} catch (error) {
-			this.logger.write(error, ansiColorCodes.bgRed)
+			this.logger.write(error + "TRACE : " + error.stack, ansiColorCodes.bgRed)
 		}
+	}
+
+	async returnFirstValueOfAMap(map: Map<number, any>): any {
+		return map.values().next().value
 	}
 
 	async sendDataWithVariableDelay<D>(

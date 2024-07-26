@@ -149,10 +149,9 @@ class InventoryCommandHandler {
 					return
 				}
 
-				await character.inventory?.changeItemQuantity(
-					itemInInventory,
-					-quantity
-				)
+				itemInInventory.quantity -= quantity
+
+				await character.inventory?.updateItemQuantity(itemInInventory)
 
 				await character.reply(
 					`Remove ${quantity} ${itemInInventory.record.name} to your inventory`

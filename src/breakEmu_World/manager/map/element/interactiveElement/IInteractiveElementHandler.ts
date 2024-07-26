@@ -3,8 +3,8 @@ import MapElement from "../MapElement"
 
 interface IInteractiveElementHandler {
 	handle(
-		element: MapElement,
-		character: Character
+		character: Character,
+		element?: MapElement
 	): Promise<void>
 }
 

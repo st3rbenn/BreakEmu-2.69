@@ -121,7 +121,6 @@ abstract class ItemCollection<T extends AbstractItem> {
 			if (sameItem) {
 				sameItem.quantity += quantity
 				this.onItemQuantityChanged(sameItem)
-				this.onItemStacked(sameItem)
 			} else {
 				const {
 					characterItem,

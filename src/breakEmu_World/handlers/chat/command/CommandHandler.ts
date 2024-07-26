@@ -7,6 +7,8 @@ import ModeratorCommandHandler from "./handler/ModeratorCommandHandler"
 import UtilsCommandHandler from "./handler/UtilsCommandHandler"
 import WarpCommandHandler from "./handler/WarpCommandHandler"
 import PlayerCommandHandler from "./handler/PlayerCommandHandler"
+import GuildCommandHandler from "./handler/GuildCommandHandler"
+import BankCommandHandler from "./handler/BankCommandHandler"
 
 interface ICommandHandler {
 	command: string
@@ -58,9 +60,11 @@ class CommandHandler {
 	static loadCommandHandlers() {
 		this.registerCommandHandlers(InventoryCommandHandler.commandHandler)
 		this.registerCommandHandlers(JobCommandHandler.commandHandler)
-    this.registerCommandHandlers(WarpCommandHandler.commandHandler)
-    this.registerCommandHandlers(PlayerCommandHandler.commandHandler)
-    this.registerCommandHandlers(UtilsCommandHandler.commandHandler)
+		this.registerCommandHandlers(WarpCommandHandler.commandHandler)
+		this.registerCommandHandlers(PlayerCommandHandler.commandHandler)
+    this.registerCommandHandlers(BankCommandHandler.commandHandler)
+		this.registerCommandHandlers(GuildCommandHandler.commandHandler)
+		this.registerCommandHandlers(UtilsCommandHandler.commandHandler)
 		this.registerCommandHandlers(ModeratorCommandHandler.commandHandler)
 
 		this.logger.write("Command handlers loaded.")
@@ -160,7 +164,7 @@ class CommandHandler {
 		commandHandlers: TCommandHandler = this.commandHandlers
 	) {
 		let allCommands: string =
-			"<br> <p text-align='center'>Available commands:</p> <br>"
+			'<br> <p style="text-align: center; color: tomato; border: 2px solid #e66465; border-radius: 25%">Available commands:</p> <br>'
 
 		for (const commandName in commandHandlers) {
 			const command = commandHandlers[commandName]

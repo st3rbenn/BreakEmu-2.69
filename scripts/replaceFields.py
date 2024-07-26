@@ -2,7 +2,7 @@ import json
 import sys
 
 
-keys_to_change = ["NameId"]
+keys_to_change = ["nameId"]
 
 
 def load_json_file(file_path):
@@ -21,7 +21,7 @@ def replace_field_with_i18n(data, i18n_data):
     for d in data:
         for key in keys_to_change:
             if key in d and str(d[key]) in i18n_data:
-                d["Name"] = i18n_data[str(d[key])]
+                d[key] = i18n_data[str(d[key])]
 
 
 if len(sys.argv) <= 1:

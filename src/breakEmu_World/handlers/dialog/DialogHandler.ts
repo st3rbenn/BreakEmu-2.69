@@ -14,6 +14,7 @@ class DialogHandler {
 		dialogType: DialogTypeEnum
 	): Promise<void> {
 		try {
+      this.logger.warn(`Leaving dialog ${dialogType}`)
 			await client.Send(new LeaveDialogMessage(dialogType))
 		} catch (error) {
 			this.logger.error(error as any)

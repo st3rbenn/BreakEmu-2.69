@@ -35,7 +35,7 @@ class ZaapDialog extends Dialog {
 	}
 	async close(): Promise<void> {
 		try {
-			this.character.removeDialog(this)
+			this.character.removeDialog()
       this.character.isZaapDialog = false
 			await DialogHandler.leaveDialogMessage(
 				this.character.client as WorldClient,

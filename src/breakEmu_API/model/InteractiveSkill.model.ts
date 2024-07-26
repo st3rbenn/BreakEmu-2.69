@@ -1,9 +1,3 @@
-import {
-	DelayedActionTypeEnum,
-	GenericActionEnum,
-	InteractiveTypeEnum,
-	SkillTypeEnum,
-} from "../../breakEmu_Server/IO"
 import Skill from "./skill.model"
 
 class InteractiveSkill {

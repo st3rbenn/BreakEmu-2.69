@@ -7,7 +7,7 @@ import {
 import WorldServerManager from "../../../breakEmu_World/WorldServerManager"
 import WorldClient from "../../WorldClient"
 import WorldServer from "../../WorldServer"
-import CharacterListHandler from "../character/CharacterListHandler"
+import CharacterHandler from "../character/CharacterHandler"
 
 class ServerListHandler {
 	public static async handleServerListRequestMessage(client: WorldClient) {
@@ -46,7 +46,7 @@ class ServerListHandler {
 		)
 
 		await client.Send(selectedServerDataMessage)
-    await CharacterListHandler.handleCharactersListMessage(client)
+    await CharacterHandler.handleCharactersListMessage(client)
 	}
 }
 

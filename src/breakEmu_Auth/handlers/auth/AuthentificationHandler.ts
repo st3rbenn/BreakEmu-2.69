@@ -1,8 +1,9 @@
 import { RSA_PKCS1_PADDING } from "constants"
 import { privateDecrypt } from "crypto"
+import NodeRSA from "node-rsa"
 import AuthController from "../../../breakEmu_API/controller/auth.controller"
 import Account from "../../../breakEmu_API/model/account.model"
-import AuthClient from "../../../breakEmu_Auth/AuthClient"
+import AuthClient, { Attributes } from "../../../breakEmu_Auth/AuthClient"
 import AuthTransition from "../../../breakEmu_Auth/AuthTransition"
 import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
 import Logger from "../../../breakEmu_Core/Logger"
@@ -20,11 +21,12 @@ class AuthentificationHandler {
 	private static logger: Logger = new Logger("AuthentificationHandler")
 
 	static async handleIdentificationMessage(
-		attrs: any,
+		attrs: Attributes,
 		message: DofusMessage,
 		client: AuthClient
 	): Promise<void> {
 		const authController = new AuthController(client)
+
 		const clearCredentials = privateDecrypt(
 			{
 				key: attrs.privateKey,
@@ -60,9 +62,6 @@ class AuthentificationHandler {
 
 		const user = await authController.login(username, password)
 
-		// if (user?.pseudo === null) {
-		// 	return;
-		// }
 		client.account = new Account(
 			user?.id as number,
 			user?.username as string,

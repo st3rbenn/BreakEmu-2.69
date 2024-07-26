@@ -18,7 +18,7 @@ class RelativeCharacteristic extends Characteristic {
   }
 
   public relativDelta(): number {
-    return this._relativ ? this._relativ.Total() / 10 : 0
+    return this._relativ ? (this.base + this.additional + this.objects) / 10 : 0
   }
 
   

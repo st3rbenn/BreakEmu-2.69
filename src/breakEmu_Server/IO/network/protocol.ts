@@ -1197,32 +1197,32 @@ export enum ExchangeTypeEnum {
 	PLAYER_TRADE = 1,
 	NPC_TRADE = 2,
 	CRAFT = 3,
-	DISCONNECTED_VENDOR = 4,
-	STORAGE = 5,
-	SHOP_STOCK = 6,
-	TAXCOLLECTOR = 8,
-	NPC_MODIFY_TRADE = 9,
-	BIDHOUSE_SELL = 10,
-	BIDHOUSE_BUY = 11,
-	MULTICRAFT_CRAFTER = 12,
-	MULTICRAFT_CUSTOMER = 13,
-	JOB_INDEX = 14,
-	MOUNT = 15,
-	MOUNT_STABLE = 16,
-	NPC_RESURECT_PET = 17,
-	NPC_TRADE_DRAGOTURKEY = 18,
-	REALESTATE_HOUSE = 19,
-	REALESTATE_FARM = 20,
-	RUNES_TRADE = 21,
-	RECYCLE_TRADE = 22,
-	BANK = 23,
-	TRASHBIN = 24,
-	ALLIANCE_PRISM = 25,
-	HAVENBAG = 26,
-	NPC_TRADE_SEEMYOOL = 27,
-	NPC_TRADE_RHINEETLE = 28,
-	EVOLUTIVE_OBJECT_ELEMENTARY_RECYCLE = 29,
-	NPC_RIDE_CAPABILITY_TRADE = 30,
+	STORAGE = 4,
+	SHOP_STOCK = 5,
+	TAXCOLLECTOR = 6,
+	NPC_MODIFY_TRADE = 7,
+	BIDHOUSE_SELL = 8,
+	BIDHOUSE_BUY = 9,
+	MULTICRAFT_CRAFTER = 10,
+	MULTICRAFT_CUSTOMER = 11,
+	JOB_INDEX = 12,
+	MOUNT = 13,
+	MOUNT_STABLE = 14,
+	NPC_RESURECT_PET = 15,
+	NPC_TRADE_DRAGOTURKEY = 16,
+	REALESTATE_HOUSE = 17,
+	REALESTATE_FARM = 18,
+	RUNES_TRADE = 19,
+	RECYCLE_TRADE = 20,
+	BANK = 21,
+	TRASHBIN = 22,
+	ALLIANCE_PRISM = 23,
+	HAVENBAG = 24,
+	NPC_TRADE_SEEMYOOL = 25,
+	NPC_TRADE_RHINEETLE = 26,
+	EVOLUTIVE_OBJECT_ELEMENTARY_RECYCLE = 27,
+	NPC_RIDE_CAPABILITY_TRADE = 28,
+	GUILD_CHEST = 29,
 }
 
 export enum GameContextEnum {
@@ -12095,7 +12095,7 @@ export interface RawAchievementAchievedRewardable
 }
 
 export class AchievementAchievedRewardable extends AchievementAchieved {
-	public static id: number = 2164
+	public static id: number = 7985
 
 	public finishedlevel: number | undefined = 0
 
@@ -17501,7 +17501,7 @@ export interface RawObjectEffectDice extends RawObjectEffect {
 }
 
 export class ObjectEffectDice extends ObjectEffect {
-	public static id: number = 9512
+	public static id: number = 2568
 
 	public diceNum: number | undefined = 0
 	public diceSide: number | undefined = 0
@@ -21591,7 +21591,7 @@ export interface RawAchievement {
 }
 
 export class Achievement extends DofusType {
-	public static id: number = 4830
+	public static id: number = 3448
 
 	public id_: number | undefined = 0
 	public finishedObjective: AchievementObjective[] | undefined
@@ -24513,7 +24513,7 @@ export interface RawAchievementObjective {
 }
 
 export class AchievementObjective extends DofusType {
-	public static id: number = 8118
+	public static id: number = 1608
 
 	public id_: number | undefined = 0
 	public maxValue: number | undefined = 0
@@ -24555,7 +24555,7 @@ export interface RawAchievementStartedObjective
 }
 
 export class AchievementStartedObjective extends AchievementObjective {
-	public static id: number = 3401
+	public static id: number = 262
 
 	public value: number | undefined = 0
 
@@ -33646,7 +33646,7 @@ export interface RawAchievementDetailedListMessage {
 }
 
 export class AchievementDetailedListMessage extends DofusMessage {
-	public static id: number = 4019
+	public static id: number = 4505
 
 	public startedAchievements: Achievement[] | undefined
 	public finishedAchievements: Achievement[] | undefined
@@ -39965,7 +39965,7 @@ export interface RawAchievementFinishedMessage {
 }
 
 export class AchievementFinishedMessage extends DofusMessage {
-	public static id: number = 518
+	public static id: number = 9364
 
 	public achievement: AchievementAchievedRewardable | undefined
 
@@ -43457,7 +43457,7 @@ export interface RawGuildCreationResultMessage {
 }
 
 export class GuildCreationResultMessage extends DofusMessage {
-	public static id: number = 563
+	public static id: number = 6753
 
 	public result: number | undefined = 0
 
@@ -45470,7 +45470,7 @@ export interface RawExchangeLeaveMessage extends RawLeaveDialogMessage {
 }
 
 export class ExchangeLeaveMessage extends LeaveDialogMessage {
-	public static id = 9053
+	public static id = 4632
 
 	public success: boolean | undefined = false
 
@@ -50430,7 +50430,7 @@ export interface RawNpcDialogCreationMessage {
 }
 
 export class NpcDialogCreationMessage extends DofusMessage {
-	public static id: number = 3416
+	public static id: number = 5741
 
 	public mapId: number | undefined = 0
 	public npcId: number | undefined = 0
@@ -50699,7 +50699,7 @@ export interface RawGuildCreationStartedMessage {
 }
 
 export class GuildCreationStartedMessage extends DofusMessage {
-	public static id: number = 2404
+	public static id: number = 1527
 
 	// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
 	public serialize(writer: BinaryWriter): void {}
@@ -51347,7 +51347,7 @@ export interface RawAchievementDetailsMessage {
 }
 
 export class AchievementDetailsMessage extends DofusMessage {
-	public static id: number = 535
+	public static id: number = 2146
 
 	public achievement: Achievement | undefined
 
@@ -67209,7 +67209,7 @@ export interface RawAchievementDetailsRequestMessage {
 }
 
 export class AchievementDetailsRequestMessage extends DofusMessage {
-	public static id: number = 2811
+	public static id: number = 5403
 
 	public achievementId: number | undefined = 0
 
@@ -67322,7 +67322,7 @@ export interface RawAchievementDetailedListRequestMessage {
 }
 
 export class AchievementDetailedListRequestMessage extends DofusMessage {
-	public static id: number = 8703
+	public static id: number = 8751
 
 	public categoryId: number | undefined = 0
 
@@ -73577,7 +73577,7 @@ export const types: { [key: number]: typeof DofusType } = {
 	4662: PaddockBuyableInformations,
 	9023: GameRolePlayNpcQuestFlag,
 	5623: ItemDurability,
-	2164: AchievementAchievedRewardable,
+	7985: AchievementAchievedRewardable,
 	1102: HumanOptionOrnament,
 	8924: HumanOptionTitle,
 	8916: AccountHouseInformations,
@@ -73667,7 +73667,7 @@ export const types: { [key: number]: typeof DofusType } = {
 	7908: GuildVersatileInformations,
 	5949: GuildInAllianceVersatileInformations,
 	5832: ShortcutObject,
-	9512: ObjectEffectDice,
+	2568: ObjectEffectDice,
 	2036: ObjectEffectDate,
 	3205: UpdateMountCharacteristic,
 	4162: UpdateMountIntegerCharacteristic,
@@ -73740,7 +73740,7 @@ export const types: { [key: number]: typeof DofusType } = {
 	1231: SimpleCharacterCharacteristicForPreset,
 	7508: CharacterCharacteristicForPreset,
 	6884: SpellForPreset,
-	4830: Achievement,
+	3448: Achievement,
 	2313: ObjectItemNotInContainer,
 	446: ObjectItemToSell,
 	2594: TaxCollectorFightersInformation,
@@ -73783,8 +73783,8 @@ export const types: { [key: number]: typeof DofusType } = {
 	6130: ProtectedEntityWaitingForHelpInfo,
 	4454: MountInformationsForPaddock,
 	4843: ObjectEffects,
-	8118: AchievementObjective,
-	3401: AchievementStartedObjective,
+	1608: AchievementObjective,
+	262: AchievementStartedObjective,
 	6266: FightTeamLightInformations,
 	7102: ArenaRanking,
 	125: ArenaLeagueRanking,
@@ -73966,7 +73966,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	1279: NicknameAcceptedMessage,
 	6694: HelloGameMessage,
 	4710: GuildFactsErrorMessage,
-	4019: AchievementDetailedListMessage,
+	4505: AchievementDetailedListMessage,
 	9044: AuthenticationTicketAcceptedMessage,
 	6703: GuildInvitationStateRecrutedMessage,
 	7533: KamasUpdateMessage,
@@ -74098,7 +74098,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	8650: ExchangeObjectPutInBagMessage,
 	2079: GuildFightPlayersEnemiesListMessage,
 	3954: GameCautiousMapMovementMessage,
-	518: AchievementFinishedMessage,
+	9364: AchievementFinishedMessage,
 	1659: AchievementFinishedInformationMessage,
 	6863: EntityTalkMessage,
 	4109: LockableStateUpdateAbstractMessage,
@@ -74168,7 +74168,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	9975: DebtsUpdateMessage,
 	2247: GameRolePlayArenaUpdatePlayerInfosMessage,
 	451: GameRolePlayArenaUpdatePlayerInfosAllQueuesMessage,
-	563: GuildCreationResultMessage,
+	6753: GuildCreationResultMessage,
 	5468: ExchangeStoppedMessage,
 	230: ExchangeShopStockMultiMovementUpdatedMessage,
 	3493: AccountInformationsUpdateMessage,
@@ -74209,7 +74209,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	8994: ExchangeCraftPaymentModifiedMessage,
 	2111: AllianceMotdSetErrorMessage,
 	2479: LeaveDialogMessage,
-	9053: ExchangeLeaveMessage,
+	4632: ExchangeLeaveMessage,
 	8117: TaxCollectorErrorMessage,
 	6303: BreachRoomLockedMessage,
 	6079: IdolListMessage,
@@ -74315,14 +74315,14 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	1424: AlignmentWarEffortProgressionMessage,
 	7382: GuildHouseUpdateInformationMessage,
 	7426: MountDataMessage,
-	3416: NpcDialogCreationMessage,
+	5741: NpcDialogCreationMessage,
 	9795: PortalDialogCreationMessage,
 	2267: PrismSetSabotagedRefusedMessage,
 	7836: MountSetMessage,
 	2521: PartyInvitationCancelledForGuestMessage,
 	3137: ExchangeCraftCountModifiedMessage,
 	678: ExchangeSellOkMessage,
-	2404: GuildCreationStartedMessage,
+	1527: GuildCreationStartedMessage,
 	907: MimicryObjectPreviewMessage,
 	7372: NotificationListMessage,
 	7486: StorageObjectUpdateMessage,
@@ -74340,7 +74340,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	3021: FriendUpdateMessage,
 	1466: HavenBagPermissionsUpdateMessage,
 	9238: AuthenticationTicketRefusedMessage,
-	535: AchievementDetailsMessage,
+	2146: AchievementDetailsMessage,
 	5525: TaxCollectorMovementMessage,
 	7636: AlliancePrismDialogQuestionMessage,
 	2914: ExchangeStartOkMountWithOutPaddockMessage,
@@ -74711,10 +74711,10 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	4816: AchievementRewardRequestMessage,
 	534: NotificationUpdateFlagMessage,
 	6610: QuestObjectiveValidationMessage,
-	2811: AchievementDetailsRequestMessage,
+	5403: AchievementDetailsRequestMessage,
 	1822: RefreshFollowedQuestsOrderRequestMessage,
 	6177: QuestStartRequestMessage,
-	8703: AchievementDetailedListRequestMessage,
+	8751: AchievementDetailedListRequestMessage,
 	2632: TreasureHuntDigRequestMessage,
 	3503: AuthenticationTicketMessage,
 	4543: GuildRanksRequestMessage,
@@ -74723,7 +74723,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	1741: CharacterNameSuggestionRequestMessage,
 	5754: CharacterSelectedForceReadyMessage,
 	5450: CharactersListRequestMessage,
-  974: KnownZaapListMessage,
+	974: KnownZaapListMessage,
 	774: CharacterCreationRequestMessage,
 	2372: CharacterCanBeCreatedRequestMessage,
 	9005: CharacterReplayRequestMessage,

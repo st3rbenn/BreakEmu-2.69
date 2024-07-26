@@ -1,5 +1,5 @@
 import SpellLevel from "./spellLevel.model"
-import CharacterSpell from "../../breakEmu_World/manager/entities/spell/CharacterSpell"
+import CharacterSpell from "../../breakEmu_World/manager/spell/CharacterSpell"
 import Character from "./character.model"
 
 class Spell {

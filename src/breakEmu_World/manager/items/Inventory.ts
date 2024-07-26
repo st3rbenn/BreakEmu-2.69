@@ -110,8 +110,6 @@ class Inventory extends ItemCollection<CharacterItem> {
 			for (const item of items) {
 				await this.onItemStacked(item)
 			}
-
-			await this.refreshWeight()
 		} catch (error) {
 			this.logger.write(error as any)
 		}
@@ -160,12 +158,11 @@ class Inventory extends ItemCollection<CharacterItem> {
 			for (const item of items) {
 				await this.onItemUnstacked(item)
 			}
-
-			await this.refreshWeight()
 		} catch (error) {
 			this.logger.write(error as any)
 		}
 	}
+
 	public async onItemQuantityChanged(item: CharacterItem): Promise<void> {
 		try {
 			await item.save()
@@ -175,14 +172,13 @@ class Inventory extends ItemCollection<CharacterItem> {
 			this.logger.write(error as any)
 		}
 	}
+
 	public async onItemsQuantityChanged(items: CharacterItem[]): Promise<void> {
 		try {
 			for (const item of items) {
 				await item.save()
 				await this.updateItemQuantity(item)
 			}
-
-			await this.refreshWeight()
 		} catch (error) {
 			this.logger.write(error as any)
 		}
@@ -208,35 +204,39 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 	public async refresh() {
 		try {
-      const objectItem: ObjectItem[] = await this.getObjectsItems()
+			const objectItems: ObjectItem[] = await this.getObjectsItems()
 
-		await this.character.client?.Send(
-			new InventoryContentMessage(objectItem, this.character.kamas)
-		)
+			await this.character.client?.Send(
+				new InventoryContentMessage(objectItems, this.character.kamas)
+			)
 
-		await this.refreshWeight()
-    } catch(error) {
-      this.logger.write(error as any)
-    }
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public async refreshKamas() {
 		try {
-      await this.character.client?.Send(
-        new KamasUpdateMessage(this.character.kamas)
-      )
-    } catch (error) {
-      this.logger.write(error as any)
-    }
+			await this.character.client?.Send(
+				new KamasUpdateMessage(this.character.kamas)
+			)
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public async refreshWeight() {
-		await this.character.client?.Send(
-			new InventoryWeightMessage(
-				this.currentWeight,
-				this.character.stats?.currentMaxWeight
+		try {
+			await this.character.client?.Send(
+				new InventoryWeightMessage(
+					this.currentWeight,
+					this.character.stats?.currentMaxWeight
+				)
 			)
-		)
+		} catch (error) {
+			this.logger.write(error as any)
+		}
 	}
 
 	public async addNewItem(
@@ -277,23 +277,6 @@ class Inventory extends ItemCollection<CharacterItem> {
 			this.logger.write(error as any)
 		}
 	}
-
-	public async changeItemQuantity(item: CharacterItem, quantity: number) {
-		try {
-			if (item.quantity + quantity < 1) {
-				await this.removeItem(item, item.quantity)
-			} else {
-				item.quantity += quantity
-				await this.updateItemQuantity(item)
-			}
-
-			await item.save()
-			await this.refresh()
-		} catch (error) {
-			this.logger.write(error as any)
-		}
-	}
-
 	public async setItemPosition(
 		item: CharacterItem,
 		position: CharacterInventoryPositionEnum,

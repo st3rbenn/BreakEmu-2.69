@@ -1,5 +1,4 @@
 import { Prisma } from "@prisma/client"
-import Bank from "../../breakEmu_World/manager/items/Bank"
 import Character from "../../breakEmu_API/model/character.model"
 import Finishmoves from "../../breakEmu_API/model/finishmoves.model"
 import Job from "../../breakEmu_API/model/job.model"
@@ -8,9 +7,9 @@ import Spell from "../../breakEmu_API/model/spell.model"
 import AuthClient from "../../breakEmu_Auth/AuthClient"
 import Logger from "../../breakEmu_Core/Logger"
 import WorldClient from "../../breakEmu_World/WorldClient"
-import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
 import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
 import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
+import Bank from "../../breakEmu_World/manager/items/Bank"
 import Inventory from "../../breakEmu_World/manager/items/Inventory"
 import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
 import Database from "../Database"
@@ -109,7 +108,7 @@ class UserController extends BaseController {
 				const character = new Character(
 					c.id,
 					c.userId,
-					BreedManager.getInstance().getBreedById(c.breed_id),
+					c.breed_id,
 					c.sex,
 					c.cosmeticId,
 					c.name,
@@ -129,19 +128,21 @@ class UserController extends BaseController {
 						JSON.parse(c.finishMoves?.toString() as string)
 					),
 					GameMap.getMapById(Number(c.mapId)) as GameMap,
-					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string))
+					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string)),
+					c.finishedAchievements?.toString().split(",").map(Number) || [],
+					c.almostFinishedAchievements?.toString().split(",").map(Number) || [],
+					c.finishedAchievementObjectives?.toString().split(",").map(Number) ||
+						[],
+					c.untakenAchievementsReward?.toString().split(",").map(Number) || []
 				)
 				character.client = client
+				character.stats.initialize(client)
 
-				if (character.stats) {
-					character.stats.client = client
-				}
+				character.account = account
 
-        character.account = account
-
-        character.knownZaaps = Character.loadKnownZaapsFromJson(
-          JSON.parse(c.knownZaaps?.toString() as string)
-        )
+				character.knownZaaps = Character.loadKnownZaapsFromJson(
+					JSON.parse(c.knownZaaps?.toString() as string)
+				)
 
 				const shrts = Character.loadShortcutsFromJson(
 					JSON.parse(c.shortcuts?.toString() as string)
@@ -155,11 +156,15 @@ class UserController extends BaseController {
 					character
 				)
 
-				const items = await CharacterItemController.getInstance().getCharacterItemsByCharacterId(character.id)
-        const bankItems = await bankItemController.getInstance().getBankItems(account.id)
+				const items = await CharacterItemController.getInstance().getCharacterItemsByCharacterId(
+					character.id
+				)
+				const bankItems = await bankItemController
+					.getInstance()
+					.getBankItems(account.id)
 
 				character.inventory = new Inventory(character, items)
-        character.bank = new Bank(character, bankItems)
+				character.bank = new Bank(character, bankItems, c.bankKamas)
 
 				account.characters.set(character.id, character)
 			}

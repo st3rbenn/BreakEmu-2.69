@@ -1,4 +1,3 @@
-import Characteristic from "breakEmu_World/manager/entities/stats/characteristic"
 import CharacterController from "../../breakEmu_API/controller/character.controller"
 import ConfigurationManager from "../../breakEmu_Core/configuration/ConfigurationManager"
 import {
@@ -29,6 +28,8 @@ import {
 	JobDescriptionMessage,
 	JobExperienceMultiUpdateMessage,
 	KnownZaapListMessage,
+	PlayerStatus,
+	PlayerStatusEnum,
 	ServerExperienceModificatorMessage,
 	ShortcutBarEnum,
 	SpellItem,
@@ -39,13 +40,16 @@ import {
 	TextInformationTypeEnum,
 } from "../../breakEmu_Server/IO"
 import WorldClient from "../../breakEmu_World/WorldClient"
-import InteractiveMapHandler from "../../breakEmu_World/handlers/map/interactive/InteractiveMapHandler"
+import CharacterHandler from "../../breakEmu_World/handlers/character/CharacterHandler"
+import TeleportHandler from "../../breakEmu_World/handlers/map/teleport/TeleportHandler"
 import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
+import BankDialog from "../../breakEmu_World/manager/exchange/BankExchange"
 import Dialog from "../../breakEmu_World/manager/dialog/Dialog"
 import ZaapDialog from "../../breakEmu_World/manager/dialog/ZaapDialog"
 import Entity from "../../breakEmu_World/manager/entities/Entity"
 import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
-import CharacterSpell from "../../breakEmu_World/manager/entities/spell/CharacterSpell"
+import CharacterSpell from "../../breakEmu_World/manager/spell/CharacterSpell"
+import Characteristic from "../../breakEmu_World/manager/entities/stats/characteristic"
 import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
 import Bank from "../../breakEmu_World/manager/items/Bank"
 import Inventory from "../../breakEmu_World/manager/items/Inventory"
@@ -65,7 +69,8 @@ import Job from "./job.model"
 import GameMap from "./map.model"
 import Skill from "./skill.model"
 import Spell from "./spell.model"
-import CharacterHandler from "../../breakEmu_World/handlers/character/CharacterHandler"
+import Achievement from "./achievement.model"
+import AchievementManager from "../../breakEmu_World/manager/achievement/AchievementManager"
 
 class Character extends Entity {
 	point: MapPoint
@@ -90,7 +95,10 @@ class Character extends Entity {
 
 	dialog: Dialog | null = null
 
-	isZaapDialog: boolean = this.dialog instanceof ZaapDialog
+	isZaapDialog: boolean = false
+	isBankDialog: boolean = false
+
+	status: PlayerStatusEnum = PlayerStatusEnum.PLAYER_STATUS_AVAILABLE
 
 	stats: EntityStats
 	statsPoints: number
@@ -110,10 +118,14 @@ class Character extends Entity {
 
 	knownZaaps: Map<number, GameMap> = new Map()
 
+	finishedAchievements: number[] = []
+	almostFinishedAchievements: number[] = []
+  finishedAchievementObjectives: number[] = []
+  untakenAchievementsReward: number[] = []
+
 	context: GameContextEnum | undefined = undefined
 	inventory: Inventory
 	bank: Bank
-	bankKamas: number = 0
 
 	client: WorldClient
 
@@ -134,7 +146,7 @@ class Character extends Entity {
 	constructor(
 		id: number,
 		accountId: number,
-		breed: Breed,
+		breed: number,
 		sex: boolean,
 		cosmeticId: number,
 		name: string,
@@ -152,12 +164,16 @@ class Character extends Entity {
 		jobs: Map<number, Job>,
 		finishMoves: Map<number, Finishmoves>,
 		map: GameMap | null,
-		stats: EntityStats
+		stats: EntityStats,
+    finishedAchievements: number[],
+    almostFinishedAchievements: number[],
+    finishedAchievementObjectives: number[],
+    untakenAchievementsReward: number[]
 	) {
 		super(map)
 		this.id = id
 		this.accountId = accountId
-		this.breed = breed
+		this.breed = BreedManager.getInstance().getBreedById(breed)
 		this.sex = sex
 		this.cosmeticId = cosmeticId
 		this.name = name
@@ -179,7 +195,11 @@ class Character extends Entity {
 		this.activeOrnament = activeOrnament
 		this.jobs = jobs
 		this.finishmoves = finishMoves
-		this.skillsAllowed = SkillManager.getInstance().getAllowedSkills(this)
+		this.skillsAllowed = SkillManager.getInstance().getAllowedSkills(this),
+    this.finishedAchievements = finishedAchievements,
+    this.almostFinishedAchievements = almostFinishedAchievements,
+    this.finishedAchievementObjectives = finishedAchievementObjectives
+    this.untakenAchievementsReward = untakenAchievementsReward
 	}
 
 	static async create(
@@ -195,16 +215,13 @@ class Character extends Entity {
 		direction: number,
 		kamas: number,
 		finishmoves: Map<number, Finishmoves>,
-		experience: Experience
+		experience: Experience,
+		stats: EntityStats
 	): Promise<Character> {
-		const bree = BreedManager.getInstance().breeds.find(
-			(b) => b.id === breed
-		) as Breed
-
 		const character = new Character(
 			id,
 			accountId,
-			bree,
+			breed,
 			sex,
 			cosmeticId,
 			name,
@@ -222,11 +239,15 @@ class Character extends Entity {
 			Job.new(),
 			finishmoves,
 			GameMap.getMapById(mapId) as GameMap,
-			EntityStats.new(experience.level)
+			stats,
+      [],
+      [],
+      [],
+      []
 		)
 		character.inventory = new Inventory(character)
 
-		character.bank = new Bank(character)
+		character.bank = new Bank(character, [])
 
 		await BreedManager.getInstance().learnBreedSpells(character)
 
@@ -260,11 +281,6 @@ class Character extends Entity {
 				this.level < Experience.maxCharacterLevel) ||
 			(experience < levelFloor && this.level > 1)
 		) {
-			// console.log(
-			// 	`Leveling up from ${this.level} to ${Experience.getCharacterLevel(
-			// 		this.experience
-			// 	)}`
-			// )
 			const current = this.level
 			this.level = Experience.getCharacterLevel(this.experience)
 			const difference = this.level - current
@@ -283,7 +299,8 @@ class Character extends Entity {
 	}
 
 	public async setDialog(dialog: Dialog) {
-		if (this.dialog !== null) {
+		if (this.dialog) {
+			console.log(`Closing dialog ${this.dialog}`)
 			await this.dialog.close()
 		}
 
@@ -291,21 +308,28 @@ class Character extends Entity {
 		await this.dialog.open()
 	}
 
-	public removeDialog(dialog: Dialog) {
-		if (this.dialog == dialog) {
-			this.dialog = null
-		}
+	public removeDialog() {
+		this.dialog = null
 	}
 
 	public async leaveDialog() {
+		console.log("leaving dialog", this.whatDialog())
 		try {
 			if (this.dialog) {
 				await this.dialog.close()
-			} else {
-				await this.client?.Send(new BasicNoOperationMessage())
 			}
+			//  else {
+			// 	await this.client?.Send(new BasicNoOperationMessage())
+			// }
 		} catch (error) {
 			console.log(error)
+		}
+	}
+
+	private whatDialog() {
+		return {
+			isZaapDialog: this.dialog instanceof ZaapDialog,
+			isBankDialog: this.dialog instanceof BankDialog,
 		}
 	}
 
@@ -326,16 +350,18 @@ class Character extends Entity {
 			this.direction
 		)
 
+		const humaneInfo = new HumanInformations(
+			this.getActorRestrictions(),
+			this.sex,
+			Array.from(this.humanOptions.values())
+		)
+
 		return new GameRolePlayCharacterInformations(
 			this.id,
 			entityDisposition,
 			this.look.toEntityLook(),
 			this.name,
-			new HumanInformations(
-				this.getActorRestrictions(),
-				this.sex,
-				Array.from(this.humanOptions.values())
-			),
+			humaneInfo,
 			this.accountId,
 			this.getActorAlignementInformations()
 		)
@@ -420,7 +446,7 @@ class Character extends Entity {
 			const spellItems: SpellItem[] = []
 
 			for (const spell of this.spells.values()) {
-				spellItems.push(spell.getSpellItem(this))
+				spellItems.push(spell.getSpellItem())
 			}
 
 			await this?.client?.Send(new SpellListMessage(false, spellItems))
@@ -446,6 +472,14 @@ class Character extends Entity {
 		}
 	}
 
+	public async refreshInventory() {
+		try {
+			await this.inventory.refresh()
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
 	public async refreshAll() {
 		try {
 			await this.refreshJobs()
@@ -453,7 +487,7 @@ class Character extends Entity {
 			await this.refreshGuild()
 			await this.refreshEmotes()
 			await this.refreshZaaps()
-			await this.client?.selectedCharacter?.inventory.refresh()
+			await this.refreshInventory()
 			await this.refreshShortcuts()
 			this.createHumanOptions()
 			await this.sendServerExperienceModificator()
@@ -492,6 +526,9 @@ class Character extends Entity {
 
 	public async noMove() {
 		try {
+			this.isMoving = false
+			this.movementKeys = []
+			this.movedCell = 0
 			await this.client?.Send(
 				new GameMapNoMovementMessage(
 					this.mapPoint?.x as number,
@@ -506,8 +543,10 @@ class Character extends Entity {
 	public async cancelMove(cellId: number) {
 		try {
 			this.isMoving = false
+			this.movementKeys = []
+			this.movedCell = 0
 			this.cellId = cellId
-			await this.client?.Send(new BasicNoOperationMessage())
+			// await this.client?.Send(new BasicNoOperationMessage())
 		} catch (error) {
 			console.log(error)
 		}
@@ -516,6 +555,7 @@ class Character extends Entity {
 	public async teleport(mapId: number, cellId: number | null = null) {
 		try {
 			await this.teleportPlayer(GameMap.getMapById(mapId) as GameMap, cellId)
+			await this.refreshStats()
 		} catch (error) {
 			console.log(error)
 		}
@@ -563,7 +603,7 @@ class Character extends Entity {
 			[this.mapId.toString()]
 		)
 
-		await InteractiveMapHandler.handleSetSpawnPoint(
+		await TeleportHandler.handleSetSpawnPoint(
 			this.client as WorldClient,
 			this.mapId
 		)
@@ -587,7 +627,7 @@ class Character extends Entity {
 			await this.map?.instance.sendMapComplementaryInformations(
 				this.client as WorldClient
 			)
-			// this.map?.instance.sendMapFightCount(this.client)
+			await this.map?.instance.sendMapFightCount(this.client, 0)
 
 			const mapCharacters = this.map?.instance.getEntities<Character>(Character)
 
@@ -604,7 +644,7 @@ class Character extends Entity {
 				await this.discoverZaap(this.mapId)
 			}
 
-			await this.client?.Send(new BasicNoOperationMessage())
+			// await this.client?.Send(new BasicNoOperationMessage())
 			const date = new Date()
 			const unixTime = Math.round(date.getTime() / 1000)
 			await this.client?.Send(new BasicTimeMessage(unixTime, 1))
@@ -673,6 +713,8 @@ class Character extends Entity {
 	public async destroyContext() {
 		try {
 			await this?.client?.Send(new GameContextDestroyMessage())
+			await this.map?.instance.removeEntity(this)
+			await CharacterController.getInstance().updateCharacter(this)
 			this.context = undefined
 		} catch (error) {
 			console.log(error)
@@ -809,7 +851,7 @@ class Character extends Entity {
 			for (const breedSpellId of this.breed.breedSpells) {
 				const spell = Spell.getSpells.get(breedSpellId)
 				if (spell) {
-					if (spell.minimumLevel > this.level) {
+					if (spell.minimumLevel < this.level) {
 						if (shortcut.has(spell.id)) {
 							console.log("Removing shortcut")
 							this.spellShortcutBar.removeShortcut(
@@ -859,6 +901,8 @@ class Character extends Entity {
 					)
 				}
 			}
+
+			AchievementManager.getInstance().checkLevelAchievements(this)
 		} catch (error) {
 			console.log(error)
 		}
@@ -877,23 +921,23 @@ class Character extends Entity {
 			let spell = new CharacterSpell(spellId, false, this)
 			this.spells.set(spellId, spell)
 
-			// console.log('is spell currently selected:', spell.isSpellSelected)
-
-			if (spell.learned() && this.spellShortcutBar.canAdd()) {
-				const spellShortcut = new CharacterSpellShortcut(
-					this.spellShortcutBar.getFreeSlotId() as number,
-					spellId,
-					ShortcutBarEnum.SPELL_SHORTCUT_BAR
-				)
-				this.spellShortcutBar.addShortcut(spellShortcut)
-
-				if (notify) {
-					await this.refreshShortcuts()
-					await this.textInformation(
-						TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
-						3,
-						[spellId.toString()]
+			if (spell.learned()) {
+				if (this.spellShortcutBar.canAdd()) {
+					const spellShortcut = new CharacterSpellShortcut(
+						this.spellShortcutBar.getFreeSlotId() as number,
+						spellId,
+						ShortcutBarEnum.SPELL_SHORTCUT_BAR
 					)
+					await this.spellShortcutBar.addShortcut(spellShortcut)
+
+					if (notify) {
+						await this.refreshShortcuts()
+						await this.textInformation(
+							TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
+							3,
+							[spellId.toString()]
+						)
+					}
 				}
 			}
 
@@ -921,8 +965,6 @@ class Character extends Entity {
 	public async disconnect() {
 		try {
 			await this.destroyContext()
-			await this.map?.instance.removeEntity(this)
-			await CharacterController.getInstance().updateCharacter(this)
 		} catch (error) {
 			console.log(error)
 		}

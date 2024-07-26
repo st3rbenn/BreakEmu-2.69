@@ -1,4 +1,3 @@
-import CharacterController from "../breakEmu_API/controller/character.controller"
 import { GameServerInformations } from "../breakEmu_Server/IO"
 import WorldClient from "./WorldClient"
 

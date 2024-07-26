@@ -5,14 +5,14 @@ database:
   password: ""
   name: breakEmu
 authServer:
-  host: 192.168.1.113
+  host: 192.168.1.163
   port: 5555
 worldServer:
-  host: 192.168.1.113
+  host: 192.168.1.163
   port: 443
 debug:
   showDebugMessages: false
-  showProtocolMessage: false
+  showProtocolMessage: true
   showDatabaseLogs: false
 dofus:
   dofusProtocolVersion: 1.0.3+7dfcc24
@@ -30,3 +30,4 @@ dofus:
   XpRate: 1.5
   jobXpRate: 1.5
   dropRate: 1.5
+  itemStarter: [10784, 10785, 10794, 10798, 10799, 10800, 10801]
