@@ -4,6 +4,7 @@ import Logger from "../breakEmu_Core/Logger"
 import InteractiveElementBonus from "../breakEmu_Core/bull/tasks/BonusTask"
 import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
 import { GenericActionEnum, InteractiveTypeEnum } from "../breakEmu_Server/IO"
+import AchievementManager from "../breakEmu_World/manager/achievement/AchievementManager"
 import BreedManager from "../breakEmu_World/manager/breed/BreedManager"
 import Effect from "../breakEmu_World/manager/entities/effect/Effect"
 import EffectCollection from "../breakEmu_World/manager/entities/effect/EffectCollection"
@@ -12,6 +13,9 @@ import MapPoint from "../breakEmu_World/manager/map/MapPoint"
 import Cell from "../breakEmu_World/manager/map/cell/Cell"
 import InteractiveElementModel from "./model/InteractiveElement.model"
 import InteractiveSkill from "./model/InteractiveSkill.model"
+import Achievement from "./model/achievement.model"
+import AchievementObjective from "./model/achievementObjective.model"
+import AchievementReward from "./model/achievementReward.model"
 import Breed from "./model/breed.model"
 import Experience from "./model/experience.model"
 import Finishmoves from "./model/finishmoves.model"
@@ -24,10 +28,6 @@ import Skill from "./model/skill.model"
 import Spell from "./model/spell.model"
 import SpellLevel from "./model/spellLevel.model"
 import World from "./model/world.model"
-import Achievement from "./model/achievement.model"
-import AchievementReward from "./model/achievementReward.model"
-import AchievementObjective from "./model/achievementObjective.model"
-import AchievementManager from "../breakEmu_World/manager/achievement/AchievementManager"
 
 interface test {
 	id: number
@@ -183,11 +183,10 @@ class Database {
 				this.loadFinishMoves(),
 				this.loadItems(),
 				this.loadItemSets(),
-				// this.loadCharactersItems(),
 				this.loadAchievements(),
 				this.loadMapScrollActions(),
 				this.loadInteractiveElements(),
-				this.loadMaps()
+				this.loadMaps(),
 			])
 
 			await Promise.resolve()
@@ -703,49 +702,59 @@ class Database {
 	}
 
 	async loadAchievements(): Promise<void> {
-		const achievements = await this.prisma.achievement.findMany()
+		const [achievements, allObjectives, allRewards] = await Promise.all([
+			this.prisma.achievement.findMany(),
+			this.prisma.achievementObjective.findMany(),
+			this.prisma.achievementReward.findMany(),
+		])
+
+		const objectivesMap = new Map<number, AchievementObjective[]>()
+		const rewardsMap = new Map<number, AchievementReward[]>()
+
+		for (const obj of allObjectives) {
+			if (!objectivesMap.has(obj.achievementId)) {
+				objectivesMap.set(obj.achievementId, [])
+			}
+			objectivesMap
+				.get(obj.achievementId)!
+				.push(new AchievementObjective(obj.id, obj.order, obj.criterion))
+		}
+
+		for (const rew of allRewards) {
+			if (!rewardsMap.has(rew.achievementId)) {
+				rewardsMap.set(rew.achievementId, [])
+			}
+			rewardsMap
+				.get(rew.achievementId)!
+				.push(
+					new AchievementReward(
+						rew.id,
+						rew.criteria,
+						rew.kamasRatio,
+						rew.experienceRatio,
+						rew.kamasScaleWithPlayerLevel,
+						rew.itemsReward?.toString().split(",").map(Number) || [],
+						rew.itemsQuantityReward?.toString().split(",").map(Number) || [],
+						rew.emotesReward?.toString().split(",").map(Number) || [],
+						rew.titlesReward?.toString().split(",").map(Number) || [],
+						rew.ornamentsReward?.toString().split(",").map(Number) || []
+					)
+				)
+		}
 
 		for (const achiev of achievements) {
-			const objectives = await this.prisma.achievementObjective.findMany({
-				where: {
-					achievementId: achiev.id,
-				},
-			})
+			const achievObjectives = objectivesMap.get(achiev.id) || []
+			const achievRewards = rewardsMap.get(achiev.id) || []
 
-			const rewards = await this.prisma.achievementReward.findMany({
-				where: {
-					achievementId: achiev.id,
-				},
-			})
+			const objectivesMapForAchiev = new Map<number, AchievementObjective>()
+			const rewardsMapForAchiev = new Map<number, AchievementReward>()
 
-			const objectivesMap = new Map<number, AchievementObjective>()
-			const rewardsMap = new Map<number, AchievementReward>()
-
-			for (const obj of objectives) {
-				const objective = new AchievementObjective(
-					obj.id,
-					obj.order,
-					obj.criterion
-				)
-
-				objectivesMap.set(obj.id, objective)
+			for (const obj of achievObjectives) {
+				objectivesMapForAchiev.set(obj.id, obj)
 			}
 
-			for (const rew of rewards) {
-				const reward = new AchievementReward(
-					rew.id,
-					rew.criteria,
-					rew.kamasRatio,
-					rew.experienceRatio,
-					rew.kamasScaleWithPlayerLevel,
-					rew.itemsReward?.toString().split(",").map(Number) || [],
-					rew.itemsQuantityReward?.toString().split(",").map(Number) || [],
-					rew.emotesReward?.toString().split(",").map(Number) || [],
-					rew.titlesReward?.toString().split(",").map(Number) || [],
-					rew.ornamentsReward?.toString().split(",").map(Number) || []
-				)
-
-				rewardsMap.set(rew.id, reward)
+			for (const rew of achievRewards) {
+				rewardsMapForAchiev.set(rew.id, rew)
 			}
 
 			const res = new Achievement(
@@ -755,8 +764,8 @@ class Database {
 				achiev.level,
 				achiev.order,
 				achiev.accountLinked,
-				objectivesMap,
-				rewardsMap
+				objectivesMapForAchiev,
+				rewardsMapForAchiev
 			)
 
 			AchievementManager.achievements.set(achiev.id, res)

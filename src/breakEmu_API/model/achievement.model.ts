@@ -1,4 +1,8 @@
-import { Achievement as AchievementMessage } from "../../breakEmu_Server/IO"
+import {
+	AchievementAchieved,
+	AchievementAchievedRewardable,
+	Achievement as AchievementMessage,
+} from "../../breakEmu_Server/IO"
 import AchievementObjective from "./achievementObjective.model"
 import AchievementReward from "./achievementReward.model"
 import Character from "./character.model"
@@ -40,16 +44,34 @@ class Achievement {
 		)
 	}
 
-	toAchivementMessage() {
-		const achievementStartedObjectives = []
+	public finishedObjective(character: Character) {
+		return Array.from(this.objectives.values()).filter((objective) =>
+			character.finishedAchievementObjectives.includes(objective.id)
+		)
+	}
 
-		for (const objective of this.objectives.values()) {
-			achievementStartedObjectives.push(
-				objective.toAchievementStartedObjectiveMessage()
+	toAchievementMessage(character: Character) {
+		return new AchievementMessage(
+			this.id,
+			this.finishedObjective(character).map((achi) =>
+				achi.toAchievementObjective()
+			),
+			this.startedObjective(character).map((achi) =>
+				achi.toAchievementStartedObjectiveMessage()
 			)
-		}
+		)
+	}
 
-		return new AchievementMessage(this.id, [], achievementStartedObjectives)
+	toAchievementAchieved(character: Character) {
+		if (character.untakenAchievementsReward.includes(this.id)) {
+			return new AchievementAchievedRewardable(
+				this.id,
+				character.id,
+				character.level
+			)
+		} else {
+			return new AchievementAchieved(this.id, character.id)
+		}
 	}
 
 	achievementFinished(character: Character) {

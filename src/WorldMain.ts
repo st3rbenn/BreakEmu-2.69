@@ -12,8 +12,11 @@ import CommandHandler from "./breakEmu_World/handlers/chat/command/CommandHandle
 class Main {
 	public logger: Logger = new Logger("Main")
 
+	constructor() {
+		this.logger.onStartup()
+	}
+
 	async Start(): Promise<void> {
-		await this.logger.onStartup()
 		await ConfigurationManager.getInstance().Load()
 		await WorldTransition.getInstance().connect()
 		await WorldTransition.getInstance().handleServerStatusUpdate(

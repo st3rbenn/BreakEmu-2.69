@@ -115,13 +115,9 @@ class MapInstance {
 	}
 
 	public async removeEntity(entity: Entity) {
-		try {
-			let entityId = entity.id
-			await this.send(new GameContextRemoveElementMessage(entityId))
-			this.entities.delete(entity.id)
-		} catch (error) {
-			console.log(error)
-		}
+		let entityId = entity.id
+		await this.send(new GameContextRemoveElementMessage(entityId))
+		this.entities.delete(entity.id)
 	}
 
 	public async sendMapComplementaryInformations(
@@ -140,9 +136,8 @@ class MapInstance {
 
 			const statedElements = this.getStatedElements()
 
-
-      // console.log("interactiveElements", interactiveElements)
-      // console.log("statedElements", statedElements)
+			// console.log("interactiveElements", interactiveElements)
+			// console.log("statedElements", statedElements)
 
 			const houses: HouseInformations[] = []
 			const obstacles: MapObstacle[] = []

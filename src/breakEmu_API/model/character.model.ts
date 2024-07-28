@@ -1,3 +1,4 @@
+import AccountRoleEnum from "../../breakEmu_World/enum/AccountRoleEnum"
 import CharacterController from "../../breakEmu_API/controller/character.controller"
 import ConfigurationManager from "../../breakEmu_Core/configuration/ConfigurationManager"
 import {
@@ -14,7 +15,6 @@ import {
 	EmoteListMessage,
 	EntityDispositionInformations,
 	GameContextCreateMessage,
-	GameContextDestroyMessage,
 	GameContextEnum,
 	GameMapMovementMessage,
 	GameMapNoMovementMessage,
@@ -24,11 +24,11 @@ import {
 	HumanOption,
 	HumanOptionFollowers,
 	HumanOptionOrnament,
+	HumanOptionTitle,
 	JobCrafterDirectorySettingsMessage,
 	JobDescriptionMessage,
 	JobExperienceMultiUpdateMessage,
 	KnownZaapListMessage,
-	PlayerStatus,
 	PlayerStatusEnum,
 	ServerExperienceModificatorMessage,
 	ShortcutBarEnum,
@@ -40,17 +40,19 @@ import {
 	TextInformationTypeEnum,
 } from "../../breakEmu_Server/IO"
 import WorldClient from "../../breakEmu_World/WorldClient"
+import ContextHandler from "../../breakEmu_World/handlers/ContextHandler"
+import AchievementHandler from "../../breakEmu_World/handlers/achievement/AchievementHandler"
 import CharacterHandler from "../../breakEmu_World/handlers/character/CharacterHandler"
 import TeleportHandler from "../../breakEmu_World/handlers/map/teleport/TeleportHandler"
+import AchievementManager from "../../breakEmu_World/manager/achievement/AchievementManager"
 import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
-import BankDialog from "../../breakEmu_World/manager/exchange/BankExchange"
 import Dialog from "../../breakEmu_World/manager/dialog/Dialog"
 import ZaapDialog from "../../breakEmu_World/manager/dialog/ZaapDialog"
 import Entity from "../../breakEmu_World/manager/entities/Entity"
 import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
-import CharacterSpell from "../../breakEmu_World/manager/spell/CharacterSpell"
 import Characteristic from "../../breakEmu_World/manager/entities/stats/characteristic"
 import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
+import BankDialog from "../../breakEmu_World/manager/exchange/BankExchange"
 import Bank from "../../breakEmu_World/manager/items/Bank"
 import Inventory from "../../breakEmu_World/manager/items/Inventory"
 import MapPoint from "../../breakEmu_World/manager/map/MapPoint"
@@ -61,7 +63,9 @@ import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/C
 import CharacterItemShortcut from "../../breakEmu_World/manager/shortcut/character/characterItemShortcut"
 import CharacterSpellShortcut from "../../breakEmu_World/manager/shortcut/character/characterSpellShortcut"
 import SkillManager from "../../breakEmu_World/manager/skills/SkillManager"
+import CharacterSpell from "../../breakEmu_World/manager/spell/CharacterSpell"
 import Account from "./account.model"
+import Achievement from "./achievement.model"
 import Breed from "./breed.model"
 import Experience from "./experience.model"
 import Finishmoves from "./finishmoves.model"
@@ -69,8 +73,6 @@ import Job from "./job.model"
 import GameMap from "./map.model"
 import Skill from "./skill.model"
 import Spell from "./spell.model"
-import Achievement from "./achievement.model"
-import AchievementManager from "../../breakEmu_World/manager/achievement/AchievementManager"
 
 class Character extends Entity {
 	point: MapPoint
@@ -120,8 +122,8 @@ class Character extends Entity {
 
 	finishedAchievements: number[] = []
 	almostFinishedAchievements: number[] = []
-  finishedAchievementObjectives: number[] = []
-  untakenAchievementsReward: number[] = []
+	finishedAchievementObjectives: number[] = []
+	untakenAchievementsReward: number[] = []
 
 	context: GameContextEnum | undefined = undefined
 	inventory: Inventory
@@ -160,15 +162,17 @@ class Character extends Entity {
 		knownEmotes: number[],
 		shortcuts: Map<number, CharacterShortcut>,
 		knownOrnaments: number[],
+		knownTitles: number[],
 		activeOrnament: number,
+		activeTitle: number,
 		jobs: Map<number, Job>,
 		finishMoves: Map<number, Finishmoves>,
 		map: GameMap | null,
 		stats: EntityStats,
-    finishedAchievements: number[],
-    almostFinishedAchievements: number[],
-    finishedAchievementObjectives: number[],
-    untakenAchievementsReward: number[]
+		finishedAchievements: number[],
+		almostFinishedAchievements: number[],
+		finishedAchievementObjectives: number[],
+		untakenAchievementsReward: number[]
 	) {
 		super(map)
 		this.id = id
@@ -193,13 +197,15 @@ class Character extends Entity {
 		this.generalShortcutBar = new GeneralShortcutBar(this)
 		this.knownOrnaments = knownOrnaments
 		this.activeOrnament = activeOrnament
+		this.knownTitles = knownTitles
+		this.activeTitle = activeTitle
 		this.jobs = jobs
 		this.finishmoves = finishMoves
-		this.skillsAllowed = SkillManager.getInstance().getAllowedSkills(this),
-    this.finishedAchievements = finishedAchievements,
-    this.almostFinishedAchievements = almostFinishedAchievements,
-    this.finishedAchievementObjectives = finishedAchievementObjectives
-    this.untakenAchievementsReward = untakenAchievementsReward
+		;(this.skillsAllowed = SkillManager.getInstance().getAllowedSkills(this)),
+			(this.finishedAchievements = finishedAchievements),
+			(this.almostFinishedAchievements = almostFinishedAchievements),
+			(this.finishedAchievementObjectives = finishedAchievementObjectives)
+		this.untakenAchievementsReward = untakenAchievementsReward
 	}
 
 	static async create(
@@ -235,15 +241,17 @@ class Character extends Entity {
 			[1],
 			new Map<number, CharacterShortcut>(),
 			[],
+			[],
+			0,
 			0,
 			Job.new(),
 			finishmoves,
 			GameMap.getMapById(mapId) as GameMap,
 			stats,
-      [],
-      [],
-      [],
-      []
+			[],
+			[],
+			[],
+			[]
 		)
 		character.inventory = new Inventory(character)
 
@@ -350,7 +358,7 @@ class Character extends Entity {
 			this.direction
 		)
 
-		const humaneInfo = new HumanInformations(
+		const humanInfo = new HumanInformations(
 			this.getActorRestrictions(),
 			this.sex,
 			Array.from(this.humanOptions.values())
@@ -361,7 +369,7 @@ class Character extends Entity {
 			entityDisposition,
 			this.look.toEntityLook(),
 			this.name,
-			humaneInfo,
+			humanInfo,
 			this.accountId,
 			this.getActorAlignementInformations()
 		)
@@ -400,11 +408,20 @@ class Character extends Entity {
 	public createHumanOptions() {
 		this.humanOptions.set(1, new HumanOptionFollowers([]))
 
-		this.humanOptions.set(2, new HumanOptionOrnament(128, this.level, 0, 2))
-
-		// if (this.activeTitle > 0) {
-		// 	this.humanOptions.set(3, new HumanOptionTitle(335, ""))
-		// }
+		if (this.activeOrnament !== 0) {
+			this.humanOptions.set(
+				2,
+				new HumanOptionOrnament(this.activeOrnament, this.level, 0, 0)
+			)
+		}
+		if (this.activeTitle !== 0) {
+			this.humanOptions.set(
+				3,
+				new HumanOptionTitle(this.activeTitle, "MODERATOR")
+			)
+		} else {
+			this.humanOptions.set(3, new HumanOptionTitle(0, "MODERATOR"))
+		}
 
 		if (this.guildId !== null) {
 			// this.humanOptions.set(3, new HumanOptionGuild(this.activeTitle, ""))
@@ -472,6 +489,43 @@ class Character extends Entity {
 		}
 	}
 
+	public async resendUnTakenRewardAchievements() {
+		try {
+			if (this.untakenAchievementsReward.length === 0) return
+			for (const achiev of this.untakenAchievementsReward) {
+				if (achiev === 0) continue
+				const achievement = AchievementManager.getInstance().getAchievementById(
+					achiev
+				)
+				if (achievement) {
+					console.log("Resending untaken reward achievement", achievement)
+					await AchievementHandler.handleSendAchievementFinishedMessage(
+						this,
+						achievement
+					)
+				}
+			}
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	public getFinishedAchievementsByCategory(categoryId: number): Achievement[] {
+		let achievements: Achievement[] = []
+		this.finishedAchievements.filter((achievement) => {
+			const ach = AchievementManager.getInstance().getAchievementById(
+				achievement
+			)
+			if (ach) {
+				if (ach.categoryId === categoryId) {
+					achievements.push(ach)
+				}
+			}
+		})
+
+		return achievements
+	}
+
 	public async refreshInventory() {
 		try {
 			await this.inventory.refresh()
@@ -482,16 +536,28 @@ class Character extends Entity {
 
 	public async refreshAll() {
 		try {
-			await this.refreshJobs()
-			await this.refreshSpells()
-			await this.refreshGuild()
-			await this.refreshEmotes()
-			await this.refreshZaaps()
-			await this.refreshInventory()
-			await this.refreshShortcuts()
+			// Utilisation de Promise.allSettled pour exécuter les méthodes en parallèle et gérer les résultats
+			const results = await Promise.allSettled([
+				this.refreshJobs(),
+				this.refreshSpells(),
+				this.refreshGuild(),
+				this.refreshEmotes(),
+				this.refreshZaaps(),
+				this.refreshInventory(),
+				this.refreshShortcuts(),
+			])
+
+			// Gestion des résultats de Promise.allSettled
+			results.forEach((result, index) => {
+				if (result.status === "rejected") {
+					console.error(`Promise ${index + 1} rejected:`, result.reason)
+				}
+			})
+
+			// Les méthodes suivantes doivent être exécutées séquentiellement après les méthodes de refresh
 			this.createHumanOptions()
 			await this.sendServerExperienceModificator()
-			await this?.onCharacterLoadingComplete()
+			await this.onCharacterLoadingComplete()
 		} catch (error) {
 			console.log(error)
 		}
@@ -705,20 +771,18 @@ class Character extends Entity {
 				[]
 			)
 			await this?.client?.Send(new AlmanachCalendarDateMessage(1))
+			// await AchievementHandler.handleAchievementListMessage(this.client)
+			// await this.resendUnTakenRewardAchievements()
 		} catch (error) {
 			console.log(error)
 		}
 	}
 
 	public async destroyContext() {
-		try {
-			await this?.client?.Send(new GameContextDestroyMessage())
-			await this.map?.instance.removeEntity(this)
-			await CharacterController.getInstance().updateCharacter(this)
-			this.context = undefined
-		} catch (error) {
-			console.log(error)
-		}
+		console.log("Destroying context")
+		await CharacterController.getInstance().updateCharacter(this)
+		await this.map?.instance.removeEntity(this)
+		// await this?.client?.Send(new GameContextDestroyMessage())
 	}
 
 	public async sendServerExperienceModificator() {
@@ -743,8 +807,8 @@ class Character extends Entity {
 		return value
 	}
 
-	public replyWarning(value: any): void {
-		this.reply(`<br>${value}`, "ED7F10", false, false)
+	public async replyWarning(value: any): Promise<void> {
+		await this.reply(`<br>${value}`, "ED7F10", false, false)
 	}
 
 	public async replyError(value: any): Promise<void> {
@@ -765,7 +829,7 @@ class Character extends Entity {
 		try {
 			value = this.applyPolice(value, bold, underline)
 
-			await this?.client?.Send(
+			await this.client?.Send(
 				new TextInformationMessage(0, 0, [
 					`<font color="#${color}" size="${size}px">${value}</font>`,
 				])
@@ -777,9 +841,9 @@ class Character extends Entity {
 
 	public async refreshStats() {
 		try {
-			await this?.client?.Send(
+			await this.client?.Send(
 				new CharacterStatsListMessage(
-					this?.stats?.getCharacterCharacteristicInformations(this)
+					this.stats.getCharacterCharacteristicInformations(this)
 				)
 			)
 		} catch (error) {
@@ -820,6 +884,32 @@ class Character extends Entity {
 		} catch (error) {
 			console.log(error)
 		}
+	}
+
+	public async addEmote(emoteId: number) {
+		if (this.knownEmotes.includes(emoteId)) return
+
+		this.knownEmotes.push(emoteId)
+		await ContextHandler.handleNewEmote(this.client, emoteId)
+	}
+
+	public async addTitle(titleId: number) {
+		if (this.knownTitles.includes(titleId)) return
+
+		this.knownTitles.push(titleId)
+		await ContextHandler.handleNewTitle(this.client, titleId)
+	}
+
+	public async addOrnament(ornamentId: number) {
+		if (this.knownOrnaments.includes(ornamentId)) return
+
+		this.knownOrnaments.push(ornamentId)
+		await ContextHandler.handleNewOrnament(this.client, ornamentId)
+	}
+
+	public async equipeOrnament(ornamentId: number) {
+		this.activeOrnament = ornamentId
+		await this.refreshStats()
 	}
 
 	public async OnLevelChanged(currentLevel: number, difference: number) {
@@ -963,11 +1053,7 @@ class Character extends Entity {
 	}
 
 	public async disconnect() {
-		try {
-			await this.destroyContext()
-		} catch (error) {
-			console.log(error)
-		}
+		await this.destroyContext()
 	}
 
 	public static loadShortcutsFromJson(

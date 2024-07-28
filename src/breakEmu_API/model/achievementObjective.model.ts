@@ -1,4 +1,9 @@
-import { AchievementStartedObjective } from "../../breakEmu_Server/IO"
+import {
+  AchievementStartedObjective,
+  AchievementObjective as AchievementObjec,
+
+
+ } from "../../breakEmu_Server/IO"
 
 class AchievementObjective {
 	id: number
@@ -14,6 +19,10 @@ class AchievementObjective {
 	toAchievementStartedObjectiveMessage() {
 		return new AchievementStartedObjective(this.id, 1, 0)
 	}
+
+  toAchievementObjective() {
+    return new AchievementObjec(this.id, 1)
+  }
 }
 
 export default AchievementObjective

@@ -1,8 +1,6 @@
-import InteractiveElementModel from "../../breakEmu_API/model/InteractiveElement.model"
 import Logger from "../Logger"
 import Task from "./Task"
 import BonusTask from "./tasks/BonusTask"
-import InteractiveElementBonus from "./tasks/BonusTask"
 import SaveTask from "./tasks/SaveTask"
 
 class TaskManager {
@@ -25,8 +23,17 @@ class TaskManager {
 	}
 
 	elementBonusHandler(): void {
-    console.log("Initialisation de la tâche BonusTask...")
+		console.log("Initialisation de la tâche BonusTask...")
 		BonusTask.init()
+	}
+
+	stopAllTasks(): void {
+		console.log("Arrêt de toutes les tâches...")
+		BonusTask.getQueue().close()
+
+		if (this.saveTask) {
+			this.saveTask.stop()
+		}
 	}
 }
 

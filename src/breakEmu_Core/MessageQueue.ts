@@ -50,7 +50,8 @@ class MessageQueue {
 			if (item) {
 				try {
 					const isMessageSend = item.client.socket.write(
-						item.client.serialize(item.message),
+            //@ts-ignore
+						item.client.serialize(item.message as DofusMessage),
 						(error) => {
 							if (error) {
 								this.logger.writeAsync(

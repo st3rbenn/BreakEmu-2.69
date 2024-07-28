@@ -62,7 +62,7 @@ class CommandHandler {
 		this.registerCommandHandlers(JobCommandHandler.commandHandler)
 		this.registerCommandHandlers(WarpCommandHandler.commandHandler)
 		this.registerCommandHandlers(PlayerCommandHandler.commandHandler)
-    this.registerCommandHandlers(BankCommandHandler.commandHandler)
+		this.registerCommandHandlers(BankCommandHandler.commandHandler)
 		this.registerCommandHandlers(GuildCommandHandler.commandHandler)
 		this.registerCommandHandlers(UtilsCommandHandler.commandHandler)
 		this.registerCommandHandlers(ModeratorCommandHandler.commandHandler)
@@ -113,7 +113,7 @@ class CommandHandler {
 		}
 
 		if (subArgs.length - 1 < handler.nbRequiredArgs) {
-			character.replyWarning(
+			await character.replyWarning(
 				`Not enough arguments. <br>${handler.requiredArgs?.join(
 					", "
 				)} required.`
@@ -135,12 +135,14 @@ class CommandHandler {
 		const command = this.commandHandlers[commandName]
 
 		if (!command) {
-			character.replyError("Unknown command.")
+			await character.replyError("Unknown command.")
 			return
 		}
 
 		if (!command.neededRole.includes(character?.account?.role as number)) {
-			character.replyWarning("You don't have the right to use this command.")
+			await character.replyWarning(
+				"You don't have the right to use this command."
+			)
 			return
 		}
 
@@ -150,7 +152,7 @@ class CommandHandler {
 		}
 
 		if (args.length < command.nbRequiredArgs) {
-			character.replyWarning("Not enough arguments.")
+			await character.replyWarning("Not enough arguments.")
 			return
 		}
 

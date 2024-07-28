@@ -25676,7 +25676,7 @@ export interface RawGameActionFightInvisibleDetectedMessage
 }
 
 export class GameActionFightInvisibleDetectedMessage extends AbstractGameActionMessage {
-	public static id = 4737
+	public static id = 4730
 
 	public targetId: number | undefined = 0
 	public cellId: number | undefined = 0
@@ -34752,7 +34752,7 @@ export interface RawOrnamentGainedMessage {
 }
 
 export class OrnamentGainedMessage extends DofusMessage {
-	public static id: number = 7295
+	public static id: number = 3437
 
 	public ornamentId: number | undefined = 0
 
@@ -37980,7 +37980,7 @@ export interface RawTitleGainedMessage {
 }
 
 export class TitleGainedMessage extends DofusMessage {
-	public static id: number = 6677
+	public static id: number = 3189
 
 	public titleId: number | undefined = 0
 
@@ -43834,7 +43834,7 @@ export interface RawEmoteAddMessage {
 }
 
 export class EmoteAddMessage extends DofusMessage {
-	public static id: number = 8673
+	public static id: number = 5327
 
 	public emoteId: number | undefined = 0
 
@@ -46275,7 +46275,7 @@ export interface RawTitlesAndOrnamentsListMessage {
 }
 
 export class TitlesAndOrnamentsListMessage extends DofusMessage {
-	public static id: number = 1979
+	public static id: number = 4737
 
 	public titles: number[] | undefined
 	public ornaments: number[] | undefined
@@ -48690,7 +48690,7 @@ export interface RawAchievementRewardErrorMessage {
 }
 
 export class AchievementRewardErrorMessage extends DofusMessage {
-	public static id: number = 5517
+	public static id: number = 8876
 
 	public achievementId: number | undefined = 0
 
@@ -54350,7 +54350,7 @@ export interface RawAchievementRewardSuccessMessage {
 }
 
 export class AchievementRewardSuccessMessage extends DofusMessage {
-	public static id: number = 5062
+	public static id: number = 3454
 
 	public achievementId: number | undefined = 0
 
@@ -58625,7 +58625,7 @@ export interface RawTitleSelectedMessage {
 }
 
 export class TitleSelectedMessage extends DofusMessage {
-	public static id: number = 9932
+	public static id: number = 2229
 
 	public titleId: number | undefined = 0
 
@@ -58742,7 +58742,7 @@ export interface RawOrnamentSelectedMessage {
 }
 
 export class OrnamentSelectedMessage extends DofusMessage {
-	public static id: number = 8881
+	public static id: number = 50
 
 	public ornamentId: number | undefined = 0
 
@@ -67092,7 +67092,7 @@ export interface RawAchievementRewardRequestMessage {
 }
 
 export class AchievementRewardRequestMessage extends DofusMessage {
-	public static id: number = 4816
+	public static id: number = 795
 
 	public achievementId: number | undefined = 0
 
@@ -69865,7 +69865,7 @@ export interface RawOrnamentSelectRequestMessage {
 }
 
 export class OrnamentSelectRequestMessage extends DofusMessage {
-	public static id: number = 3929
+	public static id: number = 445
 
 	public ornamentId: number | undefined = 0
 
@@ -69900,7 +69900,7 @@ export interface RawTitlesAndOrnamentsListRequestMessage {
 }
 
 export class TitlesAndOrnamentsListRequestMessage extends DofusMessage {
-	public static id: number = 5637
+	public static id: number = 9416
 
 	// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
 	public serialize(writer: BinaryWriter): void {}
@@ -69925,7 +69925,7 @@ export interface RawTitleSelectRequestMessage {
 }
 
 export class TitleSelectRequestMessage extends DofusMessage {
-	public static id: number = 8478
+	public static id: number = 9079
 
 	public titleId: number | undefined = 0
 
@@ -73812,7 +73812,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	9967: AllianceRanksMessage,
 	6413: GameActionFightModifyEffectsDurationMessage,
 	9063: GameActionFightTeleportOnSameMapMessage,
-	4737: GameActionFightInvisibleDetectedMessage,
+	4730: GameActionFightInvisibleDetectedMessage,
 	9184: GameActionFightDispellSpellMessage,
 	9365: GameFightTurnListMessage,
 	5574: GameActionFightChangeLookMessage,
@@ -73990,7 +73990,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	1883: SocialNoticeMessage,
 	3713: GameRolePlaySpellAnimMessage,
 	918: EmotePlayAbstractMessage,
-	7295: OrnamentGainedMessage,
+	3437: OrnamentGainedMessage,
 	4688: ExchangeBidHouseUnsoldItemsMessage,
 	418: ExchangeShopStockMovementRemovedMessage,
 	1593: IdolSelectErrorMessage,
@@ -74057,7 +74057,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	3995: TaxCollectorMovementsOfflineMessage,
 	2752: UpdateLifePointsMessage,
 	3729: ReloginTokenStatusMessage,
-	6677: TitleGainedMessage,
+	3189: TitleGainedMessage,
 	6852: InventoryContentMessage,
 	714: StorageInventoryContentMessage,
 	1200: ExchangeShopStockMultiMovementRemovedMessage,
@@ -74177,7 +74177,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	1475: TreasureHuntDigRequestAnswerMessage,
 	9892: TreasureHuntDigRequestAnswerFailedMessage,
 	7003: GameEntityDispositionErrorMessage,
-	8673: EmoteAddMessage,
+	5327: EmoteAddMessage,
 	3362: GuildMotdMessage,
 	3269: PartyLeaderUpdateMessage,
 	5509: ChatServerMessage,
@@ -74224,7 +74224,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	1800: AcquaintanceServerListMessage,
 	8304: DungeonPartyFinderRegisterErrorMessage,
 	8072: EmoteListMessage,
-	1979: TitlesAndOrnamentsListMessage,
+	4737: TitlesAndOrnamentsListMessage,
 	2667: HaapiConfirmationMessage,
 	4624: PrismsInfoValidMessage,
 	2889: InviteInHavenBagOfferMessage,
@@ -74278,7 +74278,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	9985: MailStatusMessage,
 	2732: NewMailMessage,
 	9127: MountEquipedErrorMessage,
-	5517: AchievementRewardErrorMessage,
+	8876: AchievementRewardErrorMessage,
 	3637: ChallengeFightJoinRefusedMessage,
 	7590: GuildMemberLeavingMessage,
 	1271: ForgettableSpellEquipmentSlotsMessage,
@@ -74402,7 +74402,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	4098: GameFightPlacementPossiblePositionsMessage,
 	7442: CharacterSelectedErrorMessage,
 	7982: AccountLinkRequiredMessage,
-	5062: AchievementRewardSuccessMessage,
+	3454: AchievementRewardSuccessMessage,
 	9270: MigratedServerListMessage,
 	5095: CompassResetMessage,
 	5956: ExchangeObjectRemovedFromBagMessage,
@@ -74493,10 +74493,10 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	1920: ForgettableSpellDeleteMessage,
 	5410: DebtsDeleteMessage,
 	4882: ExchangeCraftResultMagicWithObjectDescMessage,
-	9932: TitleSelectedMessage,
+	2229: TitleSelectedMessage,
 	7030: AbstractGameActionWithAckMessage,
 	8459: ExchangeBidHouseItemRemoveOkMessage,
-	8881: OrnamentSelectedMessage,
+	50: OrnamentSelectedMessage,
 	5460: AllianceBulletinMessage,
 	4399: ObjectAveragePricesErrorMessage,
 	2959: PresetUseResultWithMissingIdsMessage,
@@ -74708,7 +74708,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	7112: QuestListRequestMessage,
 	2214: QuestStepInfoRequestMessage,
 	2378: FollowQuestObjectiveRequestMessage,
-	4816: AchievementRewardRequestMessage,
+	795: AchievementRewardRequestMessage,
 	534: NotificationUpdateFlagMessage,
 	6610: QuestObjectiveValidationMessage,
 	5403: AchievementDetailsRequestMessage,
@@ -74785,9 +74785,9 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	3504: HouseBuyRequestMessage,
 	6173: HouseSellFromInsideRequestMessage,
 	1431: HouseGuildRightsViewMessage,
-	3929: OrnamentSelectRequestMessage,
-	5637: TitlesAndOrnamentsListRequestMessage,
-	8478: TitleSelectRequestMessage,
+	445: OrnamentSelectRequestMessage,
+	9416: TitlesAndOrnamentsListRequestMessage,
+	9079: TitleSelectRequestMessage,
 	8718: PresetDeleteRequestMessage,
 	8030: ObjectUseMessage,
 	1737: ObjectUseMultipleMessage,

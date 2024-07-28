@@ -300,9 +300,6 @@ class EntityStats {
 			0
 		)
 
-		console.log("energy point", stats._energy)
-		console.log("max energy point", stats._maxEnergyPoints)
-
 		commonCharacteristics.forEach((charEnum) => {
 			stats.setCharacteristic(charEnum, Characteristic.zero())
 		})

@@ -239,6 +239,20 @@ class Inventory extends ItemCollection<CharacterItem> {
 		}
 	}
 
+  public async addKamas(kamas: number) {
+    try {
+      if (this.character.kamas + kamas > this.maxKamas) {
+        this.character.kamas = this.maxKamas
+      } else {
+        this.character.kamas += kamas
+      }
+
+      await this.refreshKamas()
+    } catch (error) {
+      this.logger.write(error as any)
+    }
+  }
+
 	public async addNewItem(
 		gid: number,
 		quantity: number = 1,

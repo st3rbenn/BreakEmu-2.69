@@ -62,6 +62,11 @@ model character {
   almostFinishedAchievements    Json?
   finishedAchievementObjectives Json?
   untakenAchievementsReward     Json?
+  knownEmotes                   Json?
+  knownTitles                   Json?
+  knownOrnaments                Json?
+  activeTitle                   Int?
+  activeOrnament                Int?
   created_at                    DateTime        @default(now())
   updated_at                    DateTime        @updatedAt
   deleted_at                    DateTime?

@@ -27,7 +27,6 @@ class CharacterController {
 
 	public static getInstance(): CharacterController {
 		if (!this._instance) {
-			console.log("Creating new instance of CharacterController")
 			this._instance = new CharacterController()
 		}
 
@@ -65,21 +64,50 @@ class CharacterController {
 					c.direction,
 					c.kamas,
 					c.statsPoints,
-					[],
+					c.knownEmotes
+						?.toString()
+						.split(",")
+						.map(Number)
+						.filter((id) => id !== 0) || [],
 					new Map<number, CharacterShortcut>(),
-					[],
-					0,
+					c.knownOrnaments
+						?.toString()
+						.split(",")
+						.map(Number)
+						.filter((id) => id !== 0) || [],
+					c.knownTitles
+						?.toString()
+						.split(",")
+						.map(Number)
+						.filter((id) => id !== 0) || [],
+					c.activeOrnament as number,
+					c.activeTitle as number,
 					Job.loadFromJson(JSON.parse(c.jobs?.toString() as string)),
 					Finishmoves.loadFromJson(
 						JSON.parse(c.finishMoves?.toString() as string)
 					),
 					GameMap.getMapById(Number(c.mapId)) as GameMap,
 					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string)),
-					c.finishedAchievements?.toString().split(",").map(Number) || [],
-					c.almostFinishedAchievements?.toString().split(",").map(Number) || [],
-					c.finishedAchievementObjectives?.toString().split(",").map(Number) ||
-						[],
-					c.untakenAchievementsReward?.toString().split(",").map(Number) || []
+					c.finishedAchievements
+						?.toString()
+						.split(",")
+						.map(Number)
+						.filter((id) => id !== 0) || [],
+					c.almostFinishedAchievements
+						?.toString()
+						.split(",")
+						.map(Number)
+						.filter((id) => id !== 0) || [],
+					c.finishedAchievementObjectives
+						?.toString()
+						.split(",")
+						.map(Number)
+						.filter((id) => id !== 0) || [],
+					c.untakenAchievementsReward
+						?.toString()
+						.split(",")
+						.map(Number)
+						.filter((id) => id !== 0) || []
 				)
 
 				character.spawnMapId = c.spawnMapId
@@ -169,9 +197,9 @@ class CharacterController {
 
 			let jobs: Job[] = []
 
-			// Job.new().forEach((job) => {
-			// 	jobs.push(job)
-			// })
+			Job.new().forEach((job) => {
+				jobs.push(job)
+			})
 
 			const stats = EntityStats.new(startLevel.level)
 			stats.saveAsJSON()
@@ -252,6 +280,7 @@ class CharacterController {
 
 	public async updateCharacter(character: Character) {
 		try {
+			this._logger.write(`Updating character ${character.name}`)
 			const jobs: Job[] = []
 
 			character?.jobs.forEach((job) => {
@@ -281,10 +310,16 @@ class CharacterController {
 					knownZaaps: character.saveKnownZaapsAsJSON(),
 					spawnMapId: character.spawnMapId,
 					spawnCellId: character.spawnCellId,
-          finishedAchievements: character.finishedAchievements,
-          almostFinishedAchievements: character.almostFinishedAchievements,
-          finishedAchievementObjectives: character.finishedAchievementObjectives,
-          untakenAchievementsReward: character.untakenAchievementsReward
+					finishedAchievements: character.finishedAchievements,
+					almostFinishedAchievements: character.almostFinishedAchievements,
+					finishedAchievementObjectives:
+						character.finishedAchievementObjectives,
+					untakenAchievementsReward: character.untakenAchievementsReward,
+					knownEmotes: character.knownEmotes,
+					knownTitles: character.knownTitles,
+					knownOrnaments: character.knownOrnaments,
+					activeOrnament: character.activeOrnament,
+					activeTitle: character.activeTitle,
 				},
 			})
 		} catch (error) {

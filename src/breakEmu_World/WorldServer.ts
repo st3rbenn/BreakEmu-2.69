@@ -39,10 +39,15 @@ class WorldServer {
 		const server = createServer(
 			async (socket) => await this.handleConnection(socket)
 		)
-		server.listen({
-			port: this.worldServerData.Port,
-			host: this.worldServerData.Address,
-		})
+
+		server.listen(
+			{ port: this.worldServerData.Port, host: this.worldServerData.Address },
+			() => {
+				this.logger.write(
+					`Server listening on ${this.worldServerData.Address}:${this.worldServerData.Port}`
+				)
+			}
+		)
 
 		this._server = server
 		this.SERVER_STATE = ServerStatusEnum.ONLINE
@@ -60,17 +65,14 @@ class WorldServer {
 		)
 
 		TaskManager.getInstance().saveTaskHandler().setCron("*/5 * * * *").run()
-
 		TaskManager.getInstance().elementBonusHandler()
 	}
 
 	private async saveAllCharacters(): Promise<void> {
-		await this.logger.writeAsync(`Saving all characters...`)
+		this.logger.write(`Saving all characters...`)
 		for (const client of this.clients.values()) {
 			if (client?.selectedCharacter) {
-				await this.logger.writeAsync(
-					`Saving character ${client.selectedCharacter.name}`
-				)
+				this.logger.write(`Saving character ${client.selectedCharacter.name}`)
 				await CharacterController.getInstance().updateCharacter(
 					client.selectedCharacter
 				)
@@ -83,25 +85,30 @@ class WorldServer {
 	}
 
 	public async Stop(): Promise<void> {
-		this.logger.write(`Stoping server ${this.worldServerData.Name}`)
+		this.logger.write(`Stopping server ${this.worldServerData.Name}`)
 		this.SERVER_STATE = ServerStatusEnum.STOPING
 		this._server?.close(() => {
 			this.SERVER_STATE = ServerStatusEnum.OFFLINE
 		})
-		WorldTransition.getInstance().handleServerStatusUpdate(
-			World.worlds[0].toWorldServerData().Id,
+
+		await WorldTransition.getInstance().handleServerStatusUpdate(
+			this.worldServerData.Id,
 			ServerStatusEnum.OFFLINE.toString()
 		)
+
+		// Stop scheduled tasks
+		TaskManager.getInstance().stopAllTasks()
 	}
 
 	private async handleConnection(socket: Socket): Promise<void> {
-		await this.logger.writeAsync(`New connection from ${socket.remoteAddress}`)
+		this.logger.write(`New connection from ${socket.remoteAddress}`)
 		const worldClient = await WorldTransition.getInstance().handleAccountTransition(
 			socket
 		)
 
 		if (!worldClient) {
-			await this.logger.writeAsync(`Account not found`, ansiColorCodes.red)
+			this.logger.write(`Account not found`, ansiColorCodes.red)
+			socket.end()
 			return
 		}
 		this.AddClient(worldClient)
@@ -111,26 +118,32 @@ class WorldServer {
 		await client.initialize()
 		client.setupEventHandlers()
 
-		this.clients.set(client?.account?.id as number, client)
-		await this.logger.writeAsync(
+		this.clients.set(client.account.id as number, client)
+		this.logger.write(
 			`Client ${client.Socket.remoteAddress}:${client.Socket.remotePort} connected`
 		)
 	}
 
 	public async removeClient(client: WorldClient): Promise<void> {
-		await client.selectedCharacter?.disconnect()
-		await this.logger.writeAsync(
-			`Client ${client.account?.pseudo} disconnected`,
-			ansiColorCodes.red
-		)
-		this.clients.delete(client?.account?.id as number)
+		try {
+      if(client.selectedCharacter) {
+        client.selectedCharacter.disconnect()
+      }
+			this.logger.write(
+				`Client ${client.account?.pseudo} disconnected`,
+				ansiColorCodes.red
+			)
+			this.clients.delete(client.account.id as number)
+		} catch (error) {
+			this.logger.write(
+				`Error while removing client: ${error}`,
+				ansiColorCodes.red
+			)
+		}
 	}
 
-	public TotalConnectedClients(): number {
-		this.logger.write(
-			`Total connected clients: ${this.TotalConnectedClients()}`
-		)
-		return this.clients.size
+	public TotalConnectedClients(): void {
+		this.logger.write(`Total connected clients: ${this.clients.size}`)
 	}
 }
 

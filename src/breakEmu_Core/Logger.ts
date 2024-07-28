@@ -41,6 +41,10 @@ class Logger {
 		}
 	}
 
+  public info(msg: string): void {
+    this.logger.info(this.Colorize(msg, ansiColorCodes.orange))
+  }
+
 	private async supressLoggerLevel(msg: string, color?: string): Promise<void> {
 		this.write(`\r\x1b[K${msg}`, color) // Assuming this.write is your existing synchronous method
 	}
