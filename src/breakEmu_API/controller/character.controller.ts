@@ -64,22 +64,10 @@ class CharacterController {
 					c.direction,
 					c.kamas,
 					c.statsPoints,
-					c.knownEmotes
-						?.toString()
-						.split(",")
-						.map(Number)
-						.filter((id) => id !== 0) || [],
+					c.knownEmotes?.toString().split(",").map(Number) || [],
 					new Map<number, CharacterShortcut>(),
-					c.knownOrnaments
-						?.toString()
-						.split(",")
-						.map(Number)
-						.filter((id) => id !== 0) || [],
-					c.knownTitles
-						?.toString()
-						.split(",")
-						.map(Number)
-						.filter((id) => id !== 0) || [],
+					c.knownOrnaments?.toString().split(",").map(Number) || [],
+					c.knownTitles?.toString().split(",").map(Number) || [],
 					c.activeOrnament as number,
 					c.activeTitle as number,
 					Job.loadFromJson(JSON.parse(c.jobs?.toString() as string)),
@@ -88,26 +76,11 @@ class CharacterController {
 					),
 					GameMap.getMapById(Number(c.mapId)) as GameMap,
 					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string)),
-					c.finishedAchievements
-						?.toString()
-						.split(",")
-						.map(Number)
-						.filter((id) => id !== 0) || [],
-					c.almostFinishedAchievements
-						?.toString()
-						.split(",")
-						.map(Number)
-						.filter((id) => id !== 0) || [],
-					c.finishedAchievementObjectives
-						?.toString()
-						.split(",")
-						.map(Number)
-						.filter((id) => id !== 0) || [],
-					c.untakenAchievementsReward
-						?.toString()
-						.split(",")
-						.map(Number)
-						.filter((id) => id !== 0) || []
+					c.finishedAchievements?.toString().split(",").map(Number) || [],
+					c.almostFinishedAchievements?.toString().split(",").map(Number) || [],
+					c.finishedAchievementObjectives?.toString().split(",").map(Number) ||
+						[],
+					c.untakenAchievementsReward?.toString().split(",").map(Number) || []
 				)
 
 				character.spawnMapId = c.spawnMapId

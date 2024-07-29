@@ -136,11 +136,7 @@ class MapInstance {
 
 			const statedElements = this.getStatedElements()
 
-			// console.log("interactiveElements", interactiveElements)
-			// console.log("statedElements", statedElements)
-
 			const houses: HouseInformations[] = []
-			const obstacles: MapObstacle[] = []
 			const fightCommonInformations: FightCommonInformations[] = []
 
 			const mapComplementary = new MapComplementaryInformationsDataMessage(

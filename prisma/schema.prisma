@@ -328,14 +328,15 @@ model interactiveSkill {
 }
 
 model subArea {
-  id                  Int    @id
-  name                String @db.Text
-  areaId              Int
-  level               Int
-  monsterIds          String @db.Text
-  questsIds           String @db.Text
-  npcIds              String @db.Text
-  associatedZaapMapId Int
+  id                       Int    @id
+  name                     String @db.Text
+  areaId                   Int
+  level                    Int
+  explorationAchievementId Int?
+  monsterIds               String @db.Text
+  questsIds                String @db.Text
+  npcIds                   String @db.Text
+  associatedZaapMapId      Int
 }
 
 model monsterSpawn {

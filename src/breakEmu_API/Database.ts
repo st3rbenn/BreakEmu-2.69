@@ -28,6 +28,7 @@ import Skill from "./model/skill.model"
 import Spell from "./model/spell.model"
 import SpellLevel from "./model/spellLevel.model"
 import World from "./model/world.model"
+import SubArea from "./model/SubArea.model"
 
 interface test {
 	id: number
@@ -173,23 +174,24 @@ class Database {
 
 	public async loadAll(): Promise<void> {
 		try {
-			await Promise.all([
-				this.loadWorlds(),
-				this.loadHeads(),
-				this.loadBreeds(),
-				this.loadExperiences(),
-				this.loadSkills(),
-				this.loadSpells(),
-				this.loadFinishMoves(),
-				this.loadItems(),
-				this.loadItemSets(),
-				this.loadAchievements(),
-				this.loadMapScrollActions(),
-				this.loadInteractiveElements(),
-				this.loadMaps(),
-			])
+			await this.loadAchievements(),
+				await Promise.all([
+					this.loadWorlds(),
+					this.loadHeads(),
+					this.loadBreeds(),
+					this.loadExperiences(),
+					this.loadSkills(),
+					this.loadSpells(),
+					this.loadFinishMoves(),
+					this.loadAchievementObjectives(),
+					this.loadSubAreas(),
+					this.loadItems(),
+					this.loadItemSets(),
+					this.loadMapScrollActions(),
+					this.loadInteractiveElements(),
+				])
 
-			await Promise.resolve()
+			await this.loadMaps(), await Promise.resolve()
 		} catch (error) {
 			await this.logger.writeAsync(
 				`Error loading all: ${(error as any).stack}`,
@@ -717,7 +719,14 @@ class Database {
 			}
 			objectivesMap
 				.get(obj.achievementId)!
-				.push(new AchievementObjective(obj.id, obj.order, obj.criterion))
+				.push(
+					new AchievementObjective(
+						obj.id,
+						obj.order,
+						obj.achievementId,
+						obj.criterion
+					)
+				)
 		}
 
 		for (const rew of allRewards) {
@@ -774,6 +783,35 @@ class Database {
 		await this.logger.writeAsync(
 			`Loaded ${AchievementManager.achievements.size} achievements`
 		)
+	}
+
+	async loadSubAreas(): Promise<void> {
+		try {
+			const subAreas = await this.prisma.subArea.findMany()
+
+			for (const subArea of subAreas) {
+				const subAreaRecord = new SubArea(
+					subArea.id,
+					subArea.name,
+					subArea.areaId,
+					subArea.level,
+					subArea.monsterIds.split(",").map(Number),
+					subArea.questsIds.split(",").map(Number),
+					subArea.npcIds.split(",").map(Number),
+					subArea.associatedZaapMapId,
+					subArea.explorationAchievementId
+				)
+
+				SubArea.subAreas.set(subArea.id, subAreaRecord)
+			}
+
+			await this.logger.writeAsync(`Loaded ${SubArea.subAreas.size} subareas`)
+		} catch (error) {
+			await this.logger.writeAsync(
+				`Error loading subareas: ${(error as any).stack}`,
+				ansiColorCodes.red
+			)
+		}
 	}
 
 	async loadMaps(): Promise<void> {
@@ -861,6 +899,34 @@ class Database {
 		}
 
 		await this.logger.writeAsync(`Loaded ${GameMap.maps.size} maps`)
+	}
+
+	async loadAchievementObjectives(): Promise<void> {
+		try {
+			const objectives = await this.prisma.achievementObjective.findMany()
+
+			for (const obj of objectives) {
+				const achievementObjective = new AchievementObjective(
+					obj.id,
+					obj.order,
+					obj.achievementId,
+					obj.criterion
+				)
+				AchievementManager.achievementObjectives.set(
+					obj.id,
+					achievementObjective
+				)
+			}
+
+			await this.logger.writeAsync(
+				`Loaded ${AchievementManager.achievementObjectives.size} achievement objectives`
+			)
+		} catch (error) {
+			await this.logger.writeAsync(
+				`Error loading achievement objectives: ${(error as any).stack}`,
+				ansiColorCodes.red
+			)
+		}
 	}
 }
 

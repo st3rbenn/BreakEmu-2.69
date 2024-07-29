@@ -3,7 +3,7 @@ import ComparaisonOperatorEnum from "../objectiveCriterion/ComparaisonOperatorEn
 import ObjectiveCriterion from "../objectiveCriterion/ObjectiveCriterion";
 
 class LevelObjectiveCriterion extends ObjectiveCriterion {
-    public static identifier: string = "PL";
+    public static readonly identifier: string = "PL";
     characterLevel: number;
     criterionLevel: number;
 

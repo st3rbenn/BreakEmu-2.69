@@ -55,6 +55,8 @@ class GameMap {
 		this.rightMap = rightMap
 		this.topMap = topMap
 		this.bottomMap = bottomMap
+
+    this.subArea = SubArea.getSubAreaById(subareaId)
 	}
 
 	get instance(): MapInstance {

@@ -65588,6 +65588,32 @@ export class AchievementAlmostFinishedDetailedListRequestMessage extends DofusMe
 	public deserialize(reader: BinaryReader): void {}
 }
 
+export class AchievementAlmostFinishedDetailedListMessage extends DofusMessage {
+  public static id: number = 211
+
+  public almostFinishedAchievements: Achievement[] | undefined = []
+
+  public constructor(almostFinishedAchievements?: Achievement[] | undefined) {
+    super()
+    this.almostFinishedAchievements = almostFinishedAchievements
+  }
+
+  public serialize(writer: BinaryWriter): void {
+    writer.writeShort(this.almostFinishedAchievements?.length!)
+		this.almostFinishedAchievements!.forEach((achievement: Achievement) => achievement.serialize(writer))
+  }
+
+  public deserialize(reader: BinaryReader): void {
+		this.almostFinishedAchievements = []
+		const countAlmostFinishedAchievements = reader.readShort()
+		for (let i: number = 0; i < countAlmostFinishedAchievements; i++) {
+      const achievement: Achievement = new Achievement()
+      achievement.deserialize(reader)
+      this.almostFinishedAchievements.push(achievement)
+		}
+  }
+}
+
 export interface RawShowCellRequestMessage {
 	id: number
 	cellId: number
@@ -73798,6 +73824,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	4824: GameFightSynchronizeMessage,
 	8791: AbstractGameActionMessage,
 	7655: AbstractGameActionFightTargetedAbilityMessage,
+  211: AchievementAlmostFinishedDetailedListMessage,
 	5026: GameActionFightSpellCastMessage,
 	1408: GameActionFightDispellMessage,
 	7947: GameActionFightDispellEffectMessage,

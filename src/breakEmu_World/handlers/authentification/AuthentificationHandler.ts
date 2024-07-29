@@ -14,15 +14,6 @@ import {
 	ServerConstantTypeEnum,
 } from "../../../breakEmu_Server/IO"
 
-enum OptionalFeatureEnum {
-	xpForYounger = 20,
-	pvpKis = 23,
-	miscHavenBag = 40,
-	miscjob = 76,
-	miscexpedition = 148,
-	slotFightConsumable = 150,
-}
-
 class AuthentificationHandler {
 	private static logger: Logger = new Logger("AuthentificationHandler")
 
@@ -40,14 +31,7 @@ class AuthentificationHandler {
 			new ServerSettingsMessage(false, true, "fr", 0, 0, 0, 200)
 		)
 		await client.Send(
-			new ServerOptionalFeaturesMessage([
-				OptionalFeatureEnum.xpForYounger,
-				OptionalFeatureEnum.pvpKis,
-				OptionalFeatureEnum.miscHavenBag,
-				OptionalFeatureEnum.miscjob,
-				OptionalFeatureEnum.miscexpedition,
-				OptionalFeatureEnum.slotFightConsumable,
-			])
+			new ServerOptionalFeaturesMessage([3, 5, 13, 20, 23, 124, 125, 150])
 		)
 		await client.Send(
 			new ServerSessionConstantsMessage([

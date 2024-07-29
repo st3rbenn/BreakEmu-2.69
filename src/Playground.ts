@@ -19,7 +19,6 @@ import Job from "./breakEmu_API/model/job.model"
 import Finishmoves from "./breakEmu_API/model/finishmoves.model"
 import EntityStats from "./breakEmu_World/manager/entities/stats/entityStats"
 import ContextEntityLook from "./breakEmu_World/manager/entities/look/ContextEntityLook"
-import Achievement from "./breakEmu_API/model/achievement.model"
 import AchievementManager from "./breakEmu_World/manager/achievement/AchievementManager"
 
 interface BreedRoles {
@@ -426,19 +425,16 @@ class Playground {
 			// const achievementJson: string = "achievements"
 			// const jsonFile = this.readJsonFile(achievementJson)
 			// const achievementData = JSON.parse(jsonFile) as Achievement[]
-
 			// const achievementObjectivesJson: string = "achievementObjectives"
 			// const jsonFile2 = this.readJsonFile(achievementObjectivesJson)
 			// const achievementObjectivesData = JSON.parse(
 			// 	jsonFile2
 			// ) as AchievementObjective[]
-
 			// const achievementRewardsJson: string = "AchievementRewards"
 			// const jsonFile3 = this.readJsonFile(achievementRewardsJson)
 			// const achievementRewardsData = JSON.parse(
 			// 	jsonFile3
 			// ) as AchievementReward[]
-
 			// achievementData.forEach(async (achievement) => {
 			// 	await this.database.prisma.achievement.create({
 			// 		data: {
@@ -454,13 +450,11 @@ class Playground {
 			// 			rewardIds: achievement.rewardIds,
 			// 		},
 			// 	})
-
 			// 	this.logger.write(
 			// 		`Add achievement -> ${achievement.name} with id: ${achievement.id}`,
 			// 		ansiColorCodes.bgGreen
 			// 	)
 			// })
-
 			// achievementObjectivesData.forEach(async (objective) => {
 			// 	await this.database.prisma.achievementObjective.create({
 			// 		data: {
@@ -470,13 +464,11 @@ class Playground {
 			// 			criterion: objective.criterion,
 			// 		},
 			// 	})
-
 			//   this.logger.write(
 			// 		`Add achievement -> ${objective.name} with id: ${objective.id}`,
 			// 		ansiColorCodes.bgGreen
 			// 	)
 			// })
-
 			// achievementRewardsData.forEach(async (reward) => {
 			// 	await this.database.prisma.achievementReward.create({
 			// 		data: {
@@ -494,15 +486,12 @@ class Playground {
 			// 			ornamentsReward: reward.ornamentsReward,
 			// 		},
 			// 	})
-
 			// 	this.logger.write(
 			// 		`Add achievement rewards -> id: ${reward.id}`,
 			// 		ansiColorCodes.bgGreen
 			// 	)
 			// })
-
 			// const achievementData = await this.database.prisma.achievement.findMany()
-
 			// for (const achiev of achievementData) {
 			// 	const isObjectivesExistInDB = await this.database.prisma.achievementObjective.findMany(
 			// 		{
@@ -511,7 +500,6 @@ class Playground {
 			// 			},
 			// 		}
 			// 	)
-
 			// 	if (isObjectivesExistInDB.length === 0) {
 			// 		this.logger.write(
 			// 			`No objectives found for achievement -> ${achiev.id} excepted: ${achiev.objectiveIds?.toString()}`,
@@ -519,75 +507,58 @@ class Playground {
 			// 		)
 			// 	}
 			// }
-			await this.database.loadExperiences()
-			await this.database.loadAchievements()
 
-			const character = await this.database.prisma.character.findFirst({
-				where: {
-					id: 478,
-				},
-			})
+			const subAreas = await this.database.prisma.subArea.findMany()
 
-			if (character) {
-				const charac = new Character(
-					character.id,
-					character.userId,
-					character.breed_id,
-					character.sex,
-					character.cosmeticId,
-					character.name,
-					Number(character.experience),
-					new ContextEntityLook(0, [], [], [], []),
-					Number(character.mapId),
-					Number(character.cellId),
-					character.direction,
-					character.kamas,
-					character.statsPoints,
-					[],
-					new Map<number, CharacterShortcut>(),
-					[],
-					0,
-					Job.loadFromJson(JSON.parse(character.jobs?.toString() as string)),
-					Finishmoves.loadFromJson(
-						JSON.parse(character.finishMoves?.toString() as string)
-					),
-					GameMap.getMapById(Number(character.mapId)) as GameMap,
-					EntityStats.loadFromJSON(
-						JSON.parse(character.stats?.toString() as string)
+			for (const subArea of subAreas) {
+				const achievement = await this.database.prisma.achievement.findMany({
+					where: {
+						description: {
+							equals: `Découvrir la zone "${subArea.name}".`,
+						},
+					},
+				})
+
+				if (achievement.length <= 0) {
+					this.logger.write(
+						`No achievement found for subArea -> ${subArea.name}`,
+						ansiColorCodes.bgRed
 					)
-				)
 
-				const achiev = AchievementManager.achievements.get(3)
-
-				if (achiev) {
-					let objective = achiev.objectives.values().next()
-						.value as AchievementObjective
-
-					const objHandler = new AchievementObjectiveHandler(
-						objective ? objective.id : 0,
-						charac,
-						objective,
-						achiev
+					await this.database.prisma.subArea.update({
+						where: {
+							id: subArea.id,
+						},
+						data: {
+							explorationAchievementId: null,
+						},
+					})
+				} else {
+					this.logger.write(
+						`${achievement.length} Achievement found for subArea -> ${subArea.name}`,
+						ansiColorCodes.bgGreen
 					)
-					const objCriterions = new CriterionManager(
-						objHandler
-					).generateCriterion()
 
-					objCriterions.forEach((c) => {
-						console.log("is valid -> ", c.criterionFulfilled())
+					await this.database.prisma.subArea.update({
+						where: {
+							id: subArea.id,
+						},
+						data: {
+							explorationAchievementId: achievement[0].id,
+						},
 					})
 				}
 			}
 
-			// this.logger.write("finish ✨")
+			this.logger.write("finish ✨")
 		} catch (error) {
 			this.logger.write(error + "TRACE : " + error.stack, ansiColorCodes.bgRed)
 		}
 	}
 
-	async returnFirstValueOfAMap(map: Map<number, any>): any {
-		return map.values().next().value
-	}
+	// async returnFirstValueOfAMap(map: Map<number, any>): any {
+	// 	return map.values().next().value
+	// }
 
 	async sendDataWithVariableDelay<D>(
 		data: D[],

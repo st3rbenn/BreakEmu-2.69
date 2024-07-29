@@ -1,10 +1,16 @@
-import AchievementHandler from "../../../breakEmu_World/handlers/achievement/AchievementHandler"
+import AchievementObjective from "../../../breakEmu_API/model/achievementObjective.model"
 import Achievement from "../../../breakEmu_API/model/achievement.model"
 import Character from "../../../breakEmu_API/model/character.model"
-import Item from "breakEmu_API/model/item.model"
+import SubArea from "../../../breakEmu_API/model/SubArea.model"
+import AchievementHandler from "../../../breakEmu_World/handlers/achievement/AchievementHandler"
+import AchievementObjectiveHandler from "./objective/AchievementObjectiveHandler"
 
 class AchievementManager {
 	static achievements: Map<number, Achievement> = new Map<number, Achievement>()
+	static achievementObjectives: Map<number, AchievementObjective> = new Map<
+		number,
+		AchievementObjective
+	>()
 	private static readonly LEVEL_ADJUSTMENT_FACTOR = 0.7
 	private static readonly EXPERIENCE_MULTIPLIER = 2.25
 
@@ -47,15 +53,60 @@ class AchievementManager {
 		}
 	}
 
+	public async checkIsInMapAchievements(character: Character) {
+		const explorationAchievement =
+			character?.map?.subArea?.explorationAchievement
+		if (explorationAchievement) {
+			await this.checkAchievementCompletion(
+				character,
+				explorationAchievement,
+				true
+			)
+			await this.checkAchievementObjectives(character, explorationAchievement)
+		}
+	}
+
+	async checkAchievementObjectives(
+		character: Character,
+		achievement: Achievement
+	) {
+		let achievementObjectives = Array.from(
+			AchievementManager.achievementObjectives.values()
+		).filter(
+			(achievementObj) =>
+				achievementObj.criterion.includes("OA") &&
+				achievementObj.criterion.includes(achievement.id.toString())
+		)
+
+		if (!character.almostFinishedAchievements.includes(achievement.id) && achievementObjectives.length > 0) {
+			character.almostFinishedAchievements.push(achievement.id)
+		}
+
+		if (achievementObjectives.length <= 0) return
+
+		for (const objective of achievementObjectives) {
+			const achievementObjectifHandler = new AchievementObjectiveHandler(
+				character,
+				objective,
+				this.getAchievementById(objective.achievementId) as Achievement
+			)
+
+			await achievementObjectifHandler.tryCompleteObjective()
+		}
+	}
+
 	async checkAchievementCompletion(
 		character: Character,
 		achievement: Achievement,
-		bypassCriterion: boolean
+		bypassCriterion: boolean = false
 	) {
 		if (achievement === undefined) return
 		if (achievement.needToBeTaken(character)) {
 			character.untakenAchievementsReward.push(achievement.id)
 			character.finishedAchievements.push(achievement.id)
+			character.almostFinishedAchievements = character.almostFinishedAchievements.filter(
+				(id) => id != achievement.id
+			)
 			await AchievementHandler.handleSendAchievementFinishedMessage(
 				character,
 				achievement
@@ -63,6 +114,9 @@ class AchievementManager {
 		} else if (!achievement.achievementFinished(character) && bypassCriterion) {
 			character.untakenAchievementsReward.push(achievement.id)
 			character.finishedAchievements.push(achievement.id)
+			character.almostFinishedAchievements = character.almostFinishedAchievements.filter(
+				(id) => id != achievement.id
+			)
 			await AchievementHandler.handleSendAchievementFinishedMessage(
 				character,
 				achievement

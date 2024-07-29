@@ -19,7 +19,7 @@ import AchievementHandler from "./achievement/AchievementHandler"
 class ContextHandler {
 	public static async handleGameContextCreateMessage(character: Character) {
 		let inFight: boolean = false
-		character.inGame = true
+    character.inGame = true
 
 		if (inFight) {
 			await character.destroyContext()
@@ -32,6 +32,7 @@ class ContextHandler {
 				character.cellId as number
 			)
 			await AchievementHandler.handleAchievementListMessage(character)
+      await character.refreshStats()
 		}
 	}
 
@@ -43,8 +44,8 @@ class ContextHandler {
 			new TitlesAndOrnamentsListMessage(
 				client.selectedCharacter.knownTitles,
 				client.selectedCharacter.knownOrnaments,
-				client.selectedCharacter.activeTitle,
-				client.selectedCharacter.activeOrnament
+				client.selectedCharacter.activeTitle || 0,
+				client.selectedCharacter.activeOrnament || 0
 			)
 		)
 	}

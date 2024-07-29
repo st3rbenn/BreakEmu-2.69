@@ -1,3 +1,5 @@
+import AchievementManager from "../../breakEmu_World/manager/achievement/AchievementManager"
+import Achievement from "./achievement.model"
 import monsterSpawn from "./monsterspawn.model"
 import MonsterspawnModel from "./monsterspawn.model"
 
@@ -10,6 +12,9 @@ class SubArea {
 	questsIds: number[]
 	npcIds: number[]
 	associatedZaapMapId: number
+	explorationAchievement: Achievement
+
+	static subAreas: Map<number, SubArea> = new Map<number, SubArea>()
 
 	private monsterSpawns: Map<number, monsterSpawn> = new Map<
 		number,
@@ -24,7 +29,8 @@ class SubArea {
 		monsterIds: number[],
 		questsIds: number[],
 		npcIds: number[],
-		associatedZaapMapId: number
+		associatedZaapMapId: number,
+		explorationAchievementId: number | null
 	) {
 		this.id = id
 		this.name = name
@@ -34,6 +40,11 @@ class SubArea {
 		this.questsIds = questsIds
 		this.npcIds = npcIds
 		this.associatedZaapMapId = associatedZaapMapId
+		if (explorationAchievementId) {
+			this.explorationAchievement = AchievementManager.achievements.get(
+				explorationAchievementId
+			) as Achievement
+		}
 
 		this.monsterSpawns = new Map<number, monsterSpawn>()
 
@@ -42,6 +53,10 @@ class SubArea {
 				this.monsterSpawns.set(monsterSpawn.id, monsterSpawn)
 			}
 		)
+	}
+
+	static getSubAreaById(id: number): SubArea {
+		return this.subAreas.get(id) as SubArea
 	}
 }
 

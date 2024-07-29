@@ -6,6 +6,7 @@ import {
 	AchievementDetailsMessage,
 	AchievementDetailsRequestMessage,
 	AchievementFinishedMessage,
+	AchievementAlmostFinishedDetailedListMessage,
 	AchievementListMessage,
 	Achievement as AchievementMessage,
 	AchievementRewardErrorMessage,
@@ -38,7 +39,29 @@ class AchievementHandler {
 
 	public static async handleAchievementAlmostFinishedDetailedListRequestMessage(
 		client: WorldClient
-	) {}
+	) {
+		const almostFinishedAchievements: AchievementMessage[] = []
+
+		this.logger.write(
+			`Almost finished achievements: ${client.selectedCharacter.almostFinishedAchievements.length}`
+		)
+
+		for (const achievementId of client.selectedCharacter
+			.almostFinishedAchievements) {
+			const achievement = AchievementManager.achievements.get(achievementId)
+			if (achievement) {
+				almostFinishedAchievements.push(
+					achievement.toAchievementMessage(client.selectedCharacter)
+				)
+			}
+		}
+
+		await client.Send(
+			new AchievementAlmostFinishedDetailedListMessage(
+				almostFinishedAchievements
+			)
+		)
+	}
 
 	public static async handleAchievementDetailedListRequestMessage(
 		client: WorldClient,

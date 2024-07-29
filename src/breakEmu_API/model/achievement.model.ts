@@ -78,6 +78,10 @@ class Achievement {
 		return character.finishedAchievements.includes(this.id)
 	}
 
+  achievementStarted(character: Character) {
+    return character.almostFinishedAchievements.includes(this.id)
+  }
+
 	needToBeTaken(character: Character) {
 		return (
 			!this.achievementFinished(character) &&

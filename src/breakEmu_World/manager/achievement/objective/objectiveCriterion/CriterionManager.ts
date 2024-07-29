@@ -2,6 +2,7 @@ import AchievementObjectiveHandler from "../AchievementObjectiveHandler"
 import LevelObjectiveCriterion from "../criterions/LevelObjectiveCriterion"
 import ComparaisonOperatorEnum from "./ComparaisonOperatorEnum"
 import ObjectiveCriterion from "./ObjectiveCriterion"
+import AchievementItemCriterion from "../criterions/AchievementItemCriterion"
 
 class CriterionManager {
 	criterion: string
@@ -13,10 +14,12 @@ class CriterionManager {
 	}
 
 	generateCriterion(): ObjectiveCriterion[] {
-    // console.log(this.objective)
+		// console.log(this.objective)
 		let listOfCriterion: ObjectiveCriterion[] = []
-    console.log('criteron', this.criterion)
-		let identifiers = this.criterion.split("&") ? this.criterion.split("&") : this.criterion.split("")
+		console.log("criteron", this.criterion)
+		let identifiers = this.criterion.split("&")
+			? this.criterion.split("&")
+			: this.criterion.split("")
 
 		if (identifiers.length > 0) {
 			for (const identifier of identifiers) {
@@ -41,12 +44,21 @@ class CriterionManager {
 							)
 						)
 						break
+					case AchievementItemCriterion.identifier:
+						listOfCriterion.push(
+							new AchievementItemCriterion(
+								this.objective.character,
+								parseInt(this.arrayFirstorDefault(params, "0")),
+								operatorType
+							)
+						)
+						break
 					default:
 						console.log("Unknown criterion identifier: " + id)
 				}
 			}
 
-      return listOfCriterion
+			return listOfCriterion
 		}
 
 		return listOfCriterion

@@ -107,9 +107,9 @@ class Character extends Entity {
 	knownEmotes: number[] = []
 	shortcuts: Map<number, CharacterShortcut | undefined> = new Map()
 	knownOrnaments: number[] = []
-	activeOrnament: number
+	activeOrnament: number | null = null
 	knownTitles: number[] = []
-	activeTitle: number
+	activeTitle: number | null = null
 	jobs: Map<number, Job>
 	spells: Map<number, CharacterSpell> = new Map()
 	spellShortcutBar: SpellShortcutBar
@@ -163,8 +163,8 @@ class Character extends Entity {
 		shortcuts: Map<number, CharacterShortcut>,
 		knownOrnaments: number[],
 		knownTitles: number[],
-		activeOrnament: number,
-		activeTitle: number,
+		activeOrnament: number | null,
+		activeTitle: number | null,
 		jobs: Map<number, Job>,
 		finishMoves: Map<number, Finishmoves>,
 		map: GameMap | null,
@@ -242,8 +242,8 @@ class Character extends Entity {
 			new Map<number, CharacterShortcut>(),
 			[],
 			[],
-			0,
-			0,
+			null,
+			null,
 			Job.new(),
 			finishmoves,
 			GameMap.getMapById(mapId) as GameMap,
@@ -408,13 +408,13 @@ class Character extends Entity {
 	public createHumanOptions() {
 		this.humanOptions.set(1, new HumanOptionFollowers([]))
 
-		if (this.activeOrnament !== 0) {
+		if (this.activeOrnament != null) {
 			this.humanOptions.set(
 				2,
 				new HumanOptionOrnament(this.activeOrnament, this.level, 0, 0)
 			)
 		}
-		if (this.activeTitle !== 0) {
+		if (this.activeTitle != null) {
 			this.humanOptions.set(
 				3,
 				new HumanOptionTitle(this.activeTitle, "MODERATOR")
@@ -709,6 +709,8 @@ class Character extends Entity {
 			if (this.map?.hasZaap && !this.knownZaaps.has(this.map.id)) {
 				await this.discoverZaap(this.mapId)
 			}
+
+			await AchievementManager.getInstance().checkIsInMapAchievements(this)
 
 			// await this.client?.Send(new BasicNoOperationMessage())
 			const date = new Date()
