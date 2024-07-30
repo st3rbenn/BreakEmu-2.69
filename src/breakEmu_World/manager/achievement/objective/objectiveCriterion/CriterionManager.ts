@@ -3,6 +3,7 @@ import LevelObjectiveCriterion from "../criterions/LevelObjectiveCriterion"
 import ComparaisonOperatorEnum from "./ComparaisonOperatorEnum"
 import ObjectiveCriterion from "./ObjectiveCriterion"
 import AchievementItemCriterion from "../criterions/AchievementItemCriterion"
+import JobItemCriterion from "../criterions/JobItemCriterion"
 
 class CriterionManager {
 	criterion: string
@@ -52,6 +53,10 @@ class CriterionManager {
 								operatorType
 							)
 						)
+						break
+					case JobItemCriterion.firstIdentifier:
+					case JobItemCriterion.secondIdentifier:
+						listOfCriterion.push(new JobItemCriterion(this.objective.character, operatorType))
 						break
 					default:
 						console.log("Unknown criterion identifier: " + id)

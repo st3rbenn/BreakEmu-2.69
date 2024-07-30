@@ -768,6 +768,8 @@ class Database {
 
 			const res = new Achievement(
 				achiev.id,
+        achiev.name,
+        achiev.description,
 				achiev.categoryId,
 				achiev.points,
 				achiev.level,

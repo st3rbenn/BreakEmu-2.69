@@ -32,6 +32,9 @@ class AchievementObjective {
 
 
   completeObjective(character: Character) {
+    if(!character.almostFinishedAchievements.includes(this.achievementId)) {
+      character.almostFinishedAchievements.push(this.achievementId)
+    }
     character.finishedAchievementObjectives.push(this.id)
   }
 }

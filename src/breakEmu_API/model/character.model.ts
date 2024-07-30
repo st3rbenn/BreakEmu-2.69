@@ -8,6 +8,7 @@ import {
 	BasicNoOperationMessage,
 	BasicTimeMessage,
 	CharacterBaseInformations,
+	CharacterCapabilitiesMessage,
 	CharacterLoadingCompleteMessage,
 	CharacterStatsListMessage,
 	CharacteristicEnum,
@@ -29,7 +30,9 @@ import {
 	JobDescriptionMessage,
 	JobExperienceMultiUpdateMessage,
 	KnownZaapListMessage,
+	NotificationListMessage,
 	PlayerStatusEnum,
+	SequenceNumberRequestMessage,
 	ServerExperienceModificatorMessage,
 	ShortcutBarEnum,
 	SpellItem,
@@ -38,6 +41,7 @@ import {
 	StatsUpgradeResultMessage,
 	TextInformationMessage,
 	TextInformationTypeEnum,
+	TitlesAndOrnamentsListMessage,
 } from "../../breakEmu_Server/IO"
 import WorldClient from "../../breakEmu_World/WorldClient"
 import ContextHandler from "../../breakEmu_World/handlers/ContextHandler"
@@ -73,6 +77,7 @@ import Job from "./job.model"
 import GameMap from "./map.model"
 import Skill from "./skill.model"
 import Spell from "./spell.model"
+import Logger from "../../breakEmu_Core/Logger"
 
 class Character extends Entity {
 	point: MapPoint
@@ -201,11 +206,19 @@ class Character extends Entity {
 		this.activeTitle = activeTitle
 		this.jobs = jobs
 		this.finishmoves = finishMoves
-		;(this.skillsAllowed = SkillManager.getInstance().getAllowedSkills(this)),
-			(this.finishedAchievements = finishedAchievements),
-			(this.almostFinishedAchievements = almostFinishedAchievements),
-			(this.finishedAchievementObjectives = finishedAchievementObjectives)
-		this.untakenAchievementsReward = untakenAchievementsReward
+		this.skillsAllowed = SkillManager.getInstance().getAllowedSkills(this)
+		this.finishedAchievements = finishedAchievements.filter(
+			(achiev) => achiev !== 0
+		)
+		this.almostFinishedAchievements = almostFinishedAchievements.filter(
+			(achiev) => achiev !== 0
+		)
+		this.finishedAchievementObjectives = finishedAchievementObjectives.filter(
+			(achiev) => achiev !== 0
+		)
+		this.untakenAchievementsReward = untakenAchievementsReward.filter(
+			(achiev) => achiev !== 0
+		)
 	}
 
 	static async create(
@@ -260,6 +273,132 @@ class Character extends Entity {
 		await BreedManager.getInstance().learnBreedSpells(character)
 
 		return character
+	}
+
+	public testIfCharacterDataIsValid(): void {
+		if (this.id === 0) {
+			console.error("Character ID is 0")
+		}
+		if (this.accountId === 0) {
+			console.error("Account ID is 0")
+		}
+		if (this.breed === null) {
+			console.error("Breed is null")
+		}
+		if (this.name === "") {
+			console.error("Name is empty")
+		}
+		if (this.look === null) {
+			console.error("Look is null")
+		}
+		if (this.level === 0) {
+			console.error("Level is 0")
+		}
+		if (this.mapId === 0) {
+			console.error("Map ID is 0")
+		}
+		if (this.cellId === 0) {
+			console.error("Cell ID is 0")
+		}
+		if (this.direction === 0) {
+			console.error("Direction is 0")
+		}
+		if (this.kamas === 0) {
+			console.error("Kamas is 0")
+		}
+		if (this.stats === null) {
+			console.error("Stats is null")
+		}
+		if (this.finishmoves === null) {
+			console.error("Finishmoves is null")
+		}
+		if (this.experience === 0) {
+			console.error("Experience is 0")
+		}
+
+		if (this.skillsAllowed.size === 0) {
+			console.error("SkillsAllowed is empty")
+		}
+
+		if (this.jobs.size === 0) {
+			console.error("Jobs is empty")
+		}
+
+		if (this.spells.size === 0) {
+			console.error("Spells is empty")
+		}
+
+		if (this.knownEmotes.length === 0) {
+			console.error("KnownEmotes is empty")
+		}
+
+		if (this.shortcuts.size === 0) {
+			console.error("Shortcuts is empty")
+		}
+
+		if (this.knownOrnaments.length === 0) {
+			console.error("KnownOrnaments is empty")
+		}
+
+		if (this.knownTitles.length === 0) {
+			console.error("KnownTitles is empty")
+		}
+
+		if (this.finishedAchievements.length === 0) {
+			console.error("FinishedAchievements is empty")
+		}
+
+		if (this.almostFinishedAchievements.length === 0) {
+			console.error("AlmostFinishedAchievements is empty")
+		}
+
+		if (this.finishedAchievementObjectives.length === 0) {
+			console.error("FinishedAchievementObjectives is empty")
+		}
+
+		if (this.untakenAchievementsReward.length === 0) {
+			console.error("UntakenAchievementsReward is empty")
+		}
+
+		if (this.map === null) {
+			console.error("Map is null")
+		}
+
+		if (this.map && this.map.instance === null) {
+			console.error("Map instance is null")
+		}
+
+		if (this.inventory === null) {
+			console.error("Inventory is null")
+		}
+
+		if (this.bank === null) {
+			console.error("Bank is null")
+		}
+
+		if (this.client === null) {
+			console.error("Client is null")
+		}
+
+		if (this.context === null) {
+			console.error("Context is null")
+		}
+
+		if (this.humanOptions.size === 0) {
+			console.error("HumanOptions is empty")
+		}
+
+		if (this.generalShortcutBar === null) {
+			console.error("GeneralShortcutBar is null")
+		}
+
+		if (this.spellShortcutBar === null) {
+			console.error("SpellShortcutBar is null")
+		}
+
+		if (this.knownZaaps.size === 0) {
+			console.error("KnownZaaps is empty")
+		}
 	}
 
 	public getJobs(jobId: number): Job | undefined {
@@ -405,6 +544,43 @@ class Character extends Entity {
 		return new ActorAlignmentInformations(0, 0, 0, 0)
 	}
 
+	public async resendUnTakenRewardAchievements() {
+		try {
+			if (this.untakenAchievementsReward.length === 0) return
+			for (const achiev of this.untakenAchievementsReward) {
+				if (achiev === 0) continue
+				const achievement = AchievementManager.getInstance().getAchievementById(
+					achiev
+				)
+				if (achievement) {
+					console.log("Resending untaken reward achievement", achievement)
+					await AchievementHandler.handleSendAchievementFinishedMessage(
+						this,
+						achievement
+					)
+				}
+			}
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	public getFinishedAchievementsByCategory(categoryId: number): Achievement[] {
+		let achievements: Achievement[] = []
+		this.finishedAchievements.filter((achievement) => {
+			const ach = AchievementManager.getInstance().getAchievementById(
+				achievement
+			)
+			if (ach) {
+				if (ach.categoryId === categoryId) {
+					achievements.push(ach)
+				}
+			}
+		})
+
+		return achievements
+	}
+
 	public createHumanOptions() {
 		this.humanOptions.set(1, new HumanOptionFollowers([]))
 
@@ -489,43 +665,6 @@ class Character extends Entity {
 		}
 	}
 
-	public async resendUnTakenRewardAchievements() {
-		try {
-			if (this.untakenAchievementsReward.length === 0) return
-			for (const achiev of this.untakenAchievementsReward) {
-				if (achiev === 0) continue
-				const achievement = AchievementManager.getInstance().getAchievementById(
-					achiev
-				)
-				if (achievement) {
-					console.log("Resending untaken reward achievement", achievement)
-					await AchievementHandler.handleSendAchievementFinishedMessage(
-						this,
-						achievement
-					)
-				}
-			}
-		} catch (error) {
-			console.log(error)
-		}
-	}
-
-	public getFinishedAchievementsByCategory(categoryId: number): Achievement[] {
-		let achievements: Achievement[] = []
-		this.finishedAchievements.filter((achievement) => {
-			const ach = AchievementManager.getInstance().getAchievementById(
-				achievement
-			)
-			if (ach) {
-				if (ach.categoryId === categoryId) {
-					achievements.push(ach)
-				}
-			}
-		})
-
-		return achievements
-	}
-
 	public async refreshInventory() {
 		try {
 			await this.inventory.refresh()
@@ -534,29 +673,63 @@ class Character extends Entity {
 		}
 	}
 
+	public async refreshEmotes() {
+		try {
+			await this?.client?.Send(new EmoteListMessage(this.knownEmotes))
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	public async refreshTitleAndOrnament() {
+		try {
+			await this?.client?.Send(
+				new TitlesAndOrnamentsListMessage(
+					this.knownTitles,
+					this.knownOrnaments,
+					this.activeTitle || 0,
+					this.activeOrnament || 0
+				)
+			)
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	public async refreshStats() {
+		try {
+			await this.client?.Send(
+				new CharacterStatsListMessage(
+					this.stats.getCharacterCharacteristicInformations(this)
+				)
+			)
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	public async refreshShortcuts() {
+		try {
+			await this.spellShortcutBar.refresh()
+			await this.generalShortcutBar.refresh()
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
 	public async refreshAll() {
 		try {
-			// Utilisation de Promise.allSettled pour exécuter les méthodes en parallèle et gérer les résultats
-			const results = await Promise.allSettled([
+			Promise.all([
 				this.refreshJobs(),
 				this.refreshSpells(),
 				this.refreshGuild(),
-				this.refreshEmotes(),
 				this.refreshZaaps(),
 				this.refreshInventory(),
 				this.refreshShortcuts(),
+				this.sendServerExperienceModificator(),
 			])
 
-			// Gestion des résultats de Promise.allSettled
-			results.forEach((result, index) => {
-				if (result.status === "rejected") {
-					console.error(`Promise ${index + 1} rejected:`, result.reason)
-				}
-			})
-
-			// Les méthodes suivantes doivent être exécutées séquentiellement après les méthodes de refresh
 			this.createHumanOptions()
-			await this.sendServerExperienceModificator()
 			await this.onCharacterLoadingComplete()
 		} catch (error) {
 			console.log(error)
@@ -619,8 +792,11 @@ class Character extends Entity {
 	}
 
 	public async teleport(mapId: number, cellId: number | null = null) {
+		const gameMap = GameMap.getMapById(mapId)
 		try {
-			await this.teleportPlayer(GameMap.getMapById(mapId) as GameMap, cellId)
+			if (gameMap) {
+				await this.teleportPlayer(gameMap as GameMap, cellId)
+			}
 			await this.refreshStats()
 		} catch (error) {
 			console.log(error)
@@ -642,9 +818,10 @@ class Character extends Entity {
 
 			this.cellId = cellId
 			this.mapId = teleportMap.id
-
-			if (this.map !== null) {
+			if (this.map !== null && this.map.instance) {
 				await this.map.instance.removeEntity(this)
+			} else {
+				this.map = teleportMap
 			}
 
 			this.map = teleportMap
@@ -690,9 +867,7 @@ class Character extends Entity {
 
 			await this.map?.instance.addEntity(this)
 
-			await this.map?.instance.sendMapComplementaryInformations(
-				this.client as WorldClient
-			)
+			await this.map?.instance.sendMapComplementaryInformations(this.client)
 			await this.map?.instance.sendMapFightCount(this.client, 0)
 
 			const mapCharacters = this.map?.instance.getEntities<Character>(Character)
@@ -726,7 +901,6 @@ class Character extends Entity {
 			if (this.knownZaaps.has(mapId)) return
 
 			this.knownZaaps.set(mapId, GameMap.getMapById(mapId) as GameMap)
-			console.log(`Zaap discovered on map ${mapId}`)
 			await this.refreshZaaps()
 			await this.textInformation(
 				TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
@@ -741,15 +915,6 @@ class Character extends Entity {
 	public async createContext(context: number) {
 		try {
 			this.context = context
-			await this?.client?.Send(new GameContextCreateMessage(this.context))
-		} catch (error) {
-			console.log(error)
-		}
-	}
-
-	public async refreshEmotes() {
-		try {
-			await this?.client?.Send(new EmoteListMessage(this.knownEmotes))
 		} catch (error) {
 			console.log(error)
 		}
@@ -759,7 +924,6 @@ class Character extends Entity {
 		try {
 			await this.onConnected()
 			await this.reply("Bienvenue sur BreakEmu !", "38a3d9", true, true)
-			await this?.client?.Send(new CharacterLoadingCompleteMessage())
 		} catch (error) {
 			console.log(error)
 		}
@@ -773,23 +937,25 @@ class Character extends Entity {
 				[]
 			)
 			await this?.client?.Send(new AlmanachCalendarDateMessage(1))
-			// await AchievementHandler.handleAchievementListMessage(this.client)
-			// await this.resendUnTakenRewardAchievements()
 		} catch (error) {
 			console.log(error)
 		}
 	}
 
 	public async destroyContext() {
-		console.log("Destroying context")
-		await CharacterController.getInstance().updateCharacter(this)
-		await this.map?.instance.removeEntity(this)
-		// await this?.client?.Send(new GameContextDestroyMessage())
+		try {
+			await Promise.all([
+				CharacterController.getInstance().updateCharacter(this),
+				this.map?.instance.removeEntity(this),
+			])
+		} catch (error) {
+			console.log(error)
+		}
 	}
 
 	public async sendServerExperienceModificator() {
 		try {
-			await this?.client?.Send(
+			await this.client?.Send(
 				new ServerExperienceModificatorMessage(
 					ConfigurationManager.getInstance().XpRate * 100
 				)
@@ -841,18 +1007,6 @@ class Character extends Entity {
 		}
 	}
 
-	public async refreshStats() {
-		try {
-			await this.client?.Send(
-				new CharacterStatsListMessage(
-					this.stats.getCharacterCharacteristicInformations(this)
-				)
-			)
-		} catch (error) {
-			console.log(error)
-		}
-	}
-
 	public async textInformation(
 		msgType: TextInformationTypeEnum,
 		msgId: number,
@@ -862,15 +1016,6 @@ class Character extends Entity {
 			await this.client?.Send(
 				new TextInformationMessage(msgType, msgId, parameters)
 			)
-		} catch (error) {
-			console.log(error)
-		}
-	}
-
-	public async refreshShortcuts() {
-		try {
-			await this.spellShortcutBar.refresh()
-			await this.generalShortcutBar.refresh()
 		} catch (error) {
 			console.log(error)
 		}

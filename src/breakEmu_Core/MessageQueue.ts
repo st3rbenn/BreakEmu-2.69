@@ -8,6 +8,7 @@ interface IMessageQueueItem {
 	client: ServerClient
 	resolve: Function
 	reject: Function
+	sequence: number
 }
 
 class MessageQueue {
@@ -17,6 +18,8 @@ class MessageQueue {
 	private queue: IMessageQueueItem[] = []
 	private isProcessing = false
 	private processingLock = false
+
+	private sequenceCounter: number = 0
 
 	public static getInstance(): MessageQueue {
 		if (!MessageQueue._instance) {
@@ -30,7 +33,9 @@ class MessageQueue {
 		client: ServerClient
 	): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.queue.push({ message, client, resolve, reject })
+			const sequence = this.sequenceCounter++
+			this.queue.push({ message, client, resolve, reject, sequence })
+			this.queue.sort((a, b) => a.sequence - b.sequence)
 
 			if (!this.isProcessing) {
 				this.processQueue()
@@ -43,14 +48,19 @@ class MessageQueue {
 	}
 
 	private async processQueue(): Promise<void> {
-		while (this.queue.length > 0 && !this.processingLock) {
-			this.processingLock = true
+		this.isProcessing = true
+		while (this.queue.length > 0) {
+			if (this.processingLock) {
+				await this.wait(50)
+				continue
+			}
 
+			this.processingLock = true
 			const item = this.queue.shift()
 			if (item) {
 				try {
 					const isMessageSend = item.client.socket.write(
-            //@ts-ignore
+						//@ts-ignore
 						item.client.serialize(item.message as DofusMessage),
 						(error) => {
 							if (error) {
@@ -69,21 +79,25 @@ class MessageQueue {
 
 					if (isMessageSend) {
 						await this.logger.writeAsync(
-							`Message '${messages[item.message.id].name}' sent!`,
+							`Message '${messages[item.message.id].name}' sent! (Sequence: ${
+								item.sequence
+							})`,
 							ansiColorCodes.green
 						)
 					} else {
 						item.reject(
-							new Error(`Message ${messages[item.message.id].name} not sent`)
+							new Error(
+								`Message ${
+									messages[item.message.id].name
+								} not sent (Sequence: ${item.sequence})`
+							)
 						)
 					}
 				} catch (error) {
 					item.reject(error)
+					this.processingLock = false
 				}
 			}
-
-			await this.wait(50)
-			this.processingLock = false
 		}
 		this.isProcessing = false
 	}

@@ -113,70 +113,62 @@ class CharacterController {
 
 	public async createCharacter(
 		message: CharacterCreationRequestMessage,
-		account: Account,
-		failureCallback: (reason: CharacterCreationResultEnum) => void,
-		successCallback: (character: Character) => void
-	): Promise<any> {
+		account: Account
+	): Promise<Character> {
+		const characters = account.characters
+
+		if (characters && characters.size >= this.MaxCharacterSlots) {
+			await this._logger.writeAsync(
+				`Error while creating character: too many characters`
+			)
+			throw new Error(
+				CharacterCreationResultEnum.ERR_TOO_MANY_CHARACTERS.toString()
+			)
+		}
+
+		const characterWithSameName = await this.database.prisma.character.findFirst(
+			{
+				where: { name: message.name },
+			}
+		)
+
+		if (characterWithSameName) {
+			await this._logger.writeAsync(
+				`Error while creating character: character with same name already exists: ${message.name}`
+			)
+			throw new Error(CharacterCreationResultEnum.ERR_INVALID_NAME.toString())
+		}
+
+		if (!this.NAME_REGEX.test(message.name as string)) {
+			await this._logger.writeAsync(
+				`Error while creating character: invalid name: ${message.name}`
+			)
+			throw new Error(CharacterCreationResultEnum.ERR_INVALID_NAME.toString())
+		}
+
+		const verifiedColors = ContextEntityLook.verifyColors(
+			message.colors as number[],
+			message.sex as boolean,
+			BreedManager.getInstance().getBreedById(message.breed as number)
+		)
+
+		const look: ContextEntityLook = BreedManager.getInstance().getBreedLook(
+			message.breed as number,
+			message.sex as boolean,
+			message.cosmeticId as number,
+			verifiedColors
+		)
+
+		const startLevel = Experience.experiences.get(
+			ConfigurationManager.getInstance().startLevel
+		) as Experience
+
+		const jobs: Job[] = Array.from(Job.new().values())
+
+		const stats = EntityStats.new(startLevel.level)
+		stats.saveAsJSON()
+
 		try {
-			const characters = account.characters
-
-			if (characters && characters.size >= this.MaxCharacterSlots) {
-				await this._logger.writeAsync(
-					`Error while creating character: too many characters`
-				)
-				return failureCallback(
-					CharacterCreationResultEnum.ERR_TOO_MANY_CHARACTERS
-				)
-			}
-
-			const characterWithSameName = await this.database.prisma.character.findFirst(
-				{
-					where: {
-						name: message.name,
-					},
-				}
-			)
-
-			if (characterWithSameName) {
-				await this._logger.writeAsync(
-					`Error while creating character: character with same name already exists: ${message.name}`
-				)
-				return failureCallback(CharacterCreationResultEnum.ERR_INVALID_NAME)
-			}
-
-			if (!this.NAME_REGEX.test(message.name as string)) {
-				await this._logger.writeAsync(
-					`Error while creating character: invalid name: ${message.name}`
-				)
-				return failureCallback(CharacterCreationResultEnum.ERR_INVALID_NAME)
-			}
-
-			const verifiedColors = ContextEntityLook.verifyColors(
-				message.colors as number[],
-				message.sex as boolean,
-				BreedManager.getInstance().getBreedById(message.breed as number)
-			)
-
-			const look: ContextEntityLook = BreedManager.getInstance().getBreedLook(
-				message.breed as number,
-				message.sex as boolean,
-				message.cosmeticId as number,
-				verifiedColors
-			)
-
-			const startLevel = Experience.experiences.get(
-				ConfigurationManager.getInstance().startLevel
-			) as Experience
-
-			let jobs: Job[] = []
-
-			Job.new().forEach((job) => {
-				jobs.push(job)
-			})
-
-			const stats = EntityStats.new(startLevel.level)
-			stats.saveAsJSON()
-
 			const newCharacter = await this.database.prisma.character.create({
 				data: {
 					userId: account.id as number,
@@ -216,12 +208,12 @@ class CharacterController {
 				stats
 			)
 
-			return successCallback(character)
+			return character
 		} catch (error) {
 			this._logger.write(
 				`Error while creating character: ${(error as any).stack}`
 			)
-			return failureCallback(CharacterCreationResultEnum.ERR_NO_REASON)
+			throw new Error(CharacterCreationResultEnum.ERR_NO_REASON.toString())
 		}
 	}
 

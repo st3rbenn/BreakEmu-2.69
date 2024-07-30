@@ -6,6 +6,15 @@ class Logger {
 	private totalParameters: number = 0
 	private loadedParameters: number = 0
 
+  private static instance: Logger
+
+  public static getInstance(name: string): Logger {
+    if (!this.instance) {
+      this.instance = new Logger(name)
+    }
+    return this.instance
+  }
+
 	constructor(msgPrefix: string = "breakEmu") {
 		this.logger = PinoLogger.default({
 			timestamp: false,

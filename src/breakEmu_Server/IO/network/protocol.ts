@@ -33267,20 +33267,25 @@ export interface RawAdminCommandMessage {
 }
 
 export class AdminCommandMessage extends DofusMessage {
-	public static id: number = 2983
+	public static id: number = 7272
 
+  public messageUuid: Uuid | undefined
 	public content: string | undefined
 
-	public constructor(content?: string | undefined) {
+	public constructor(content?: string | undefined, messageUuid?: Uuid | undefined) {
 		super()
 		this.content = content
+    this.messageUuid = messageUuid
 	}
 
 	public serialize(writer: BinaryWriter): void {
+    this.messageUuid?.serialize(writer)
 		writer.writeUTF(this.content!)
 	}
 
 	public deserialize(reader: BinaryReader): void {
+    this.messageUuid = new Uuid()
+    this.messageUuid.deserialize(reader)
 		this.content = reader.readUTF()
 	}
 
@@ -33295,6 +33300,24 @@ export class AdminCommandMessage extends DofusMessage {
 
 		return this
 	}
+}
+
+export class Uuid extends DofusType {
+  public static id: number = 2009;
+
+  public uuidString: string | undefined = ""
+
+  public contructor(uuidString: string | undefined) {
+    this.uuidString = uuidString
+  }
+
+  public serialize(writer: BinaryWriter): void {
+    writer.writeUTF(this.uuidString!)
+  }
+
+  public deserialize(reader: BinaryReader): void {
+  this.uuidString = reader.readUTF()
+  }
 }
 
 export interface RawConsoleMessage {
@@ -68417,7 +68440,7 @@ export interface RawAdminQuietCommandMessage extends RawAdminCommandMessage {
 }
 
 export class AdminQuietCommandMessage extends AdminCommandMessage {
-	public static id = 5819
+	public static id = 7816
 
 	public constructor(content?: string | undefined) {
 		super(content)
@@ -73489,6 +73512,7 @@ export class PopupWarningClosedMessage extends DofusMessage {
 export const types: { [key: number]: typeof DofusType } = {
 	7500: GameContextActorPositionInformations,
 	1094: SpellModifierMessage,
+  2009: Uuid,
 	9225: CharacterCharacteristic,
 	6639: GameContextActorInformations,
 	9377: GameRolePlayActorInformations,
@@ -73984,7 +74008,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	2340: BasicLatencyStatsRequestMessage,
 	9646: BasicLatencyStatsMessage,
 	8389: CheckIntegrityMessage,
-	2983: AdminCommandMessage,
+	7272: AdminCommandMessage,
 	2223: ConsoleMessage,
 	3230: QuestListMessage,
 	7778: QuestValidatedMessage,
@@ -74770,7 +74794,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	1885: PaddockToSellFilterMessage,
 	5809: HouseToSellListRequestMessage,
 	7868: HouseToSellFilterMessage,
-	5819: AdminQuietCommandMessage,
+	7816: AdminQuietCommandMessage,
 	8131: SetEnablePVPRequestMessage,
 	6202: CharacterAlignmentWarEffortProgressionRequestMessage,
 	8514: AlignmentWarEffortDonateRequestMessage,

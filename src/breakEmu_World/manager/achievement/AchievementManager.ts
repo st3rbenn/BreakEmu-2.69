@@ -1,7 +1,7 @@
-import AchievementObjective from "../../../breakEmu_API/model/achievementObjective.model"
 import Achievement from "../../../breakEmu_API/model/achievement.model"
+import AchievementObjective from "../../../breakEmu_API/model/achievementObjective.model"
 import Character from "../../../breakEmu_API/model/character.model"
-import SubArea from "../../../breakEmu_API/model/SubArea.model"
+import Job from "../../../breakEmu_API/model/job.model"
 import AchievementHandler from "../../../breakEmu_World/handlers/achievement/AchievementHandler"
 import AchievementObjectiveHandler from "./objective/AchievementObjectiveHandler"
 
@@ -19,11 +19,29 @@ class AchievementManager {
 		Achievement
 	>()
 
+	private jobAchievements: Map<number, Achievement> = new Map<
+		number,
+		Achievement
+	>()
+
+	private levelJobAchievements: Map<number, Achievement> = new Map<
+		number,
+		Achievement
+	>()
+
 	static instance: AchievementManager
 
 	constructor() {
 		this.take(11).forEach((achievement) => {
 			this.levelAchievements.set(achievement.id, achievement)
+		})
+
+		this.getAchievementsByCategoryId(7).forEach((achievement) => {
+			this.jobAchievements.set(achievement.id, achievement)
+		})
+
+		this.take(3, this.jobAchievements).forEach((achievement) => {
+			this.levelJobAchievements.set(achievement.id, achievement)
 		})
 	}
 
@@ -34,8 +52,11 @@ class AchievementManager {
 		return this.instance
 	}
 
-	private take(n: number) {
-		return Array.from(AchievementManager.achievements.values()).slice(0, n)
+	private take(
+		n: number,
+		achievements: Map<number, Achievement> = AchievementManager.achievements
+	) {
+		return Array.from(achievements.values()).slice(0, n)
 	}
 
 	public async checkLevelAchievements(character: Character) {
@@ -48,6 +69,20 @@ class AchievementManager {
 
 		if (levelToAdd.length > 0) {
 			for (const achievement of levelToAdd) {
+				await this.checkAchievementCompletion(character, achievement, true)
+			}
+		}
+	}
+
+	public async checkJobLevelAchievements(character: Character, job: Job) {
+		const jobLevelToAdd = Array.from(this.levelJobAchievements.values()).filter(
+			(achievement) =>
+				!character.finishedAchievements.includes(achievement.id) &&
+				achievement.description.match(/\d+/g)?.[0] === job.level.toString()
+		)
+
+		if (jobLevelToAdd.length > 0) {
+			for (const achievement of jobLevelToAdd) {
 				await this.checkAchievementCompletion(character, achievement, true)
 			}
 		}
@@ -77,10 +112,6 @@ class AchievementManager {
 				achievementObj.criterion.includes("OA") &&
 				achievementObj.criterion.includes(achievement.id.toString())
 		)
-
-		if (!character.almostFinishedAchievements.includes(achievement.id) && achievementObjectives.length > 0) {
-			character.almostFinishedAchievements.push(achievement.id)
-		}
 
 		if (achievementObjectives.length <= 0) return
 

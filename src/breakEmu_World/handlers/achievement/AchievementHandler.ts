@@ -143,6 +143,18 @@ class AchievementHandler {
 							client,
 							achievement.id
 						)
+						client.selectedCharacter.untakenAchievementsReward = client.selectedCharacter.untakenAchievementsReward.filter(
+							(id) => id != achievement.id
+						)
+						if (
+							client?.selectedCharacter?.almostFinishedAchievements.includes(
+								achievement.id
+							)
+						) {
+							client.selectedCharacter.almostFinishedAchievements = client.selectedCharacter.almostFinishedAchievements.filter(
+								(id) => id != achievement.id
+							)
+						}
 						await client.selectedCharacter.refreshStats()
 					}
 				}

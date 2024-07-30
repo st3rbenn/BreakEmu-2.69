@@ -9,7 +9,9 @@ import Character from "./character.model"
 
 class Achievement {
 	id: number
+  name: string
 	categoryId: number
+  description: string
 	points: number
 	level: number
 	order: number
@@ -19,6 +21,8 @@ class Achievement {
 
 	constructor(
 		id: number,
+    name: string,
+    description: string,
 		categoryId: number,
 		points: number,
 		level: number,
@@ -28,6 +32,8 @@ class Achievement {
 		rewards: Map<number, AchievementReward>
 	) {
 		this.id = id
+    this.name = name
+    this.description = description
 		this.categoryId = categoryId
 		this.points = points
 		this.level = level

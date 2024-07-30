@@ -92,15 +92,15 @@ class MapInstance {
 	}
 
 	public async addEntity(entity: Entity) {
-		try {
-			if (this.entities.has(entity.id)) {
-				return
-			}
-			console.log(
-				`Add entity: (${entity.name}) on map: (${this.record.id}) at cell: (${entity.cellId})`
-			)
+		if (this.entities.has(entity.id)) {
+			return
+		}
+		console.log(
+			`Add entity: (${entity.name}) on map: (${this.record.id}) at cell: (${entity.cellId})`
+		)
 
-			let actorInformations = entity.getActorInformations()
+		let actorInformations = entity.getActorInformations()
+		try {
 			await this.send(new GameRolePlayShowActorMessage(actorInformations))
 
 			this.entities.set(entity.id, entity)
@@ -151,7 +151,6 @@ class MapInstance {
 				false,
 				new FightStartingPositions([0], [0])
 			)
-
 			await client.Send(mapComplementary)
 		} catch (error) {
 			console.log(error)
@@ -314,7 +313,11 @@ class MapInstance {
 
 	public async sendMapFightCount(client: WorldClient, fightCount: number) {
 		//TODO: Implement this
-		await client.Send(new MapFightCountMessage(fightCount))
+		try {
+			await client.Send(new MapFightCountMessage(fightCount))
+		} catch (error) {
+			console.log(error)
+		}
 	}
 
 	public async isCharacterBlocked(character: Character): Promise<boolean> {

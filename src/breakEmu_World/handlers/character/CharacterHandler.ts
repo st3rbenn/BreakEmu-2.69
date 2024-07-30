@@ -1,3 +1,4 @@
+import CharacterCreationResultEnum from "../../../breakEmu_World/enum/CharacterCreationResultEnum"
 import CharacterController from "../../../breakEmu_API/controller/character.controller"
 import Account from "../../../breakEmu_API/model/account.model"
 import Character from "../../../breakEmu_API/model/character.model"
@@ -5,24 +6,24 @@ import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
 import ConfigurationManager from "../../../breakEmu_Core/configuration/ConfigurationManager"
 import Logger from "../../../breakEmu_Core/Logger"
 import {
-  CharacterBaseInformations,
-  CharacterCanBeCreatedRequestMessage,
-  CharacterCanBeCreatedResultMessage,
-  CharacterCapabilitiesMessage,
-  CharacterCreationRequestMessage,
-  CharacterCreationResultMessage,
-  CharacterDeletionErrorEnum,
-  CharacterDeletionErrorMessage,
-  CharacterDeletionPrepareMessage,
-  CharacterDeletionPrepareRequestMessage,
-  CharacterDeletionRequestMessage,
-  CharacterLevelUpInformationMessage,
-  CharacterLevelUpMessage,
-  CharacterSelectedSuccessMessage,
-  CharactersListMessage,
-  NotificationListMessage,
-  PopupWarningClosedMessage,
-  SequenceNumberRequestMessage,
+	CharacterBaseInformations,
+	CharacterCanBeCreatedRequestMessage,
+	CharacterCanBeCreatedResultMessage,
+	CharacterCapabilitiesMessage,
+	CharacterCreationRequestMessage,
+	CharacterCreationResultMessage,
+	CharacterDeletionErrorEnum,
+	CharacterDeletionErrorMessage,
+	CharacterDeletionPrepareMessage,
+	CharacterDeletionPrepareRequestMessage,
+	CharacterDeletionRequestMessage,
+	CharacterLevelUpInformationMessage,
+	CharacterLevelUpMessage,
+	CharacterSelectedSuccessMessage,
+	CharactersListMessage,
+	NotificationListMessage,
+	PopupWarningClosedMessage,
+	SequenceNumberRequestMessage,
 } from "../../../breakEmu_Server/IO"
 import WorldClient from "../../WorldClient"
 
@@ -54,28 +55,34 @@ class CharacterHandler {
 		character: Character,
 		client: WorldClient
 	) {
-		client.selectedCharacter = character as Character
-		this.logger.warn(
-			`Client ${client.account?.username} selected character ${character.name} (id: ${character.id})`
-		)
-		await client.Send(
-			new CharacterSelectedSuccessMessage(
-				character?.toCharacterBaseInformations(),
-				false
+		client.setSelectedCharacter(character)
+		try {
+			await client.Send(
+				new CharacterSelectedSuccessMessage(
+					character?.toCharacterBaseInformations(),
+					false
+				)
 			)
-		)
-		await client.Send(new NotificationListMessage([2147483647]))
-		await client.Send(new CharacterCapabilitiesMessage(4095))
-		await client.Send(new SequenceNumberRequestMessage())
+			await client.Send(new NotificationListMessage([2147483647]))
+			await client.Send(new CharacterCapabilitiesMessage(4095))
+			await client.Send(new SequenceNumberRequestMessage())
 
-		await client.selectedCharacter.refreshAll()
+      client.selectedCharacter.testIfCharacterDataIsValid()
+      
+			await client.selectedCharacter.refreshAll()
 
-		// await character.inventory?.addNewItem(8464, 1, false)
+			// await character.inventory?.addNewItem(8464, 1, false)
+		} catch (error) {
+			this.logger.write(
+				`Error in handleCharacterSelectionMessage: ${(error as any).stack}`,
+				ansiColorCodes.red
+			)
+		}
 	}
 
 	public static async handleCharactersListMessage(client: WorldClient) {
 		try {
-			let characters = client.account?.characters
+			let characters = client.account.characters
 
 			let characterToBaseInfo: CharacterBaseInformations[] = []
 
@@ -108,45 +115,54 @@ class CharacterHandler {
 		message: CharacterDeletionPrepareRequestMessage,
 		client: WorldClient
 	) {
-		await this.logger.writeAsync(
-			`Received CharacterDeletionPrepareRequestMessage message`,
-			ansiColorCodes.lightGray
-		)
-		const msg = message as CharacterDeletionPrepareRequestMessage
-
-		const currCharacter = client.account?.characters.get(
-			msg.characterId as number
-		)
-
-		if (!currCharacter) {
+		try {
 			await this.logger.writeAsync(
-				`Character ${msg.characterId} not found`,
-				ansiColorCodes.red
+				`Received CharacterDeletionPrepareRequestMessage message`,
+				ansiColorCodes.lightGray
 			)
+			const msg = message as CharacterDeletionPrepareRequestMessage
+
+			const currCharacter = client.account?.characters.get(
+				msg.characterId as number
+			)
+
+			if (!currCharacter) {
+				await this.logger.writeAsync(
+					`Character ${msg.characterId} not found`,
+					ansiColorCodes.red
+				)
+
+				await client.Send(
+					new CharacterDeletionErrorMessage(
+						CharacterDeletionErrorEnum.DEL_ERR_NO_REASON
+					)
+				)
+				return
+			}
+			//console log the character to delete
+			const characterToDelete = {
+				characterId: currCharacter?.id as number,
+				characterName: currCharacter?.name as string,
+				secretQuestion: client.account?.secretQuestion as string,
+				needSecretAnswer: false,
+			}
 
 			await client.Send(
-				new CharacterDeletionErrorMessage(
-					CharacterDeletionErrorEnum.DEL_ERR_NO_REASON
+				new CharacterDeletionPrepareMessage(
+					characterToDelete.characterId,
+					characterToDelete.characterName,
+					characterToDelete.secretQuestion,
+					characterToDelete.needSecretAnswer
 				)
 			)
-			return
-		}
-		//console log the character to delete
-		const t = {
-			characterId: currCharacter?.id as number,
-			characterName: currCharacter?.name as string,
-			secretQuestion: client.account?.secretQuestion as string,
-			needSecretAnswer: false,
-		}
-
-		await client.Send(
-			new CharacterDeletionPrepareMessage(
-				t.characterId,
-				t.characterName,
-				t.secretQuestion,
-				t.needSecretAnswer
+		} catch (error) {
+			await this.logger.writeAsync(
+				`Error while handling CharacterDeletionPrepareRequestMessage: ${
+					(error as any).stack
+				}`,
+				ansiColorCodes.red
 			)
-		)
+		}
 	}
 
 	public static async handleCharacterDeletionMessage(
@@ -196,33 +212,47 @@ class CharacterHandler {
 		message: CharacterCreationRequestMessage,
 		client: WorldClient
 	) {
-		await CharacterController.getInstance().createCharacter(
-			message,
-			client.account as Account,
-			async (reason) => {
-				await client.Send(new CharacterCreationResultMessage(1, reason))
-			},
-			async (character) => {
-				await client.Send(new CharacterCreationResultMessage(0, 0))
-				this.logger.write(
-					`Character ${character.name} created`,
-					ansiColorCodes.bgGreen
-				)
+		try {
+			const character = await CharacterController.getInstance().createCharacter(
+				message,
+				client.account as Account
+			)
 
+			await client.Send(new CharacterCreationResultMessage(0, 0))
+			this.logger.write(
+				`Character ${character.name} created`,
+				ansiColorCodes.bgGreen
+			)
+
+			// Utiliser Promise.all pour attendre que tous les items soient ajoutés
+			await Promise.all(
 				ConfigurationManager.instance.itemStarter.map(async (itemGid) => {
 					await character.inventory.addNewItem(itemGid)
 				})
+			)
 
-				await CharacterController.getInstance().updateCharacter(character)
+			await CharacterController.getInstance().updateCharacter(character)
 
-				client.account?.characters.set(character.id, character)
-				character.account = client.account
+			client.account?.characters.set(character.id, character)
+			character.account = client.account
 
-				client.selectedCharacter = character
+			client.selectedCharacter = character
 
-				await this.handleCharacterSelectionMessage(character, client)
-			}
-		)
+			await this.handleCharacterSelectionMessage(character, client)
+		} catch (error) {
+			this.logger.write(
+				`Error in handleCharacterCreationRequestMessage: ${
+					(error as any).message
+				}`,
+				ansiColorCodes.red
+			)
+			await client.Send(
+				new CharacterCreationResultMessage(
+					1,
+					CharacterCreationResultEnum.ERR_NO_REASON
+				)
+			)
+		}
 	}
 
 	public static async CharacterCanBeCreatedRequestMessage(

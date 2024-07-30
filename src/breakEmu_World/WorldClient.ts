@@ -10,6 +10,7 @@ import {
 	AchievementDetailedListRequestMessage,
 	AchievementDetailsRequestMessage,
 	AchievementRewardRequestMessage,
+	AdminQuietCommandMessage,
 	AllianceRanksMessage,
 	AllianceRanksRequestMessage,
 	AuthenticationTicketMessage,
@@ -92,6 +93,10 @@ class WorldClient extends ServerClient {
 		this.initializeMessageHandlers()
 	}
 
+	setSelectedCharacter(character: Character) {
+		this.selectedCharacter = character
+	}
+
 	private initializeMessageHandlers() {
 		this.messageHandlers = {
 			[AuthenticationTicketMessage.id]: AuthentificationHandler.handleAuthenticationTicketMessage.bind(
@@ -107,13 +112,6 @@ class WorldClient extends ServerClient {
 				client: WorldClient,
 				message: DofusMessage
 			) => {
-				if (client.selectedCharacter && !client.selectedCharacter.inGame) {
-					console.log("character blocked")
-					await ContextHandler.handleGameContextCreateMessage(
-						client.selectedCharacter as Character
-					)
-				}
-
 				await client.Send(new BasicPongMessage(true))
 				return
 			},
@@ -196,10 +194,7 @@ class WorldClient extends ServerClient {
 			[GameContextCreateRequestMessage.id]: async (
 				client: WorldClient,
 				message: DofusMessage
-			) =>
-				await ContextHandler.handleGameContextCreateMessage(
-					client.selectedCharacter as Character
-				),
+			) => await ContextHandler.handleGameContextCreateMessage(client),
 			[MapInformationsRequestMessage.id]: async (
 				client: WorldClient,
 				message: DofusMessage
@@ -255,29 +250,6 @@ class WorldClient extends ServerClient {
 				await InventoryHandler.handleObjectSetPositionMessage(
 					client,
 					message as ObjectSetPositionMessage
-				),
-			[AchievementAlmostFinishedDetailedListRequestMessage.id]: async (
-				client: WorldClient,
-				message: DofusMessage
-			) =>
-				await AchievementHandler.handleAchievementAlmostFinishedDetailedListRequestMessage(
-					client
-				),
-			[AchievementDetailedListRequestMessage.id]: async (
-				client: WorldClient,
-				message: DofusMessage
-			) =>
-				await AchievementHandler.handleAchievementDetailedListRequestMessage(
-					client,
-					message as AchievementDetailedListRequestMessage
-				),
-			[AchievementDetailsRequestMessage.id]: async (
-				client: WorldClient,
-				message: DofusMessage
-			) =>
-				await AchievementHandler.handleAchievementDetailsRequestMessage(
-					client,
-					message as AchievementDetailsRequestMessage
 				),
 			[StatsUpgradeRequestMessage.id]: async (
 				client: WorldClient,
@@ -355,6 +327,10 @@ class WorldClient extends ServerClient {
 					client,
 					message as ChatClientMultiMessage
 				),
+			[AdminQuietCommandMessage.id]: async (
+				client: WorldClient,
+				message: AdminQuietCommandMessage
+			) => await ContextHandler.handleAdminQuietCommandMessage(client, message),
 			[AchievementRewardRequestMessage.id]: async (
 				client: WorldClient,
 				message: DofusMessage
@@ -362,6 +338,29 @@ class WorldClient extends ServerClient {
 				await AchievementHandler.handleAchievementRewardRequestMessage(
 					client,
 					message as AchievementRewardRequestMessage
+				),
+			[AchievementAlmostFinishedDetailedListRequestMessage.id]: async (
+				client: WorldClient,
+				message: DofusMessage
+			) =>
+				await AchievementHandler.handleAchievementAlmostFinishedDetailedListRequestMessage(
+					client
+				),
+			[AchievementDetailedListRequestMessage.id]: async (
+				client: WorldClient,
+				message: DofusMessage
+			) =>
+				await AchievementHandler.handleAchievementDetailedListRequestMessage(
+					client,
+					message as AchievementDetailedListRequestMessage
+				),
+			[AchievementDetailsRequestMessage.id]: async (
+				client: WorldClient,
+				message: DofusMessage
+			) =>
+				await AchievementHandler.handleAchievementDetailsRequestMessage(
+					client,
+					message as AchievementDetailsRequestMessage
 				),
 			[TitlesAndOrnamentsListRequestMessage.id]: async (
 				client: WorldClient,
@@ -383,11 +382,13 @@ class WorldClient extends ServerClient {
 	}
 
 	public async initialize(): Promise<void> {
+		const userController = new UserController()
 		try {
-			this.account = (await new UserController().getAccountByNickname(
+			this.account = (await userController.getAccountByNickname(
 				this.pseudo,
 				this
 			)) as Account
+
 			await this.Send(
 				new ProtocolRequired(
 					ConfigurationManager.getInstance().dofusProtocolVersion

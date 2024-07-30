@@ -1,13 +1,12 @@
+import AchievementManager from "../../breakEmu_World/manager/achievement/AchievementManager"
 import Experience from "../../breakEmu_API/model/experience.model"
 import {
-	CharacteristicEnum,
-	JobCrafterDirectorySettings,
-	JobDescription,
-	JobExperience,
-	JobExperienceUpdateMessage,
-	JobLevelUpMessage,
-	JobTypeEnum,
-	TextInformationTypeEnum,
+  JobCrafterDirectorySettings,
+  JobDescription,
+  JobExperience,
+  JobExperienceUpdateMessage,
+  JobLevelUpMessage,
+  JobTypeEnum
 } from "../../breakEmu_Server/IO"
 import SkillManager from "../../breakEmu_World/manager/skills/SkillManager"
 import Character from "./character.model"
@@ -42,6 +41,7 @@ class Job {
 		if (this.experience >= nextLevelFloor && this.level < Job.MAX_LEVEL) {
 			this.level = Experience.getJobLevel(this.experience)
 			await this.onLevelUp(character, this.level - 1, this.level)
+      await AchievementManager.getInstance().checkJobLevelAchievements(character, this)
 		}
 	}
 

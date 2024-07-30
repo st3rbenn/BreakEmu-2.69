@@ -16,7 +16,7 @@ class GameMap {
 	subareaId: number
 	version: number
 
-	_instance: MapInstance
+	instance: MapInstance
 
 	subArea: SubArea
 
@@ -56,18 +56,9 @@ class GameMap {
 		this.topMap = topMap
 		this.bottomMap = bottomMap
 
-    this.subArea = SubArea.getSubAreaById(subareaId)
-	}
+		this.subArea = SubArea.getSubAreaById(subareaId)
 
-	get instance(): MapInstance {
-		if (!this._instance) {
-			this._instance = new MapInstance(this)
-		}
-		return this._instance
-	}
-
-	set instance(value: MapInstance) {
-		this._instance = value
+		this.instance = new MapInstance(this)
 	}
 
 	static getMapById(id: number): GameMap | undefined {
@@ -238,26 +229,28 @@ class GameMap {
 		})
 		return element
 	}
-  
-  public getFirstElementByCellId(cellId: number): InteractiveElementModel | undefined {
-    return this.elements.get(cellId)
-  }
 
-  public getCell(cellId: number): Cell | undefined {
-    return this.cells.get(cellId)
-  }
+	public getFirstElementByCellId(
+		cellId: number
+	): InteractiveElementModel | undefined {
+		return this.elements.get(cellId)
+	}
 
-  public getCellByPoint(point: MapPoint): Cell | undefined {
-    return this.cells.get(point.cellId)
-  }
+	public getCell(cellId: number): Cell | undefined {
+		return this.cells.get(cellId)
+	}
 
-  public getCellByPointId(pointId: number): Cell | undefined {
-    return this.cells.get(pointId)
-  }
+	public getCellByPoint(point: MapPoint): Cell | undefined {
+		return this.cells.get(point.cellId)
+	}
 
-  public getCellByElement(element: InteractiveElementModel): Cell | undefined {
-    return this.cells.get(element.cellId)
-  }
+	public getCellByPointId(pointId: number): Cell | undefined {
+		return this.cells.get(pointId)
+	}
+
+	public getCellByElement(element: InteractiveElementModel): Cell | undefined {
+		return this.cells.get(element.cellId)
+	}
 
 	public getMapObstacles(): MapObstacle[] {
 		let obstacles: MapObstacle[] = []
