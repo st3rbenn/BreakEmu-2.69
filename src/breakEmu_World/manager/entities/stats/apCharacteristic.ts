@@ -1,5 +1,5 @@
 import LimitCharacteristic from "./limitCharacteristic";
-import ConfigurationManager from "../../../../breakEmu_Core/configuration/ConfigurationManager";
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager";
 
 class ApCharacteristic extends LimitCharacteristic {
   public override get limit(): number {

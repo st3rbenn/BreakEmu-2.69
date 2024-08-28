@@ -1,5 +1,5 @@
 import Bull from "bull"
-import InteractiveElementModel from "../../../breakEmu_API/model/InteractiveElement.model"
+import InteractiveElementModel from "@breakEmu_API/model/InteractiveElement.model"
 import Task from "../Task"
 
 class BonusTask extends Task {

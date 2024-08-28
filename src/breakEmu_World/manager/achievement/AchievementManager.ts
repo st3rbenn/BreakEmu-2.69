@@ -1,8 +1,8 @@
-import Achievement from "../../../breakEmu_API/model/achievement.model"
-import AchievementObjective from "../../../breakEmu_API/model/achievementObjective.model"
-import Character from "../../../breakEmu_API/model/character.model"
-import Job from "../../../breakEmu_API/model/job.model"
-import AchievementHandler from "../../../breakEmu_World/handlers/achievement/AchievementHandler"
+import Achievement from "@breakEmu_API/model/achievement.model"
+import AchievementObjective from "@breakEmu_API/model/achievementObjective.model"
+import Character from "@breakEmu_API/model/character.model"
+import Job from "@breakEmu_API/model/job.model"
+import AchievementHandler from "@breakEmu_World/handlers/achievement/AchievementHandler"
 import AchievementObjectiveHandler from "./objective/AchievementObjectiveHandler"
 
 class AchievementManager {
@@ -11,8 +11,8 @@ class AchievementManager {
 		number,
 		AchievementObjective
 	>()
-	private static readonly LEVEL_ADJUSTMENT_FACTOR = 0.7
-	private static readonly EXPERIENCE_MULTIPLIER = 2.25
+	private static readonly LEVEL_ADJUSTMENT_FACTOR = 0.1
+	private static readonly EXPERIENCE_MULTIPLIER = 1
 
 	private levelAchievements: Map<number, Achievement> = new Map<
 		number,

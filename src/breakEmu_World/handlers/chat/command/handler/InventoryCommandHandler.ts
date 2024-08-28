@@ -1,7 +1,7 @@
-import Character from "../../../../../breakEmu_API/model/character.model"
-import Item from "../../../../../breakEmu_API/model/item.model"
-import Logger from "../../../../../breakEmu_Core/Logger"
-import WorldServer from "../../../../../breakEmu_World/WorldServer"
+import Character from "@breakEmu_API/model/character.model"
+import Item from "@breakEmu_API/model/item.model"
+import Logger from "@breakEmu_Core/Logger"
+import WorldServer from "@breakEmu_World/WorldServer"
 import AccountRoleEnum from "../../../../enum/AccountRoleEnum"
 import CommandHandler, { TCommandHandler } from "../CommandHandler"
 
@@ -151,7 +151,7 @@ class InventoryCommandHandler {
 
 				itemInInventory.quantity -= quantity
 
-				await character.inventory?.updateItemQuantity(itemInInventory)
+				await character.inventory?.updateItem(itemInInventory)
 
 				await character.reply(
 					`Remove ${quantity} ${itemInInventory.record.name} to your inventory`

@@ -1,10 +1,14 @@
-import Character from "../../../breakEmu_API/model/character.model"
-import { DialogTypeEnum, ExchangeLeaveMessage } from "../../../breakEmu_Server/IO"
+import Character from "@breakEmu_API/model/character.model"
+import { DialogTypeEnum, ExchangeLeaveMessage, ExchangeTypeEnum } from "@breakEmu_Protocol/IO"
 import Dialog from "../dialog/Dialog"
 
 abstract class Exchange extends Dialog {
 
   success: boolean = false
+
+  dialogType: DialogTypeEnum = DialogTypeEnum.DIALOG_EXCHANGE
+
+  EchangeType: ExchangeTypeEnum
 
   constructor(character: Character) {
     super()
@@ -19,6 +23,20 @@ abstract class Exchange extends Dialog {
     ))
     this.character.removeDialog()
   }
+
+
+
+  public abstract moveItemPriced(objectUID: number, quantity: number, price: number): void;
+
+  public abstract modifyItemPriced(objectUID: number, quantity: number, price: number): void;
+
+  public abstract moveItem(uid: string, quantity: number): void;
+
+  public abstract ready(ready: boolean, step: number): void;
+
+  public abstract moveKamas(quantity: number): void;
+
+  // public abstract onNpcGenericAction(action: NpcActionsEnum): void;
 }
 
 export default Exchange

@@ -1,4 +1,4 @@
-import { StatsBoostEnum } from "../../breakEmu_Server/IO"
+import { StatsBoostEnum } from "@breakEmu_Protocol/IO"
 
 interface StatUpgradeCost {
 	cost: number
@@ -78,7 +78,6 @@ class Breed {
 	): number {
 		let index = 0
 		for(let i = 0; i < costs.length; i++) {
-      console.log(costs[i])
       if(costs[i].until <= actualPoints) {
         index = i
         return index

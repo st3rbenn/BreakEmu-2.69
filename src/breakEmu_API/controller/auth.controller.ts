@@ -1,11 +1,11 @@
 import { compareSync } from "bcrypt"
-import AuthClient from "../../breakEmu_Auth/AuthClient"
-import Logger from "../../breakEmu_Core/Logger"
+import AuthClient from "@breakEmu_Auth/AuthClient"
+import Logger from "@breakEmu_Core/Logger"
 import {
   IdentificationFailedMessage,
   IdentificationFailureReasonEnum,
   NicknameRegistrationMessage
-} from "../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import Database from "../Database"
 import BaseController from "./base.controller"
 

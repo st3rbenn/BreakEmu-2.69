@@ -1,5 +1,5 @@
 import Effect from "breakEmu_World/manager/entities/effect/Effect"
-import EffectCollection from "../../breakEmu_World/manager/entities/effect/EffectCollection"
+import EffectCollection from "@breakEmu_World/manager/entities/effect/EffectCollection"
 import Item from "./item.model"
 
 class ItemSet {

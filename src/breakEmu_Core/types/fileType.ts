@@ -6,9 +6,20 @@ export interface IAuthConfiguration {
 	debug: IDebugOptions
 	authServer: IAuthServer
   worldServer: IWorldConfiguration
+  snifferServer: ISnifferServer
 }
 
-export interface IWorldConfiguration {
+interface IWorldConfiguration {
+	host: string
+	port: number
+}
+
+interface ISnifferServer {
+  host: string
+  port: number
+}
+
+interface IAuthServer {
 	host: string
 	port: number
 }
@@ -44,9 +55,4 @@ interface IDebugOptions {
 	showDebugMessages: boolean
 	showProtocolMessage: boolean
   showDatabaseLogs: boolean
-}
-
-interface IAuthServer {
-	host: string
-	port: number
 }

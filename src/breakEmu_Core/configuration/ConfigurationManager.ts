@@ -1,7 +1,7 @@
 import { existsSync, promises as fsPromises } from "fs"
 import * as yaml from "js-yaml"
 import * as YML from "yaml"
-import { ansiColorCodes } from "../Colors"
+import ansiColorCodes from "../Colors"
 import Logger from "../Logger"
 import { IAuthConfiguration } from "../types/fileType"
 import DofusConfiguration from "./DofusConfiguration"
@@ -107,7 +107,7 @@ class ConfigurationManager extends DofusConfiguration {
 				// Check if the property exists in ConfigurationManager
 				// @ts-ignore
 				this[propertyName as keyof ConfigurationManager] = value
-				await this.updateProgress(this.configResult as IAuthConfiguration) // Update progress after each assignment
+				// await this.updateProgress(this.configResult as IAuthConfiguration) // Update progress after each assignment
 			} else {
 				console.warn(`Unrecognized property: ${propertyName}`)
 			}
@@ -115,7 +115,12 @@ class ConfigurationManager extends DofusConfiguration {
 	}
 
 	private isCategory(category: string): boolean {
-		return new Set(["database", "authServer", "worldServer"]).has(category)
+		return new Set([
+			"database",
+			"authServer",
+			"worldServer",
+			"snifferServer",
+		]).has(category)
 	}
 
 	private capitalizeFirstLetter(string: string): string {
@@ -139,6 +144,10 @@ class ConfigurationManager extends DofusConfiguration {
 				host: this.worldServerHost,
 				port: this.worldServerPort,
 			},
+			snifferServer: {
+				host: this.snifferServerHost,
+				port: this.snifferServerPort,
+			},
 			dofus: {
 				dofusProtocolVersion: this.dofusProtocolVersion,
 				versionMajor: this.versionMajor,
@@ -153,9 +162,9 @@ class ConfigurationManager extends DofusConfiguration {
 				startKamas: this.startKamas,
 				startStatsPoints: this.startStatsPoints,
 				XpRate: this.XpRate,
-        jobXpRate: this.jobXpRate,
-        dropRate: this.dropRate,
-        itemStarter: this.itemStarter,
+				jobXpRate: this.jobXpRate,
+				dropRate: this.dropRate,
+				itemStarter: this.itemStarter,
 			},
 			debug: {
 				showDebugMessages: this.showDebugMessages,

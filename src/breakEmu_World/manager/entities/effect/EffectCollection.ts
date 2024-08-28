@@ -1,4 +1,4 @@
-import { EffectsEnum, ObjectEffect } from "../../../../breakEmu_Server/IO"
+import { EffectsEnum, ObjectEffect } from "@breakEmu_Protocol/IO"
 import AsyncRandom from "../../AsyncRandom"
 import Effect from "./Effect"
 import EffectDice from "./EffectDice"

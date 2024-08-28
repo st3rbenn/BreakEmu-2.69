@@ -1,4 +1,4 @@
-import WorldServerData from "../../breakEmu_World/WorldServerData"
+import WorldServerData from "@breakEmu_World/WorldServerData"
 
 class World {
 	id: number

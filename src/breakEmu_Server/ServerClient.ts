@@ -1,15 +1,15 @@
 import { Socket } from "net"
-import { ansiColorCodes } from "../breakEmu_Core/Colors"
-import Logger from "../breakEmu_Core/Logger"
-import MessageQueue from "../breakEmu_Core/MessageQueue"
-import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
+import MessageQueue from "@breakEmu_Core/MessageQueue"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
 import {
 	BinaryBigEndianReader,
 	BinaryBigEndianWriter,
 	DofusMessage,
 	DofusNetworkMessage,
 	messages,
-} from "./IO"
+} from "@breakEmu_Protocol/IO"
 
 abstract class ServerClient {
 	public abstract logger: Logger

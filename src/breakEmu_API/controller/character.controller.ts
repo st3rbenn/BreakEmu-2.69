@@ -1,17 +1,18 @@
-import Account from "../../breakEmu_API/model/account.model"
-import Experience from "../../breakEmu_API/model/experience.model"
-import Finishmoves from "../../breakEmu_API/model/finishmoves.model"
-import Job from "../../breakEmu_API/model/job.model"
-import GameMap from "../../breakEmu_API/model/map.model"
-import Spell from "../../breakEmu_API/model/spell.model"
-import Logger from "../../breakEmu_Core/Logger"
-import ConfigurationManager from "../../breakEmu_Core/configuration/ConfigurationManager"
-import { CharacterCreationRequestMessage } from "../../breakEmu_Server/IO"
-import CharacterCreationResultEnum from "../../breakEmu_World/enum/CharacterCreationResultEnum"
-import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
-import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
-import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
-import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
+import JobManager from "@breakEmu_World/manager/job/JobManager"
+import Account from "@breakEmu_API/model/account.model"
+import Experience from "@breakEmu_API/model/experience.model"
+import Finishmoves from "@breakEmu_API/model/finishmoves.model"
+import Job from "@breakEmu_API/model/job.model"
+import GameMap from "@breakEmu_API/model/map.model"
+import Spell from "@breakEmu_API/model/spell.model"
+import Logger from "@breakEmu_Core/Logger"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
+import { CharacterCreationRequestMessage } from "@breakEmu_Protocol/IO"
+import CharacterCreationResultEnum from "@breakEmu_World/enum/CharacterCreationResultEnum"
+import BreedManager from "@breakEmu_World/manager/breed/BreedManager"
+import ContextEntityLook from "@breakEmu_World/manager/entities/look/ContextEntityLook"
+import EntityStats from "@breakEmu_World/manager/entities/stats/entityStats"
+import CharacterShortcut from "@breakEmu_World/manager/shortcut/character/CharacterShortcut"
 import Database from "../Database"
 import Character from "../model/character.model"
 
@@ -163,7 +164,7 @@ class CharacterController {
 			ConfigurationManager.getInstance().startLevel
 		) as Experience
 
-		const jobs: Job[] = Array.from(Job.new().values())
+		const jobs: Job[] = Array.from(JobManager.new().values())
 
 		const stats = EntityStats.new(startLevel.level)
 		stats.saveAsJSON()

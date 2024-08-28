@@ -1,20 +1,20 @@
 import { RSA_PKCS1_PADDING } from "constants"
 import { privateDecrypt } from "crypto"
 import NodeRSA from "node-rsa"
-import AuthController from "../../../breakEmu_API/controller/auth.controller"
-import Account from "../../../breakEmu_API/model/account.model"
-import AuthClient, { Attributes } from "../../../breakEmu_Auth/AuthClient"
-import AuthTransition from "../../../breakEmu_Auth/AuthTransition"
-import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
-import Logger from "../../../breakEmu_Core/Logger"
-import ConfigurationManager from "../../../breakEmu_Core/configuration/ConfigurationManager"
+import AuthController from "@breakEmu_API/controller/auth.controller"
+import Account from "@breakEmu_API/model/account.model"
+import AuthClient, { Attributes } from "@breakEmu_Auth/AuthClient"
+import AuthTransition from "@breakEmu_Auth/AuthTransition"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
 import {
 	BinaryBigEndianReader,
 	CredentialsAcknowledgementMessage,
 	DofusMessage,
 	IdentificationMessage,
 	IdentificationSuccessMessage,
-} from "../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import ServerListHandler from "../server/ServerListHandler"
 
 class AuthentificationHandler {

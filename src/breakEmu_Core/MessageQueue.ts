@@ -1,6 +1,6 @@
-import { DofusMessage, messages } from "../breakEmu_Server/IO"
-import ServerClient from "../breakEmu_Server/ServerClient"
-import { ansiColorCodes } from "./Colors"
+import { DofusMessage, messages } from "@breakEmu_Protocol/IO"
+import ServerClient from "@breakEmu_Server/ServerClient"
+import ansiColorCodes from "./Colors"
 import Logger from "./Logger"
 
 interface IMessageQueueItem {

@@ -1,8 +1,8 @@
 import { Socket } from "net"
-import Logger from "../../breakEmu_Core/Logger"
+import Logger from "@breakEmu_Core/Logger"
 import Database from "../Database"
-import AuthClient from "../../breakEmu_Auth/AuthClient"
-import WorldServer from "../../breakEmu_World/WorldServerManager"
+import AuthClient from "@breakEmu_Auth/AuthClient"
+import WorldServer from "@breakEmu_World/WorldServerManager"
 
 abstract class BaseController {
 	protected _logger: Logger = new Logger("BaseController")

@@ -12,12 +12,12 @@ import {
 	AchievementRewardErrorMessage,
 	AchievementRewardRequestMessage,
 	AchievementRewardSuccessMessage,
-} from "../../../breakEmu_Server/IO"
-import Logger from "../../../breakEmu_Core/Logger"
-import WorldClient from "../../../breakEmu_World/WorldClient"
-import Achievement from "../../../breakEmu_API/model/achievement.model"
-import AchievementManager from "../../../breakEmu_World/manager/achievement/AchievementManager"
-import Character from "../../../breakEmu_API/model/character.model"
+} from "@breakEmu_Protocol/IO"
+import Logger from "@breakEmu_Core/Logger"
+import WorldClient from "@breakEmu_World/WorldClient"
+import Achievement from "@breakEmu_API/model/achievement.model"
+import AchievementManager from "@breakEmu_World/manager/achievement/AchievementManager"
+import Character from "@breakEmu_API/model/character.model"
 
 class AchievementHandler {
 	private static logger: Logger = new Logger("AchievementHandler")

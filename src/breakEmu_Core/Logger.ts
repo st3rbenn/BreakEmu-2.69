@@ -1,5 +1,5 @@
 import * as PinoLogger from "pino"
-import { ansiColorCodes } from "./Colors"
+import ansiColorCodes from "./Colors"
 
 class Logger {
 	private logger: PinoLogger.Logger

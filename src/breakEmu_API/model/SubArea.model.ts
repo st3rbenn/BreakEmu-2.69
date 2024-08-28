@@ -1,4 +1,4 @@
-import AchievementManager from "../../breakEmu_World/manager/achievement/AchievementManager"
+import AchievementManager from "@breakEmu_World/manager/achievement/AchievementManager"
 import Achievement from "./achievement.model"
 import monsterSpawn from "./monsterspawn.model"
 import MonsterspawnModel from "./monsterspawn.model"

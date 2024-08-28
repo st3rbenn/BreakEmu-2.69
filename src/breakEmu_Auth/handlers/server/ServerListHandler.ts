@@ -1,17 +1,17 @@
-import WorldController from "../../../breakEmu_API/controller/world.controller"
-import AuthClient from "../../../breakEmu_Auth/AuthClient"
-import AuthTransition from "../../../breakEmu_Auth/AuthTransition"
-import Logger from "../../../breakEmu_Core/Logger"
-import ConfigurationManager from "../../../breakEmu_Core/configuration/ConfigurationManager"
+import WorldController from "@breakEmu_API/controller/world.controller"
+import AuthClient from "@breakEmu_Auth/AuthClient"
+import AuthTransition from "@breakEmu_Auth/AuthTransition"
+import Logger from "@breakEmu_Core/Logger"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
 import {
   SelectedServerDataMessage,
   SelectedServerRefusedMessage,
   ServersListMessage,
-} from "../../../breakEmu_Server/IO"
-import WorldServer from "../../../breakEmu_World/WorldServer"
-import WorldServerManager from "../../../breakEmu_World/WorldServerManager"
-import ServerConnectionErrorEnum from "../../../breakEmu_World/enum/ServerConnectionErrorEnum"
-import ServerStatusEnum from "../../../breakEmu_World/enum/ServerStatusEnum"
+} from "@breakEmu_Protocol/IO"
+import WorldServer from "@breakEmu_World/WorldServer"
+import WorldServerManager from "@breakEmu_World/WorldServerManager"
+import ServerConnectionErrorEnum from "@breakEmu_World/enum/ServerConnectionErrorEnum"
+import ServerStatusEnum from "@breakEmu_World/enum/ServerStatusEnum"
 
 class ServerListHandler {
 	private static logger: Logger = new Logger("ServerListHandler")

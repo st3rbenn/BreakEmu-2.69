@@ -2,8 +2,10 @@ import {
 	ItemTypeEnum,
 	ObjectEffect,
 	ObjectItemToSellInNpcShop,
-} from "../../breakEmu_Server/IO"
-import EffectCollection from "../../breakEmu_World/manager/entities/effect/EffectCollection"
+} from "@breakEmu_Protocol/IO"
+import EffectCollection from "@breakEmu_World/manager/entities/effect/EffectCollection"
+import Character from "./character.model"
+import CharacterItem from "./characterItem.model"
 import ItemSet from "./itemSet.model"
 
 class Item {

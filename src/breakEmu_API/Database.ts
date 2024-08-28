@@ -1,16 +1,16 @@
 import { PrismaClient } from "@prisma/client"
-import { ansiColorCodes } from "../breakEmu_Core/Colors"
-import Logger from "../breakEmu_Core/Logger"
-import InteractiveElementBonus from "../breakEmu_Core/bull/tasks/BonusTask"
-import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
-import { GenericActionEnum, InteractiveTypeEnum } from "../breakEmu_Server/IO"
-import AchievementManager from "../breakEmu_World/manager/achievement/AchievementManager"
-import BreedManager from "../breakEmu_World/manager/breed/BreedManager"
-import Effect from "../breakEmu_World/manager/entities/effect/Effect"
-import EffectCollection from "../breakEmu_World/manager/entities/effect/EffectCollection"
-import EffectDice from "../breakEmu_World/manager/entities/effect/EffectDice"
-import MapPoint from "../breakEmu_World/manager/map/MapPoint"
-import Cell from "../breakEmu_World/manager/map/cell/Cell"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
+import InteractiveElementBonus from "@breakEmu_Core/bull/tasks/BonusTask"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
+import { GenericActionEnum, InteractiveTypeEnum } from "@breakEmu_Protocol/IO"
+import AchievementManager from "@breakEmu_World/manager/achievement/AchievementManager"
+import BreedManager from "@breakEmu_World/manager/breed/BreedManager"
+import Effect from "@breakEmu_World/manager/entities/effect/Effect"
+import EffectCollection from "@breakEmu_World/manager/entities/effect/EffectCollection"
+import EffectDice from "@breakEmu_World/manager/entities/effect/EffectDice"
+import MapPoint from "@breakEmu_World/manager/map/MapPoint"
+import Cell from "@breakEmu_World/manager/map/cell/Cell"
 import InteractiveElementModel from "./model/InteractiveElement.model"
 import InteractiveSkill from "./model/InteractiveSkill.model"
 import Achievement from "./model/achievement.model"
@@ -29,6 +29,7 @@ import Spell from "./model/spell.model"
 import SpellLevel from "./model/spellLevel.model"
 import World from "./model/world.model"
 import SubArea from "./model/SubArea.model"
+import Recipe from "./model/recipe.model"
 
 interface test {
 	id: number
@@ -174,22 +175,24 @@ class Database {
 
 	public async loadAll(): Promise<void> {
 		try {
-			await this.loadAchievements(),
-				await Promise.all([
-					this.loadWorlds(),
-					this.loadHeads(),
-					this.loadBreeds(),
-					this.loadExperiences(),
-					this.loadSkills(),
-					this.loadSpells(),
-					this.loadFinishMoves(),
-					this.loadAchievementObjectives(),
-					this.loadSubAreas(),
-					this.loadItems(),
-					this.loadItemSets(),
-					this.loadMapScrollActions(),
-					this.loadInteractiveElements(),
-				])
+			await this.loadAchievements()
+			await this.loadSkills()
+			await this.loadInteractiveSkills()
+      await this.loadItemSets()
+      await this.loadItems()
+			await this.loadRecipes()
+			await Promise.all([
+				this.loadWorlds(),
+				this.loadHeads(),
+				this.loadBreeds(),
+				this.loadExperiences(),
+				this.loadSpells(),
+				this.loadFinishMoves(),
+				this.loadAchievementObjectives(),
+				this.loadSubAreas(),
+				this.loadMapScrollActions(),
+				this.loadInteractiveElements(),
+			])
 
 			await this.loadMaps(), await Promise.resolve()
 		} catch (error) {
@@ -616,6 +619,12 @@ class Database {
 					interactiveSkill.criteria
 				)
 
+				const skill = Skill.getSkill(is.skillId)
+
+				if (skill) {
+					is.record = skill
+				}
+
 				InteractiveSkill.interactiveSkills.set(interactiveSkill.id, is)
 			}
 
@@ -661,7 +670,6 @@ class Database {
 
 	async loadInteractiveElements(): Promise<void> {
 		try {
-			await this.loadInteractiveSkills()
 			const interactiveElements = await this.prisma.interactiveElement.findMany()
 
 			for (const el of interactiveElements) {
@@ -768,8 +776,8 @@ class Database {
 
 			const res = new Achievement(
 				achiev.id,
-        achiev.name,
-        achiev.description,
+				achiev.name,
+				achiev.description,
 				achiev.categoryId,
 				achiev.points,
 				achiev.level,
@@ -880,7 +888,7 @@ class Database {
 								}
 							}
 
-							gameMap.instance.addElement(el)
+							gameMap.instance().addElement(el)
 						})
 					)
 
@@ -926,6 +934,51 @@ class Database {
 		} catch (error) {
 			await this.logger.writeAsync(
 				`Error loading achievement objectives: ${(error as any).stack}`,
+				ansiColorCodes.red
+			)
+		}
+	}
+
+	async loadRecipes(): Promise<void> {
+		try {
+			const recipes = await this.prisma.recipe.findMany()
+
+			for (const recipe of recipes) {
+				const ingredients: Array<{
+					id: number
+					quantity: number
+				}> = []
+
+				const ingredientsArray = recipe.ingredients as number[]
+				const quantitesArray = recipe.quantities as number[]
+
+				for (let i = 0; i < ingredientsArray.length; i++) {
+					ingredients.push({
+						id: ingredientsArray[i],
+						quantity: quantitesArray[i],
+					})
+				}
+
+				const rec = new Recipe(
+					recipe.id,
+					recipe.resultId,
+					recipe.resultName,
+					recipe.resultType,
+					recipe.resultLevel,
+					ingredients,
+					recipe.jobId,
+					recipe.skillId
+				)
+
+				rec.resultItem = Item.getItem(recipe.resultId)
+
+				Recipe.recipes.set(recipe.id, rec)
+			}
+
+			await this.logger.writeAsync(`Loaded ${Recipe.recipes.size} recipes`)
+		} catch (error) {
+			await this.logger.writeAsync(
+				`Error loading recipes: ${(error as any).stack}`,
 				ansiColorCodes.red
 			)
 		}

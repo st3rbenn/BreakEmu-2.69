@@ -1,10 +1,10 @@
-import Account from "../../../breakEmu_API/model/account.model"
+import Account from "@breakEmu_API/model/account.model"
 import {
 	ReloginTokenStatusMessage,
 	SelectedServerDataMessage,
 	ServersListMessage,
-} from "../../../breakEmu_Server/IO"
-import WorldServerManager from "../../../breakEmu_World/WorldServerManager"
+} from "@breakEmu_Protocol/IO"
+import WorldServerManager from "@breakEmu_World/WorldServerManager"
 import WorldClient from "../../WorldClient"
 import WorldServer from "../../WorldServer"
 import CharacterHandler from "../character/CharacterHandler"

@@ -1,11 +1,11 @@
 import { Socket } from "net"
-import Account from "../breakEmu_API/model/account.model"
-import { ansiColorCodes } from "../breakEmu_Core/Colors"
-import Logger from "../breakEmu_Core/Logger"
-import RSAKeyHandler from "../breakEmu_Core/RSAKeyHandler"
-import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
-import ServerClient from "../breakEmu_Server/ServerClient"
-import WorldServer from "../breakEmu_World/WorldServer"
+import Account from "@breakEmu_API/model/account.model"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
+import RSAKeyHandler from "@breakEmu_Core/RSAKeyHandler"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
+import ServerClient from "@breakEmu_Server/ServerClient"
+import WorldServer from "@breakEmu_World/WorldServer"
 import AuthServer from "./AuthServer"
 import ServerStatus from "./enum/ServerStatus"
 
@@ -20,7 +20,7 @@ import {
 	ServerSelectionMessage,
 	SystemMessageDisplayMessage,
 	messages,
-} from "../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import AuthentificationHandler from "./handlers/auth/AuthentificationHandler"
 import NicknameHandlers from "./handlers/nickname/NicknameHandlers"
 import ServerListHandler from "./handlers/server/ServerListHandler"

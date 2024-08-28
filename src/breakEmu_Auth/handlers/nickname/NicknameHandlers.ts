@@ -1,14 +1,14 @@
-import Database from "../../../breakEmu_API/Database"
-import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
-import Logger from "../../../breakEmu_Core/Logger"
-import ConfigurationManager from "../../../breakEmu_Core/configuration/ConfigurationManager"
+import Database from "@breakEmu_API/Database"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
 import {
 	DofusMessage,
 	NicknameAcceptedMessage,
 	NicknameChoiceRequestMessage,
 	NicknameErrorEnum,
 	NicknameRefusedMessage,
-} from "../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import AuthClient from "../../AuthClient"
 import AuthentificationHandler from "../auth/AuthentificationHandler"
 import ServerListHandler from "../server/ServerListHandler"

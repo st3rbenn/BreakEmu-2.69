@@ -1,14 +1,14 @@
-import Character from "../../../breakEmu_API/model/character.model"
-import GameMap from "../../../breakEmu_API/model/map.model"
-import Logger from "../../../breakEmu_Core/Logger"
+import Character from "@breakEmu_API/model/character.model"
+import GameMap from "@breakEmu_API/model/map.model"
+import Logger from "@breakEmu_Core/Logger"
 import {
   DialogTypeEnum,
   TeleportDestination,
   TeleporterTypeEnum,
   ZaapDestinationsMessage,
-} from "../../../breakEmu_Server/IO"
-import WorldClient from "../../../breakEmu_World/WorldClient"
-import DialogHandler from "../../../breakEmu_World/handlers/dialog/DialogHandler"
+} from "@breakEmu_Protocol/IO"
+import WorldClient from "@breakEmu_World/WorldClient"
+import DialogHandler from "@breakEmu_World/handlers/dialog/DialogHandler"
 import MapPoint from "../map/MapPoint"
 import MapElement from "../map/element/MapElement"
 import Dialog from "./Dialog"

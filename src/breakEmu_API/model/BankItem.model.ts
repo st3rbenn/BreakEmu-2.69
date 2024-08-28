@@ -1,5 +1,5 @@
-import { ObjectItem, ObjectItemQuantity } from "../../breakEmu_Server/IO"
-import AbstractItem from "../../breakEmu_World/manager/items/AbstractItem"
+import { ObjectItem, ObjectItemQuantity } from "@breakEmu_Protocol/IO"
+import AbstractItem from "@breakEmu_World/manager/items/AbstractItem"
 
 class BankItem extends AbstractItem {
 	accountId: number

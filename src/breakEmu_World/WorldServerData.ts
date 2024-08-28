@@ -1,4 +1,4 @@
-import { GameServerInformations } from "../breakEmu_Server/IO"
+import { GameServerInformations } from "@breakEmu_Protocol/IO"
 import WorldClient from "./WorldClient"
 
 class WorldServerData {

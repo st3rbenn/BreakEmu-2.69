@@ -1,4 +1,4 @@
-import Logger from "../../../../breakEmu_Core/Logger"
+import Logger from "@breakEmu_Core/Logger"
 import {
 	ShortcutBarAddRequestMessage,
 	ShortcutBarEnum,
@@ -6,8 +6,8 @@ import {
 	ShortcutBarSwapRequestMessage,
 	ShortcutObjectItem,
 	ShortcutSpell,
-} from "../../../../breakEmu_Server/IO"
-import CharacterItemShortcut from "../../../../breakEmu_World/manager/shortcut/character/characterItemShortcut"
+} from "@breakEmu_Protocol/IO"
+import CharacterItemShortcut from "@breakEmu_World/manager/shortcut/character/characterItemShortcut"
 import WorldClient from "../../../WorldClient"
 import ShortcutBar from "../../../manager/shortcut/ShortcutBar"
 import CharacterSpellShortcut from "../../../manager/shortcut/character/characterSpellShortcut"

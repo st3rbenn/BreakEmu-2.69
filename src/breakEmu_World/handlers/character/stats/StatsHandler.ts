@@ -1,11 +1,11 @@
-import Characteristic from "../../../../breakEmu_World/manager/entities/stats/characteristic"
-import Logger from "../../../../breakEmu_Core/Logger"
+import Characteristic from "@breakEmu_World/manager/entities/stats/characteristic"
+import Logger from "@breakEmu_Core/Logger"
 import {
 	StatsUpgradeRequestMessage,
 	StatsBoostEnum,
 	StatsUpgradeResultEnum,
 	CharacteristicEnum,
-} from "../../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import WorldClient from "../../../WorldClient"
 
 class StatsHandler {

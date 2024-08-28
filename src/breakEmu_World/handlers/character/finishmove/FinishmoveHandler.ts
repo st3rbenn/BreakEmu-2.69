@@ -1,13 +1,13 @@
-import Character from "../../../../breakEmu_API/model/character.model"
-import { ansiColorCodes } from "../../../../breakEmu_Core/Colors"
-import Logger from "../../../../breakEmu_Core/Logger"
+import Character from "@breakEmu_API/model/character.model"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
 import {
 	FinishMoveInformations,
 	FinishMoveListMessage,
 	FinishMoveListRequestMessage,
 	FinishMoveSetRequestMessage,
-} from "../../../../breakEmu_Server/IO"
-import WorldClient from "../../../../breakEmu_World/WorldClient"
+} from "@breakEmu_Protocol/IO"
+import WorldClient from "@breakEmu_World/WorldClient"
 
 class FinishmoveHandler {
 	private static logger: Logger = new Logger("FinishmoveHandler")

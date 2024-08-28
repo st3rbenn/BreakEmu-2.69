@@ -1,4 +1,4 @@
-import { TriggerTypeEnum } from "../../../../breakEmu_Server/IO"
+import { TriggerTypeEnum } from "@breakEmu_Protocol/IO"
 
 class Trigger {
 	private _type: TriggerTypeEnum

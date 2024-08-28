@@ -2,7 +2,7 @@ import {
 	AchievementAchieved,
 	AchievementAchievedRewardable,
 	Achievement as AchievementMessage,
-} from "../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import AchievementObjective from "./achievementObjective.model"
 import AchievementReward from "./achievementReward.model"
 import Character from "./character.model"

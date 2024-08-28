@@ -3,10 +3,10 @@ import {
 	InteractiveTypeEnum,
 	MapObstacle,
 	MapScrollEnum,
-} from "../../breakEmu_Server/IO"
-import MapInstance from "../../breakEmu_World/manager/map/MapInstance"
-import MapPoint from "../../breakEmu_World/manager/map/MapPoint"
-import Cell from "../../breakEmu_World/manager/map/cell/Cell"
+} from "@breakEmu_Protocol/IO"
+import MapInstance from "@breakEmu_World/manager/map/MapInstance"
+import MapPoint from "@breakEmu_World/manager/map/MapPoint"
+import Cell from "@breakEmu_World/manager/map/cell/Cell"
 import InteractiveElementModel from "./InteractiveElement.model"
 import SubArea from "./SubArea.model"
 import MapScrollAction from "./mapScrollAction.model"
@@ -16,7 +16,7 @@ class GameMap {
 	subareaId: number
 	version: number
 
-	instance: MapInstance
+	_instance: MapInstance
 
 	subArea: SubArea
 
@@ -57,12 +57,17 @@ class GameMap {
 		this.bottomMap = bottomMap
 
 		this.subArea = SubArea.getSubAreaById(subareaId)
-
-		this.instance = new MapInstance(this)
 	}
 
 	static getMapById(id: number): GameMap | undefined {
 		return GameMap.maps.get(id)
+	}
+
+	instance(): MapInstance {
+		if (this._instance === undefined) {
+			this._instance = new MapInstance(this)
+		}
+		return this._instance
 	}
 
 	static getNeighbourMapId(map: GameMap, scrollType: number): number {
@@ -198,7 +203,6 @@ class GameMap {
 			| InteractiveElementModel
 			| undefined = this.getFirstElementByType(interactiveType)
 		if (element) {
-			console.log("element.cellId", element.cellId)
 			return element.cellId
 		}
 

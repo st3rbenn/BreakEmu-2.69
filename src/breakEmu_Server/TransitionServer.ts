@@ -1,7 +1,7 @@
 import Redis from "ioredis"
-import { ansiColorCodes } from "../breakEmu_Core/Colors"
-import Logger from "../breakEmu_Core/Logger"
-import ConfigurationManager from "../breakEmu_Core/configuration/ConfigurationManager"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
 
 abstract class TransitionServer {
 	abstract logger: Logger

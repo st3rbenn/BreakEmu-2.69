@@ -1,4 +1,4 @@
-import { CharacterCharacteristicDetailed, CharacteristicEnum } from "../../../../breakEmu_Server/IO";
+import { CharacterCharacteristicDetailed, CharacteristicEnum } from "@breakEmu_Protocol/IO";
 import Characteristic from "./characteristic";
 
 class RelativeCharacteristic extends Characteristic {

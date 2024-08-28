@@ -1,14 +1,14 @@
 //generic abstract class for item collections
 
-import CharacterItemController from "../../../../breakEmu_API/controller/characterItem.controller"
+import CharacterItemController from "@breakEmu_API/controller/characterItem.controller"
 import {
-	CharacterInventoryPositionEnum,
-	ObjectItem,
-} from "../../../../breakEmu_Server/IO"
+  CharacterInventoryPositionEnum,
+  ObjectItem,
+} from "@breakEmu_Protocol/IO"
 import AbstractItem from "../AbstractItem"
 
 abstract class ItemCollection<T extends AbstractItem> {
-	private _items: Map<number, T> = new Map<number, T>()
+	private _items: Map<string, T> = new Map<string, T>()
 	public _count: number = 0
 
 	public get count(): number {
@@ -24,10 +24,7 @@ abstract class ItemCollection<T extends AbstractItem> {
 	public async loadItems(items: T[]) {
 		if (items) {
 			for (const item of items) {
-				const id = await CharacterItemController.getInstance().getIntIdFromUuid(
-					item.uId
-				)
-				this._items.set(id as number, item)
+				this._items.set(item.uId, item)
 			}
 		}
 	}
@@ -38,12 +35,12 @@ abstract class ItemCollection<T extends AbstractItem> {
 		}
 	}
 
-	public get items(): Map<number, T> {
+	public get items(): Map<string, T> {
 		return this._items
 	}
 
-	private createContainer(): Map<number, T> {
-		return new Map<number, T>()
+	private createContainer(): Map<string, T> {
+		return new Map<string, T>()
 	}
 
 	public abstract onItemAdded(item: T): void
@@ -67,16 +64,16 @@ abstract class ItemCollection<T extends AbstractItem> {
 			let sameItem: T | undefined = await this.getSameItem(item)
 
 			if (sameItem) {
+				console.log(
+					`sameItem found for addItems: ${sameItem.quantity} > ${item.quantity}`
+				)
 				sameItem.quantity += item.quantity
 
 				if (!stackedItems.includes(sameItem)) {
 					stackedItems.push(sameItem)
 				}
 			} else {
-				const id = await CharacterItemController.getInstance().getIntIdFromUuid(
-					item.uId
-				)
-				this._items.set(id as number, item)
+				this._items.set(item.uId, item)
 				addedItems.push(item)
 			}
 		}
@@ -94,16 +91,21 @@ abstract class ItemCollection<T extends AbstractItem> {
 			let sameItem: T | undefined = await this.getSameItem(item)
 
 			if (sameItem) {
+				console.log("sameItem found for removeItems")
+				console.log(
+					`sameItem quantity > item quantity ${sameItem.quantity} > ${item.quantity}`
+				)
 				if (sameItem.quantity > item.quantity) {
+					console.log("UNSTACK ITEM")
 					sameItem.quantity -= item.quantity
 					unstackedItems.push(sameItem)
-				} else {
-					const id = await CharacterItemController.getInstance().getIntIdFromUuid(
-						sameItem.uId
-					)
-					this._items.delete(id as number)
-					removedItems.push(sameItem)
 				}
+
+        if (sameItem.quantity == item.quantity) {
+          console.log("REMOVE ITEM")
+          this._items.delete(sameItem.uId)
+          removedItems.push(sameItem)
+        }
 			}
 		}
 
@@ -112,27 +114,37 @@ abstract class ItemCollection<T extends AbstractItem> {
 		this.onItemsQuantityChanged(unstackedItems)
 	}
 
-	public async addItem(item: T, quantity: number = 1, characterId: number) {
+	public async addItem(
+		item: T,
+		quantity: number = 1,
+		characterId: number,
+		createItem: boolean = true
+	) {
 		try {
 			item.initialize()
 
 			let sameItem: T | undefined = await this.getSameItem(item)
 
 			if (sameItem) {
+				console.log("sameItem found for addItem")
 				sameItem.quantity += quantity
 				this.onItemQuantityChanged(sameItem)
 			} else {
-				const {
-					characterItem,
-					idMapping,
-				} = await CharacterItemController.getInstance().createCharacterItemWithMapping(
-					item,
-					characterId
-				)
-				this._items.set(idMapping.intId as number, item)
-				this.onItemAdded(item)
+				if (createItem) {
+					const {
+						idMapping,
+					} = await CharacterItemController.getInstance().createCharacterItemWithMapping(
+						item,
+						characterId
+					)
+					this._items.set(idMapping.uuid, item)
+					this.onItemAdded(item)
+				} else {
+					item.quantity = quantity
+					this._items.set(item.uId, item)
+					this.onItemAdded(item)
+				}
 			}
-
 		} catch (error) {
 			console.log(error)
 		}
@@ -149,10 +161,7 @@ abstract class ItemCollection<T extends AbstractItem> {
 
 			if (item.quantity >= quantity) {
 				if (item.quantity == quantity) {
-					const id = await CharacterItemController.getInstance().getIntIdFromUuid(
-						item.uId
-					)
-					this._items.delete(id as number)
+					this._items.delete(item.uId)
 					this.onItemRemoved(item)
 				} else {
 					item.quantity -= quantity
@@ -167,8 +176,10 @@ abstract class ItemCollection<T extends AbstractItem> {
 		let same: T
 
 		for (const [key, value] of this._items) {
-			if (value.record.id == item.gId) {
-				console.log("same item found")
+			if (
+				value.record.id == item.gId &&
+				value.effects.sequenceEqual(item.effects)
+			) {
 				same = value
 				return same
 			}
@@ -186,7 +197,7 @@ abstract class ItemCollection<T extends AbstractItem> {
 		return objectsItems
 	}
 
-	public async getItem(id: number): Promise<T | undefined> {
+	public async getItem(id: string): Promise<T | undefined> {
 		return this._items.get(id)
 	}
 }

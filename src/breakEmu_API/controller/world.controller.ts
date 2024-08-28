@@ -1,8 +1,8 @@
-import { ansiColorCodes } from "../../breakEmu_Core/Colors"
-import Logger from "../../breakEmu_Core/Logger"
-import WorldServer from "../../breakEmu_World/WorldServer"
-import WorldServerData from "../../breakEmu_World/WorldServerData"
-import WorldServerManager from "../../breakEmu_World/WorldServerManager"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
+import WorldServer from "@breakEmu_World/WorldServer"
+import WorldServerData from "@breakEmu_World/WorldServerData"
+import WorldServerManager from "@breakEmu_World/WorldServerManager"
 import Database from "../Database"
 import BaseController from "./base.controller"
 

@@ -1,17 +1,17 @@
-import CharacterController from "../breakEmu_API/controller/character.controller"
-import WorldController from "../breakEmu_API/controller/world.controller"
-import Account from "../breakEmu_API/model/account.model"
-import Character from "../breakEmu_API/model/character.model"
-import AuthClient from "../breakEmu_Auth/AuthClient"
-import { ansiColorCodes } from "../breakEmu_Core/Colors"
-import Logger from "../breakEmu_Core/Logger"
+import CharacterController from "@breakEmu_API/controller/character.controller"
+import WorldController from "@breakEmu_API/controller/world.controller"
+import Account from "@breakEmu_API/model/account.model"
+import Character from "@breakEmu_API/model/character.model"
+import AuthClient from "@breakEmu_Auth/AuthClient"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
 import {
 	BinaryBigEndianReader,
 	DofusMessage,
 	DofusNetworkMessage,
 	GameServerInformations,
 	messages,
-} from "../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import WorldServer from "./WorldServer"
 
 class WorldServerManager {

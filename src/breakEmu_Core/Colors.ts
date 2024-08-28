@@ -37,7 +37,7 @@ export type AnsiColorCodeMap = {
 	[K in AnsiColorCode]: string
 }
 
-export const ansiColorCodes: AnsiColorCodeMap = {
+const ansiColorCodes: AnsiColorCodeMap = {
 	reset: "\x1b[0m",
 	bright: "\x1b[1m",
 	dim: "\x1b[2m",
@@ -67,3 +67,5 @@ export const ansiColorCodes: AnsiColorCodeMap = {
 
 	lightGray: "\x1b[90m",
 }
+
+export default ansiColorCodes

@@ -1,5 +1,5 @@
-import InteractiveElementModel from "../../../../breakEmu_API/model/InteractiveElement.model";
-import Character from "../../../../breakEmu_API/model/character.model";
+import InteractiveElementModel from "@breakEmu_API/model/InteractiveElement.model";
+import Character from "@breakEmu_API/model/character.model";
 import MapInstance from "../MapInstance";
 
 abstract class MapElement {

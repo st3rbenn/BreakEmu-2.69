@@ -4,7 +4,7 @@ import { Socket } from "net"
 import ConnectionQueue from "./breakEmu_Auth/ConnectionQueue"
 import Database from "./breakEmu_API/Database"
 import * as fs from "fs"
-import { ansiColorCodes } from "./breakEmu_Core/Colors"
+import ansiColorCodes from "./breakEmu_Core/Colors"
 import * as path from "node:path"
 import GameMap from "./breakEmu_API/model/map.model"
 import Cell from "./breakEmu_World/manager/map/cell/Cell"
@@ -385,6 +385,18 @@ interface AchievementReward {
 	ornamentsReward: number[]
 }
 
+interface Recipe {
+	id: number
+	resultId: number
+	resultName: string
+	resultType: number
+	resultLevel: number
+	ingredients: number[]
+	quantities: number[]
+	jobId: number
+	skillId: number
+}
+
 class Playground {
 	public logger: Logger = new Logger("Playground")
 	public database: Database = Database.getInstance()
@@ -422,132 +434,28 @@ class Playground {
 		 */
 
 		try {
-			// const achievementJson: string = "achievements"
-			// const jsonFile = this.readJsonFile(achievementJson)
-			// const achievementData = JSON.parse(jsonFile) as Achievement[]
-			// const achievementObjectivesJson: string = "achievementObjectives"
-			// const jsonFile2 = this.readJsonFile(achievementObjectivesJson)
-			// const achievementObjectivesData = JSON.parse(
-			// 	jsonFile2
-			// ) as AchievementObjective[]
-			// const achievementRewardsJson: string = "AchievementRewards"
-			// const jsonFile3 = this.readJsonFile(achievementRewardsJson)
-			// const achievementRewardsData = JSON.parse(
-			// 	jsonFile3
-			// ) as AchievementReward[]
-			// achievementData.forEach(async (achievement) => {
-			// 	await this.database.prisma.achievement.create({
-			// 		data: {
-			// 			id: achievement.id,
-			// 			name: achievement.name,
-			// 			categoryId: achievement.categoryId,
-			// 			description: achievement.description,
-			// 			points: achievement.points,
-			// 			level: achievement.level,
-			// 			order: achievement.order,
-			// 			accountLinked: achievement.accountLinked,
-			// 			objectiveIds: achievement.objectiveIds,
-			// 			rewardIds: achievement.rewardIds,
-			// 		},
-			// 	})
-			// 	this.logger.write(
-			// 		`Add achievement -> ${achievement.name} with id: ${achievement.id}`,
-			// 		ansiColorCodes.bgGreen
-			// 	)
-			// })
-			// achievementObjectivesData.forEach(async (objective) => {
-			// 	await this.database.prisma.achievementObjective.create({
-			// 		data: {
-			// 			id: objective.id,
-			// 			achievementId: objective.achievementId,
-			// 			order: objective.order,
-			// 			criterion: objective.criterion,
-			// 		},
-			// 	})
-			//   this.logger.write(
-			// 		`Add achievement -> ${objective.name} with id: ${objective.id}`,
-			// 		ansiColorCodes.bgGreen
-			// 	)
-			// })
-			// achievementRewardsData.forEach(async (reward) => {
-			// 	await this.database.prisma.achievementReward.create({
-			// 		data: {
-			// 			id: reward.id,
-			// 			achievementId: reward.achievementId,
-			// 			criteria: reward.criteria,
-			// 			kamasRatio: reward.kamasRatio,
-			// 			experienceRatio: reward.experienceRatio,
-			// 			kamasScaleWithPlayerLevel: reward.kamasScaleWithPlayerLevel,
-			// 			itemsReward: reward.itemsReward,
-			// 			itemsQuantityReward: reward.itemsQuantityReward,
-			// 			emotesReward: reward.emotesReward,
-			// 			spellsReward: reward.spellsReward,
-			// 			titlesReward: reward.titlesReward,
-			// 			ornamentsReward: reward.ornamentsReward,
-			// 		},
-			// 	})
-			// 	this.logger.write(
-			// 		`Add achievement rewards -> id: ${reward.id}`,
-			// 		ansiColorCodes.bgGreen
-			// 	)
-			// })
-			// const achievementData = await this.database.prisma.achievement.findMany()
-			// for (const achiev of achievementData) {
-			// 	const isObjectivesExistInDB = await this.database.prisma.achievementObjective.findMany(
-			// 		{
-			// 			where: {
-			// 				achievementId: achiev.id,
-			// 			},
-			// 		}
-			// 	)
-			// 	if (isObjectivesExistInDB.length === 0) {
-			// 		this.logger.write(
-			// 			`No objectives found for achievement -> ${achiev.id} excepted: ${achiev.objectiveIds?.toString()}`,
-			// 			ansiColorCodes.bgRed
-			// 		)
-			// 	}
-			// }
+			const recipesJson: string = "recipes"
+			const jsonFile = this.readJsonFile(recipesJson)
+			const recipesData = JSON.parse(jsonFile) as Recipe[]
 
-			const subAreas = await this.database.prisma.subArea.findMany()
-
-			for (const subArea of subAreas) {
-				const achievement = await this.database.prisma.achievement.findMany({
-					where: {
-						description: {
-							equals: `Découvrir la zone "${subArea.name}".`,
-						},
+			for (const recipe of recipesData) {
+				await this?.database?.prisma?.recipe?.create({
+					data: {
+						resultId: recipe.resultId,
+						resultName: recipe.resultName,
+						resultType: recipe.resultType,
+						resultLevel: recipe.resultLevel,
+						ingredients: recipe.ingredients,
+						quantities: recipe.quantities,
+						jobId: recipe.jobId,
+						skillId: recipe.skillId,
 					},
 				})
 
-				if (achievement.length <= 0) {
-					this.logger.write(
-						`No achievement found for subArea -> ${subArea.name}`,
-						ansiColorCodes.bgRed
-					)
-
-					await this.database.prisma.subArea.update({
-						where: {
-							id: subArea.id,
-						},
-						data: {
-							explorationAchievementId: null,
-						},
-					})
-				} else {
-					this.logger.write(
-						`${achievement.length} Achievement found for subArea -> ${subArea.name}`,
-						ansiColorCodes.bgGreen
-					)
-
-					await this.database.prisma.subArea.update({
-						where: {
-							id: subArea.id,
-						},
-						data: {
-							explorationAchievementId: achievement[0].id,
-						},
-					})
-				}
+				this.logger.write(
+					`Recipe ${recipe.resultName} added`,
+					ansiColorCodes.bgGreen
+				)
 			}
 
 			this.logger.write("finish ✨")

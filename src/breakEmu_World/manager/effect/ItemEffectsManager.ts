@@ -1,6 +1,6 @@
-import Character from "../../../breakEmu_API/model/character.model"
-import Logger from "../../../breakEmu_Core/Logger"
-import { CharacteristicEnum, EffectsEnum } from "../../../breakEmu_Server/IO"
+import Character from "@breakEmu_API/model/character.model"
+import Logger from "@breakEmu_Core/Logger"
+import { CharacteristicEnum, EffectsEnum } from "@breakEmu_Protocol/IO"
 import EffectCollection from "../entities/effect/EffectCollection"
 import EntityStats from "../entities/stats/entityStats"
 
@@ -98,7 +98,7 @@ class ItemEffectsManager {
 		for (const [_, effect] of effects.effects) {
 			const charactStats = character.stats as EntityStats
 
-			// console.log("effect", effect.effectId)
+			console.log("effect", effect.effectId)
 
 			switch (effect.effectId) {
 				case EffectsEnum.Effect_AddInitiative:

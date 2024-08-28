@@ -7,9 +7,9 @@ database:
 authServer:
   host: 192.168.1.163
   port: 5555
-worldServer:
+snifferServer:
   host: 192.168.1.163
-  port: 443
+  port: 5556
 debug:
   showDebugMessages: false
   showProtocolMessage: true
@@ -28,6 +28,6 @@ dofus:
   startKamas: 0
   startStatsPoints: 5
   XpRate: 1.5
-  jobXpRate: 25
+  jobXpRate: 1.5
   dropRate: 1.5
   itemStarter: [10784, 10785, 10794, 10798, 10799, 10800, 10801]

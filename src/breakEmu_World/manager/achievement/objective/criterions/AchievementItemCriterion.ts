@@ -1,4 +1,4 @@
-import Character from "../../../../../breakEmu_API/model/character.model";
+import Character from "@breakEmu_API/model/character.model";
 import ComparaisonOperatorEnum from "../objectiveCriterion/ComparaisonOperatorEnum";
 import ObjectiveCriterion from "../objectiveCriterion/ObjectiveCriterion"
 

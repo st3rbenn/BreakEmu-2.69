@@ -1,4 +1,4 @@
-import AccountRoleEnum from "../../breakEmu_World/enum/AccountRoleEnum"
+import AccountRoleEnum from "@breakEmu_World/enum/AccountRoleEnum"
 import Character from "./character.model"
 
 class Account {

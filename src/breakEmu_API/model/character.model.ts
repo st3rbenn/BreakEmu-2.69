@@ -1,6 +1,5 @@
-import AccountRoleEnum from "../../breakEmu_World/enum/AccountRoleEnum"
-import CharacterController from "../../breakEmu_API/controller/character.controller"
-import ConfigurationManager from "../../breakEmu_Core/configuration/ConfigurationManager"
+import CharacterController from "@breakEmu_API/controller/character.controller"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
 import {
 	ActorAlignmentInformations,
 	ActorRestrictionsInformations,
@@ -8,8 +7,6 @@ import {
 	BasicNoOperationMessage,
 	BasicTimeMessage,
 	CharacterBaseInformations,
-	CharacterCapabilitiesMessage,
-	CharacterLoadingCompleteMessage,
 	CharacterStatsListMessage,
 	CharacteristicEnum,
 	CurrentMapMessage,
@@ -30,9 +27,7 @@ import {
 	JobDescriptionMessage,
 	JobExperienceMultiUpdateMessage,
 	KnownZaapListMessage,
-	NotificationListMessage,
 	PlayerStatusEnum,
-	SequenceNumberRequestMessage,
 	ServerExperienceModificatorMessage,
 	ShortcutBarEnum,
 	SpellItem,
@@ -42,32 +37,34 @@ import {
 	TextInformationMessage,
 	TextInformationTypeEnum,
 	TitlesAndOrnamentsListMessage,
-} from "../../breakEmu_Server/IO"
-import WorldClient from "../../breakEmu_World/WorldClient"
-import ContextHandler from "../../breakEmu_World/handlers/ContextHandler"
-import AchievementHandler from "../../breakEmu_World/handlers/achievement/AchievementHandler"
-import CharacterHandler from "../../breakEmu_World/handlers/character/CharacterHandler"
-import TeleportHandler from "../../breakEmu_World/handlers/map/teleport/TeleportHandler"
-import AchievementManager from "../../breakEmu_World/manager/achievement/AchievementManager"
-import BreedManager from "../../breakEmu_World/manager/breed/BreedManager"
-import Dialog from "../../breakEmu_World/manager/dialog/Dialog"
-import ZaapDialog from "../../breakEmu_World/manager/dialog/ZaapDialog"
-import Entity from "../../breakEmu_World/manager/entities/Entity"
-import ContextEntityLook from "../../breakEmu_World/manager/entities/look/ContextEntityLook"
-import Characteristic from "../../breakEmu_World/manager/entities/stats/characteristic"
-import EntityStats from "../../breakEmu_World/manager/entities/stats/entityStats"
-import BankDialog from "../../breakEmu_World/manager/exchange/BankExchange"
-import Bank from "../../breakEmu_World/manager/items/Bank"
-import Inventory from "../../breakEmu_World/manager/items/Inventory"
-import MapPoint from "../../breakEmu_World/manager/map/MapPoint"
-import PathReader from "../../breakEmu_World/manager/map/PathReader"
-import GeneralShortcutBar from "../../breakEmu_World/manager/shortcut/GeneralShortcutBar"
-import SpellShortcutBar from "../../breakEmu_World/manager/shortcut/SpellShortcutBar"
-import CharacterShortcut from "../../breakEmu_World/manager/shortcut/character/CharacterShortcut"
-import CharacterItemShortcut from "../../breakEmu_World/manager/shortcut/character/characterItemShortcut"
-import CharacterSpellShortcut from "../../breakEmu_World/manager/shortcut/character/characterSpellShortcut"
-import SkillManager from "../../breakEmu_World/manager/skills/SkillManager"
-import CharacterSpell from "../../breakEmu_World/manager/spell/CharacterSpell"
+} from "@breakEmu_Protocol/IO"
+import WorldClient from "@breakEmu_World/WorldClient"
+import ContextHandler from "@breakEmu_World/handlers/ContextHandler"
+import AchievementHandler from "@breakEmu_World/handlers/achievement/AchievementHandler"
+import CharacterHandler from "@breakEmu_World/handlers/character/CharacterHandler"
+import TeleportHandler from "@breakEmu_World/handlers/map/teleport/TeleportHandler"
+import AchievementManager from "@breakEmu_World/manager/achievement/AchievementManager"
+import BreedManager from "@breakEmu_World/manager/breed/BreedManager"
+import Dialog from "@breakEmu_World/manager/dialog/Dialog"
+import ZaapDialog from "@breakEmu_World/manager/dialog/ZaapDialog"
+import CraftExchange from "@breakEmu_World/manager/dialog/job/CraftExchange"
+import Entity from "@breakEmu_World/manager/entities/Entity"
+import ContextEntityLook from "@breakEmu_World/manager/entities/look/ContextEntityLook"
+import Characteristic from "@breakEmu_World/manager/entities/stats/characteristic"
+import EntityStats from "@breakEmu_World/manager/entities/stats/entityStats"
+import BankDialog from "@breakEmu_World/manager/exchange/BankExchange"
+import Bank from "@breakEmu_World/manager/items/Bank"
+import Inventory from "@breakEmu_World/manager/items/Inventory"
+import JobManager from "@breakEmu_World/manager/job/JobManager"
+import MapPoint from "@breakEmu_World/manager/map/MapPoint"
+import PathReader from "@breakEmu_World/manager/map/PathReader"
+import GeneralShortcutBar from "@breakEmu_World/manager/shortcut/GeneralShortcutBar"
+import SpellShortcutBar from "@breakEmu_World/manager/shortcut/SpellShortcutBar"
+import CharacterShortcut from "@breakEmu_World/manager/shortcut/character/CharacterShortcut"
+import CharacterItemShortcut from "@breakEmu_World/manager/shortcut/character/characterItemShortcut"
+import CharacterSpellShortcut from "@breakEmu_World/manager/shortcut/character/characterSpellShortcut"
+import SkillManager from "@breakEmu_World/manager/skills/SkillManager"
+import CharacterSpell from "@breakEmu_World/manager/spell/CharacterSpell"
 import Account from "./account.model"
 import Achievement from "./achievement.model"
 import Breed from "./breed.model"
@@ -77,7 +74,6 @@ import Job from "./job.model"
 import GameMap from "./map.model"
 import Skill from "./skill.model"
 import Spell from "./spell.model"
-import Logger from "../../breakEmu_Core/Logger"
 
 class Character extends Entity {
 	point: MapPoint
@@ -104,6 +100,7 @@ class Character extends Entity {
 
 	isZaapDialog: boolean = false
 	isBankDialog: boolean = false
+	isCraftDialog: boolean = false
 
 	status: PlayerStatusEnum = PlayerStatusEnum.PLAYER_STATUS_AVAILABLE
 
@@ -172,7 +169,7 @@ class Character extends Entity {
 		activeTitle: number | null,
 		jobs: Map<number, Job>,
 		finishMoves: Map<number, Finishmoves>,
-		map: GameMap | null,
+		map: GameMap,
 		stats: EntityStats,
 		finishedAchievements: number[],
 		almostFinishedAchievements: number[],
@@ -257,7 +254,7 @@ class Character extends Entity {
 			[],
 			null,
 			null,
-			Job.new(),
+			JobManager.new(),
 			finishmoves,
 			GameMap.getMapById(mapId) as GameMap,
 			stats,
@@ -441,7 +438,7 @@ class Character extends Entity {
 		const job = this.getJobs(jobId)
 
 		if (job) {
-			job.setExperience(experience, this)
+			JobManager.getInstance().setExperience(experience, this, job)
 		}
 	}
 
@@ -477,6 +474,7 @@ class Character extends Entity {
 		return {
 			isZaapDialog: this.dialog instanceof ZaapDialog,
 			isBankDialog: this.dialog instanceof BankDialog,
+			isCraftDialog: this.dialog instanceof CraftExchange,
 		}
 	}
 
@@ -736,6 +734,20 @@ class Character extends Entity {
 		}
 	}
 
+	public async whatPlayerDoing() {
+		if (this.busy) {
+			this.reply("Player is busy")
+		}
+
+		if (this.isMoving) {
+			this.reply("Player is moving")
+		}
+
+		if (this.dialog) {
+			this.reply("Player is in dialog")
+		}
+	}
+
 	public async move(keys: number[]) {
 		try {
 			if (!this.busy) {
@@ -819,7 +831,7 @@ class Character extends Entity {
 			this.cellId = cellId
 			this.mapId = teleportMap.id
 			if (this.map !== null && this.map.instance) {
-				await this.map.instance.removeEntity(this)
+				await this.map.instance().removeEntity(this)
 			} else {
 				this.map = teleportMap
 			}
@@ -865,12 +877,14 @@ class Character extends Entity {
 		try {
 			this.changeMap = false
 
-			await this.map?.instance.addEntity(this)
+			await this.map?.instance().addEntity(this)
 
-			await this.map?.instance.sendMapComplementaryInformations(this.client)
-			await this.map?.instance.sendMapFightCount(this.client, 0)
+			await this.map?.instance().sendMapComplementaryInformations(this.client)
+			await this.map?.instance().sendMapFightCount(this.client, 0)
 
-			const mapCharacters = this.map?.instance.getEntities<Character>(Character)
+			const mapCharacters = this.map
+				?.instance()
+				.getEntities<Character>(Character)
 
 			for (const player of mapCharacters as Character[]) {
 				if (player.isMoving) {
@@ -887,7 +901,6 @@ class Character extends Entity {
 
 			await AchievementManager.getInstance().checkIsInMapAchievements(this)
 
-			// await this.client?.Send(new BasicNoOperationMessage())
 			const date = new Date()
 			const unixTime = Math.round(date.getTime() / 1000)
 			await this.client?.Send(new BasicTimeMessage(unixTime, 1))
@@ -915,6 +928,7 @@ class Character extends Entity {
 	public async createContext(context: number) {
 		try {
 			this.context = context
+			await this.client.Send(new GameContextCreateMessage(context))
 		} catch (error) {
 			console.log(error)
 		}
@@ -946,7 +960,7 @@ class Character extends Entity {
 		try {
 			await Promise.all([
 				CharacterController.getInstance().updateCharacter(this),
-				this.map?.instance.removeEntity(this),
+				this.map?.instance().removeEntity(this),
 			])
 		} catch (error) {
 			console.log(error)
@@ -1026,7 +1040,7 @@ class Character extends Entity {
 			const job = this.getJobs(jobId)
 
 			if (job) {
-				await job.setExperience(experience, this)
+				await JobManager.getInstance().setExperience(experience, this, job)
 			}
 		} catch (error) {
 			console.log(error)

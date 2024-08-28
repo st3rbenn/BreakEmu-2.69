@@ -1,12 +1,13 @@
-import InteractiveElementModel from "../../../../breakEmu_API/model/InteractiveElement.model"
-import Character from "../../../../breakEmu_API/model/character.model"
-import { InteractiveElement } from "../../../../breakEmu_Server/IO"
+import InteractiveElementModel from "@breakEmu_API/model/InteractiveElement.model"
+import Character from "@breakEmu_API/model/character.model"
+import { InteractiveElement } from "@breakEmu_Protocol/IO"
 import MapInstance from "../MapInstance"
 import {
 	InteractiveElementSkill,
 	InteractiveElementWithAgeBonus,
-} from "./../../../../breakEmu_Server/IO/network/protocol"
+} from "@breakEmu_Protocol/IO/network/protocol"
 import MapElement from "./MapElement"
+import InteractiveSkill from "@breakEmu_API/model/InteractiveSkill.model"
 
 class MapInteractiveElement extends MapElement {
 	constructor(record: InteractiveElementModel, mapInstance: MapInstance) {
@@ -14,6 +15,15 @@ class MapInteractiveElement extends MapElement {
 	}
 
 	public getInteractiveElement(character: Character): InteractiveElement {
+		if (!this.record.skill) {
+			const skill = InteractiveSkill.getByMapIdAndIdentifier(
+				this.record.mapId,
+				this.record.elementId
+			) as InteractiveSkill
+
+			this.record.skill = skill
+		}
+
 		const interactiveElementSkills: InteractiveElementSkill[] = [
 			new InteractiveElementSkill(
 				this.record.skill?.skillId,
@@ -26,7 +36,7 @@ class MapInteractiveElement extends MapElement {
 			this.record.harvestable &&
 			!character.busy
 		) {
-			// console.log('Allowed skills: ', this.record?.skill?.skillId)
+			console.log("Allowed skills: ", this.record?.skill?.skillId)
 			return new InteractiveElementWithAgeBonus(
 				this.record?.skill?.identifier,
 				this.record?.skill?.type,
@@ -36,7 +46,7 @@ class MapInteractiveElement extends MapElement {
 				this.record.ageBonus
 			)
 		} else {
-			// console.log('Not allowed skills: ', this.record?.skill?.skillId)
+			console.log("Not allowed skills: ", this.record?.skill?.skillId)
 			return new InteractiveElementWithAgeBonus(
 				this.record?.skill?.identifier,
 				this.record?.skill?.type,

@@ -1,9 +1,9 @@
 import { Connection, ConsumeMessage } from "amqplib"
-import WorldController from "../breakEmu_API/controller/world.controller"
-import Logger from "../breakEmu_Core/Logger"
-import { ServerStatusUpdateMessage } from "../breakEmu_Server/IO"
-import TransitionServer from "../breakEmu_Server/TransitionServer"
-import WorldServerManager from "../breakEmu_World/WorldServerManager"
+import WorldController from "@breakEmu_API/controller/world.controller"
+import Logger from "@breakEmu_Core/Logger"
+import { ServerStatusUpdateMessage } from "@breakEmu_Protocol/IO"
+import TransitionServer from "@breakEmu_Server/TransitionServer"
+import WorldServerManager from "@breakEmu_World/WorldServerManager"
 import AuthServer from "./AuthServer"
 
 class AuthTransition extends TransitionServer {

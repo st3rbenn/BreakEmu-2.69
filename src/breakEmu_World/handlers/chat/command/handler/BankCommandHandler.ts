@@ -1,8 +1,8 @@
-import Character from "../../../../../breakEmu_API/model/character.model"
-import Item from "../../../../../breakEmu_API/model/item.model"
-import Logger from "../../../../../breakEmu_Core/Logger"
-import BankHandler from "../../../../../breakEmu_World/manager/map/element/interactiveElement/BankHandler"
-import WorldServer from "../../../../../breakEmu_World/WorldServer"
+import Character from "@breakEmu_API/model/character.model"
+import Item from "@breakEmu_API/model/item.model"
+import Logger from "@breakEmu_Core/Logger"
+import BankHandler from "@breakEmu_World/manager/map/element/interactiveElement/BankHandler"
+import WorldServer from "@breakEmu_World/WorldServer"
 import AccountRoleEnum from "../../../../enum/AccountRoleEnum"
 import CommandHandler, { TCommandHandler } from "../CommandHandler"
 

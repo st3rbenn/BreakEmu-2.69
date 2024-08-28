@@ -1,4 +1,4 @@
-import Logger from "../../../breakEmu_Core/Logger";
+import Logger from "@breakEmu_Core/Logger";
 
 class PathReader {
     private static logger: Logger = new Logger("PathReader")

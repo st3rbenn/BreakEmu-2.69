@@ -2,7 +2,7 @@ import {
 	EffectsEnum,
 	ObjectEffect,
 	ObjectEffectInteger,
-} from "../../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import Effect from "./Effect"
 
 class EffectInteger extends Effect {

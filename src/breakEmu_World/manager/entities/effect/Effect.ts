@@ -1,4 +1,4 @@
-import { EffectsEnum, ObjectEffect, TriggerTypeEnum } from "../../../../breakEmu_Server/IO"
+import { EffectsEnum, ObjectEffect, TriggerTypeEnum } from "@breakEmu_Protocol/IO"
 import Trigger from "../trigger/Trigger"
 import Triggers from "../trigger/Trigger"
 

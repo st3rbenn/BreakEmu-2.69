@@ -1,5 +1,5 @@
-import Character from "../../../../../breakEmu_API/model/character.model"
-import Logger from "../../../../../breakEmu_Core/Logger"
+import Character from "@breakEmu_API/model/character.model"
+import Logger from "@breakEmu_Core/Logger"
 import AccountRoleEnum from "../../../../enum/AccountRoleEnum"
 import { TCommandHandler } from "../CommandHandler"
 
@@ -16,7 +16,7 @@ class ModeratorCommandHandler {
 			command: "tp !mapId ?cellId",
 			neededRole: [AccountRoleEnum.MODERATOR],
 			show: true,
-      nbRequiredArgs: 0,
+			nbRequiredArgs: 0,
 		},
 		god: {
 			execute: async (args, message, character) => {
@@ -26,8 +26,22 @@ class ModeratorCommandHandler {
 			command: "god",
 			neededRole: [AccountRoleEnum.MODERATOR],
 			show: true,
-      nbRequiredArgs: 0,
+			nbRequiredArgs: 0,
 		},
+		whatPlayerDoing: {
+			execute: async (args, message, character) => {
+				await this.whatPlayerDoingCommand(character)
+			},
+			description: "Display what a player is doing",
+			command: "whatPlayerDoing",
+			neededRole: [AccountRoleEnum.MODERATOR],
+			show: true,
+			nbRequiredArgs: 0,
+		},
+	}
+
+	static async whatPlayerDoingCommand(character: Character) {
+		await character.whatPlayerDoing()
 	}
 
 	static async godCommand(character: Character) {

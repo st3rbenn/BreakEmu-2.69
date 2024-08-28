@@ -2,7 +2,7 @@ import json
 import sys
 
 
-keys_to_change = ["nameId"]
+keys_to_change = ["resultNameId"]
 
 
 def load_json_file(file_path):

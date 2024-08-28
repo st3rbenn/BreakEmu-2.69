@@ -1,4 +1,4 @@
-import ConfigurationManager from "../../../../breakEmu_Core/configuration/ConfigurationManager"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
 import LimitCharacteristic from "./limitCharacteristic"
 
 class MpCharacteristic extends LimitCharacteristic {

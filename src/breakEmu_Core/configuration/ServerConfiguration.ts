@@ -5,4 +5,6 @@ export abstract class ServerConfiguration extends DatabaseConfiguration {
   public authServerPort: number = 0
   public worldServerHost: string = ""
   public worldServerPort: number = 0
+  public snifferServerHost: string = ""
+  public snifferServerPort: number = 0
 }

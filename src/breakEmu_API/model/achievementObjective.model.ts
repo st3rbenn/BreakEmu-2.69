@@ -1,7 +1,7 @@
 import {
 	AchievementStartedObjective,
 	AchievementObjective as AchievementObjec,
-} from "../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import Character from "./character.model"
 
 class AchievementObjective {

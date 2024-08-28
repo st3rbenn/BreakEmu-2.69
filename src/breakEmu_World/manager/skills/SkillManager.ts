@@ -1,5 +1,5 @@
-import Character from "../../../breakEmu_API/model/character.model"
-import Skill from "../../../breakEmu_API/model/skill.model"
+import Character from "@breakEmu_API/model/character.model"
+import Skill from "@breakEmu_API/model/skill.model"
 
 class SkillManager {
 	public static SKILL_DURATION = 35

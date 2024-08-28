@@ -8,7 +8,7 @@ import {
 	privateEncrypt,
 } from "crypto"
 import { readFileSync } from "fs"
-import Logger from "../breakEmu_Core/Logger"
+import Logger from "@breakEmu_Core/Logger"
 
 class RSAKeyHandler {
 	logger: Logger = new Logger("RSAKeyHandler")

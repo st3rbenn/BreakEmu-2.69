@@ -1,5 +1,5 @@
 import Bull from 'bull';
-import WorldServer from '../../../breakEmu_World/WorldServer';
+import WorldServer from '@breakEmu_World/WorldServer';
 import Task from '../Task'; // Assurez-vous que le chemin d'importation est correct
 
 class SaveTask extends Task {

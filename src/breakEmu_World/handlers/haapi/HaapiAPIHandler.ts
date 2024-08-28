@@ -1,4 +1,4 @@
-import Logger from "../../../breakEmu_Core/Logger"
+import Logger from "@breakEmu_Core/Logger"
 import WorldClient from "../../WorldClient"
 
 class HaapiAPIHandler {

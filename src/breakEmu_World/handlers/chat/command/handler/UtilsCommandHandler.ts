@@ -1,7 +1,7 @@
-import Character from "../../../../../breakEmu_API/model/character.model"
-import Logger from "../../../../../breakEmu_Core/Logger"
-import { InteractiveTypeEnum } from "../../../../../breakEmu_Server/IO"
-import ZaapDialog from "../../../../../breakEmu_World/manager/dialog/ZaapDialog"
+import Character from "@breakEmu_API/model/character.model"
+import Logger from "@breakEmu_Core/Logger"
+import { InteractiveTypeEnum } from "@breakEmu_Protocol/IO"
+import ZaapDialog from "@breakEmu_World/manager/dialog/ZaapDialog"
 import AccountRoleEnum from "../../../../enum/AccountRoleEnum"
 import { TCommandHandler } from "../CommandHandler"
 

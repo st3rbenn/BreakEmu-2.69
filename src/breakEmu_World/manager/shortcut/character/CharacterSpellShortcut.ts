@@ -1,4 +1,4 @@
-import { Shortcut, ShortcutSpell } from "../../../../breakEmu_Server/IO";
+import { Shortcut, ShortcutSpell } from "@breakEmu_Protocol/IO";
 import CharacterShortcut from "./CharacterShortcut";
 
 class CharacterSpellShortcut extends CharacterShortcut {

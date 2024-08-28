@@ -1,4 +1,4 @@
-import { SpellTargetType } from "../../../../breakEmu_Server/IO"
+import { SpellTargetType } from "@breakEmu_Server/IO"
 
 abstract class TargetCriterion {
 	public static readonly targetsMapping: Map<string, SpellTargetType> = new Map(

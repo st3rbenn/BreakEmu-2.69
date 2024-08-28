@@ -1,5 +1,5 @@
-import { DofusMessage } from "../../breakEmu_Server/IO"
-import { BinaryReader, BinaryWriter } from "../../breakEmu_Server/IO/interfaces"
+import { DofusMessage } from "../IO"
+import { BinaryReader, BinaryWriter } from "../IO/interfaces"
 
 export class WorldRegistrationRequestMessage extends DofusMessage {
 	public static id: number = 2590

@@ -1,9 +1,9 @@
-import Logger from "../../../breakEmu_Core/Logger"
+import Logger from "@breakEmu_Core/Logger"
 import {
 	DialogTypeEnum,
 	LeaveDialogMessage,
 	LeaveDialogRequestMessage,
-} from "../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import WorldClient from "../../WorldClient"
 
 class DialogHandler {

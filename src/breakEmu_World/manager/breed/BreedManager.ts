@@ -1,6 +1,6 @@
-import Breed from "../../../breakEmu_API/model/breed.model"
-import Character from "../../../breakEmu_API/model/character.model"
-import Head from "../../../breakEmu_API/model/head.model"
+import Breed from "@breakEmu_API/model/breed.model"
+import Character from "@breakEmu_API/model/character.model"
+import Head from "@breakEmu_API/model/head.model"
 import ContextEntityLook from "../entities/look/ContextEntityLook"
 
 class BreedManager {

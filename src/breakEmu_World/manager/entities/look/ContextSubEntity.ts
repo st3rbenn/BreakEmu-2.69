@@ -1,4 +1,4 @@
-import { SubEntity } from "../../../../breakEmu_Server/IO"
+import { SubEntity } from "@breakEmu_Protocol/IO"
 import ContextEntityLook from "./ContextEntityLook"
 
 class ContextSubEntity {

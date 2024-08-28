@@ -1,10 +1,10 @@
-import CharacterCreationResultEnum from "../../../breakEmu_World/enum/CharacterCreationResultEnum"
-import CharacterController from "../../../breakEmu_API/controller/character.controller"
-import Account from "../../../breakEmu_API/model/account.model"
-import Character from "../../../breakEmu_API/model/character.model"
-import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
-import ConfigurationManager from "../../../breakEmu_Core/configuration/ConfigurationManager"
-import Logger from "../../../breakEmu_Core/Logger"
+import CharacterCreationResultEnum from "@breakEmu_World/enum/CharacterCreationResultEnum"
+import CharacterController from "@breakEmu_API/controller/character.controller"
+import Account from "@breakEmu_API/model/account.model"
+import Character from "@breakEmu_API/model/character.model"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
+import Logger from "@breakEmu_Core/Logger"
 import {
 	CharacterBaseInformations,
 	CharacterCanBeCreatedRequestMessage,
@@ -24,7 +24,7 @@ import {
 	NotificationListMessage,
 	PopupWarningClosedMessage,
 	SequenceNumberRequestMessage,
-} from "../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import WorldClient from "../../WorldClient"
 
 class CharacterHandler {
@@ -82,6 +82,10 @@ class CharacterHandler {
 
 	public static async handleCharactersListMessage(client: WorldClient) {
 		try {
+      this.logger.write(
+        `try retrieve characters for account: ${client.account?.username}`,
+        ansiColorCodes.bgYellow
+      )
 			let characters = client.account.characters
 
 			let characterToBaseInfo: CharacterBaseInformations[] = []

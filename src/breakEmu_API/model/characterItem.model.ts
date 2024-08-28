@@ -1,13 +1,14 @@
-import Effect from "../../breakEmu_World/manager/entities/effect/Effect"
+import Effect from "@breakEmu_World/manager/entities/effect/Effect"
 import {
 	CharacterInventoryPositionEnum,
 	ObjectItem,
 	ObjectItemNotInContainer,
 	ObjectItemQuantity,
-} from "../../breakEmu_Server/IO"
-import EffectCollection from "../../breakEmu_World/manager/entities/effect/EffectCollection"
-import AbstractItem from "../../breakEmu_World/manager/items/AbstractItem"
+} from "@breakEmu_Protocol/IO"
+import EffectCollection from "@breakEmu_World/manager/entities/effect/EffectCollection"
+import AbstractItem from "@breakEmu_World/manager/items/AbstractItem"
 import CharacterItemController from "../controller/characterItem.controller"
+import Item from "./item.model"
 
 class CharacterItem extends AbstractItem {
 	private _characterId: number
@@ -34,22 +35,22 @@ class CharacterItem extends AbstractItem {
 	}
 
 	public async getObjectItemNotInContainer(): Promise<ObjectItemNotInContainer> {
-    const id = await CharacterItemController.getInstance().getIntIdFromUuid(this.uId)
+    const itemuId = await CharacterItemController.getInstance().getIntIdFromUuid(this.uId)
 		return new ObjectItemNotInContainer(
 			this.gId,
 			this.effects.getObjectEffects(),
-			id as number,
+			itemuId as number,
 			this.quantity
 		)
 	}
 
 	public override async getObjectItem(): Promise<ObjectItem> {
-    const id = await CharacterItemController.getInstance().getIntIdFromUuid(this.uId)
+    const itemuId = await CharacterItemController.getInstance().getIntIdFromUuid(this.uId)
 		return new ObjectItem(
 			this.position,
 			this.gId,
 			this.effects.getObjectEffects(),
-			id as number,
+			itemuId as number,
 			this.quantity
 		)
 	}

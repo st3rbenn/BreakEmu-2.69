@@ -1,4 +1,4 @@
-import {Shortcut} from '../../../../breakEmu_Server/IO'
+import {Shortcut} from '@breakEmu_Protocol/IO'
 
 
 abstract class CharacterShortcut {

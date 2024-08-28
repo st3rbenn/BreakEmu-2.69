@@ -1,10 +1,10 @@
-import { ansiColorCodes } from "../../../../breakEmu_Core/Colors"
-import Logger from "../../../../breakEmu_Core/Logger"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
 import {
 	PlayerStatusEnum,
 	PlayerStatusUpdateMessage,
 	PlayerStatusUpdateRequestMessage,
-} from "../../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import WorldClient from "../../../WorldClient"
 
 class PlayerStatusHandler {

@@ -1,5 +1,5 @@
-import Character from "../../../breakEmu_API/model/character.model"
-import Logger from "../../../breakEmu_Core/Logger"
+import Character from "@breakEmu_API/model/character.model"
+import Logger from "@breakEmu_Core/Logger"
 import Dialog from "./Dialog"
 
 class NpcDialog extends Dialog {

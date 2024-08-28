@@ -8,7 +8,7 @@ class InteractiveSkill {
 	type: number
 	skillId: number
 
-	record: Skill
+	record: Skill | undefined
 	param1: string | undefined
 	param2: string | undefined
 	param3: string | undefined

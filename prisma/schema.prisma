@@ -239,6 +239,8 @@ model item {
   craftXpRatio   Int
   isSaleable     Boolean
   look           String? @db.Text
+
+  characterItem characterItem[]
 }
 
 model bankItem {
@@ -297,13 +299,14 @@ model characterItem {
   characterId           Int
   character             character              @relation(fields: [characterId], references: [id], onDelete: Cascade)
   uid                   String                 @id @default(uuid())
-  gid                   Int
+  gid                   Int                    
   position              Int
   quantity              Int
   effects               Json                   @default("[]")
   appearanceId          Int
   look                  String?                @db.Text
   characterItemIdMapper characterItemIdMapper?
+  item                  item                   @relation(fields: [gid], references: [id])
 }
 
 model characterItemIdMapper {
@@ -409,4 +412,16 @@ model achievementReward {
   spellsReward              Json
   titlesReward              Json
   ornamentsReward           Json
+}
+
+model recipe {
+  id          Int    @id @default(autoincrement())
+  resultId    Int
+  resultName  String
+  resultType  Int
+  resultLevel Int
+  ingredients Json
+  quantities  Json
+  jobId       Int
+  skillId     Int
 }

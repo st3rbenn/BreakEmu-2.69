@@ -1,5 +1,5 @@
-import Logger from "../../../breakEmu_Core/Logger"
-import { ChatClientMultiMessage } from "../../../breakEmu_Server/IO"
+import Logger from "@breakEmu_Core/Logger"
+import { ChatClientMultiMessage } from "@breakEmu_Protocol/IO"
 import WorldClient from "../../WorldClient"
 import CommandHandler from "./command/CommandHandler"
 

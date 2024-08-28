@@ -1,6 +1,6 @@
-import BankItem from "../../breakEmu_API/model/BankItem.model"
-import Logger from "../../breakEmu_Core/Logger"
-import AbstractItem from "../../breakEmu_World/manager/items/AbstractItem"
+import BankItem from "@breakEmu_API/model/BankItem.model"
+import Logger from "@breakEmu_Core/Logger"
+import AbstractItem from "@breakEmu_World/manager/items/AbstractItem"
 import Database from "../Database"
 import Character from "../model/character.model"
 

@@ -1,5 +1,5 @@
-import BankItem from "../../../breakEmu_API/model/BankItem.model";
-import Character from "../../../breakEmu_API/model/character.model";
+import BankItem from "@breakEmu_API/model/BankItem.model";
+import Character from "@breakEmu_API/model/character.model";
 import ItemCollection from "./collections/ItemCollections";
 
 class Bank extends ItemCollection<BankItem> {

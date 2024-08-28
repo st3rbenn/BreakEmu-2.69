@@ -1,4 +1,4 @@
-import { FinishMoveInformations } from "../../breakEmu_Server/IO"
+import { FinishMoveInformations } from "@breakEmu_Protocol/IO"
 
 class Finishmoves {
 	id: number

@@ -1,10 +1,10 @@
-import Character from "../../../breakEmu_API/model/character.model"
+import Character from "@breakEmu_API/model/character.model"
 import {
 	Shortcut,
 	ShortcutBarContentMessage,
 	ShortcutBarEnum,
 	ShortcutBarRefreshMessage,
-} from "../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import CharacterShortcut from "./character/CharacterShortcut"
 
 abstract class ShortcutBar {

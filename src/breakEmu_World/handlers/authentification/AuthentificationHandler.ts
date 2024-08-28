@@ -1,6 +1,6 @@
-import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
-import Logger from "../../../breakEmu_Core/Logger"
-import WorldClient from "../../../breakEmu_World/WorldClient"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
+import WorldClient from "@breakEmu_World/WorldClient"
 
 import {
 	BasicTimeMessage,
@@ -12,7 +12,7 @@ import {
 	ServerSessionConstantsMessage,
 	ServerSessionConstantInteger,
 	ServerConstantTypeEnum,
-} from "../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 
 class AuthentificationHandler {
 	private static logger: Logger = new Logger("AuthentificationHandler")

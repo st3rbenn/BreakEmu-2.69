@@ -1,14 +1,20 @@
-import GameMap from "breakEmu_API/model/map.model"
-import Character from "../../breakEmu_API/model/character.model"
-import Logger from "../../breakEmu_Core/Logger"
+import Recipe from "@breakEmu_API/model/recipe.model"
+import Logger from "@breakEmu_Core/Logger"
 import {
 	GameContextEnum,
 	TitlesAndOrnamentsListRequestMessage,
-} from "../../breakEmu_Server/IO"
-import WorldClient from "../../breakEmu_World/WorldClient"
+} from "@breakEmu_Protocol/IO"
+import CraftExchange from "@breakEmu_World/manager/dialog/job/CraftExchange"
+import Exchange from "@breakEmu_World/manager/exchange/Exchange"
+import WorldClient from "@breakEmu_World/WorldClient"
 import {
 	AdminQuietCommandMessage,
 	EmoteAddMessage,
+	ExchangeCraftCountModifiedMessage,
+	ExchangeCraftCountRequestMessage,
+	ExchangeObjectMoveMessage,
+	ExchangeReadyMessage,
+	ExchangeSetCraftRecipeMessage,
 	GameContextCreateMessage,
 	OrnamentGainedMessage,
 	OrnamentSelectedMessage,
@@ -17,7 +23,7 @@ import {
 	TitlesAndOrnamentsListMessage,
 	TitleSelectedMessage,
 	TitleSelectRequestMessage,
-} from "./../../breakEmu_Server/IO/network/protocol"
+} from "@breakEmu_Protocol/IO/network/protocol"
 import AchievementHandler from "./achievement/AchievementHandler"
 
 enum AdminQuietCommande {
@@ -28,9 +34,7 @@ class ContextHandler {
 	private static logger: Logger = new Logger("ContextHandler")
 	public static async handleGameContextCreateMessage(client: WorldClient) {
 		const character = client.selectedCharacter
-		character.inGame = true
-
-		const inFight = false // Assurez-vous que cette valeur est correctement déterminée
+		const inFight = false
 
 		try {
 			if (inFight) {
@@ -39,11 +43,11 @@ class ContextHandler {
 			} else {
 				await Promise.all([
 					character.createContext(GameContextEnum.ROLE_PLAY),
-          client.Send(new GameContextCreateMessage(character.context)),
+          AchievementHandler.handleAchievementListMessage(character),
+          character.refreshStats()
 				])
-        await character.teleport(character.mapId, character.cellId)
-        await AchievementHandler.handleAchievementListMessage(character)
-        // character.refreshStats()
+				await character.teleport(character.mapId, character.cellId)
+        character.inGame = true
 			}
 		} catch (error) {
 			this.logger.write(
@@ -190,6 +194,66 @@ class ContextHandler {
 				}`,
 				"red"
 			)
+		}
+	}
+
+	public static async handleExchangeSetCraftRecipeMessage(
+		client: WorldClient,
+		message: ExchangeSetCraftRecipeMessage
+	) {
+		const objectGID = message.objectGID
+		if (!Recipe.getRecipeByResultId(objectGID as number)) {
+			await client.selectedCharacter.reply("Recipe not found")
+			return
+		}
+
+		if (!client.selectedCharacter.isCraftDialog) {
+			return
+		}
+
+		const craftExchange = client.selectedCharacter.dialog as CraftExchange
+
+		await craftExchange.setRecipe(objectGID as number)
+	}
+
+	public static async handleExchangeObjectMoveMessage(
+		client: WorldClient,
+		message: ExchangeObjectMoveMessage
+	) {
+		const objectUID = message.objectUID
+		const quantity = message.quantity
+
+		if (!client.selectedCharacter.isCraftDialog) {
+			return
+		}
+
+		const craftExchange = client.selectedCharacter.dialog as CraftExchange
+
+    console.log(`SENDING MOVE ITEM: ${objectUID} quantity: ${quantity} `)
+
+		// await craftExchange.moveItem(objectUID as number, quantity as number)
+	}
+
+	public static async handleExchangeCraftCountRequestMessage(
+		client: WorldClient,
+		message: ExchangeCraftCountRequestMessage
+	): Promise<void> {
+		const craftExchange = client.selectedCharacter.dialog as CraftExchange
+
+		craftExchange.setCount(message.count as number)
+
+		await client.Send(
+			new ExchangeCraftCountModifiedMessage(craftExchange.count)
+		)
+	}
+
+	public static async handleExchangeReadyMessage(
+		client: WorldClient,
+		message: ExchangeReadyMessage
+	) {
+		if (client.selectedCharacter.dialog instanceof Exchange) {
+			const exchange = client.selectedCharacter.dialog as CraftExchange
+			await exchange.ready(message.ready as boolean, message.step as number)
 		}
 	}
 

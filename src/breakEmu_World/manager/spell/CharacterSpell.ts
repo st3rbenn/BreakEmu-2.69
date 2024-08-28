@@ -1,7 +1,7 @@
-import { SpellItem } from "../../../breakEmu_Server/IO"
-import Character from "../../../breakEmu_API/model/character.model"
-import Spell from "../../../breakEmu_API/model/spell.model"
-import SpellLevel from "../../../breakEmu_API/model/spellLevel.model"
+import { SpellItem } from "@breakEmu_Protocol/IO"
+import Character from "@breakEmu_API/model/character.model"
+import Spell from "@breakEmu_API/model/spell.model"
+import SpellLevel from "@breakEmu_API/model/spellLevel.model"
 
 class CharacterSpell {
 	private spell: Spell | null = null

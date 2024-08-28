@@ -1,6 +1,6 @@
-import Logger from "../../../../breakEmu_Core/Logger"
-import { InteractiveUseRequestMessage } from "./../../../../breakEmu_Server/IO/network/protocol"
-import WorldClient from "./../../../../breakEmu_World/WorldClient"
+import Logger from "@breakEmu_Core/Logger"
+import { InteractiveUseRequestMessage } from "@breakEmu_Protocol/IO/network/protocol"
+import WorldClient from "./@breakEmu_World/WorldClient"
 class InteractiveMapHandler {
 	private static logger: Logger = new Logger("InteractiveMapHandler")
 	public static async handleInteractiveUse(
@@ -8,11 +8,13 @@ class InteractiveMapHandler {
 		client: WorldClient
 	) {
 		try {
-			await client.selectedCharacter?.map?.instance?.useInteractiveElement(
-				client.selectedCharacter,
-				message.elemId as number,
-				message.skillInstanceUid as number
-			)
+			await client.selectedCharacter.map
+				.instance()
+				.useInteractiveElement(
+					client.selectedCharacter,
+					message.elemId as number,
+					message.skillInstanceUid as number
+				)
 		} catch (e) {
 			this.logger.error(`${(e as any).message} - ${(e as any).stack}`)
 		}

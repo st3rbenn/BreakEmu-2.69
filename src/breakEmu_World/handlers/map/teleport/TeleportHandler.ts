@@ -1,11 +1,11 @@
-import GameMap from "../../../../breakEmu_API/model/map.model"
-import { ansiColorCodes } from "../../../../breakEmu_Core/Colors"
-import Logger from "../../../../breakEmu_Core/Logger"
+import GameMap from "@breakEmu_API/model/map.model"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
 import {
 	TeleportRequestMessage,
 	ZaapRespawnSaveRequestMessage,
 	ZaapRespawnUpdatedMessage,
-} from "../../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import WorldClient from "../../../WorldClient"
 
 class TeleportHandler {
@@ -15,12 +15,7 @@ class TeleportHandler {
 		client: WorldClient,
 		message: TeleportRequestMessage
 	) {
-		console.log(
-			"TeleportHandler: handleTeleportRequestMessage",
-			client?.selectedCharacter?.isZaapDialog
-		)
 		if (client?.selectedCharacter?.isZaapDialog) {
-			console.log("TeleportHandler: isZaapDialog")
 			this.logger.write(
 				`TeleportHandler: ${client?.account?.pseudo} is using a zaap`,
 				ansiColorCodes.bgYellow

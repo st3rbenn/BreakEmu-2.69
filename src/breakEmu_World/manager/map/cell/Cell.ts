@@ -1,4 +1,4 @@
-import { CellData } from "../../../../breakEmu_API/model/map.model"
+import { CellData } from "@breakEmu_API/model/map.model"
 
 class Cell {
 	id: number

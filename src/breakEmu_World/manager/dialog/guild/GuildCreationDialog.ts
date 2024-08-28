@@ -1,11 +1,11 @@
-import Character from "../../../../breakEmu_API/model/character.model"
-import Logger from "../../../../breakEmu_Core/Logger"
+import Character from "@breakEmu_API/model/character.model"
+import Logger from "@breakEmu_Core/Logger"
 import {
 	DialogTypeEnum,
 	SocialGroupCreationResultEnum,
-} from "../../../../breakEmu_Server/IO"
-import DialogHandler from "../../../../breakEmu_World/handlers/dialog/DialogHandler"
-import WorldClient from "../../../../breakEmu_World/WorldClient"
+} from "@breakEmu_Protocol/IO"
+import DialogHandler from "@breakEmu_World/handlers/dialog/DialogHandler"
+import WorldClient from "@breakEmu_World/WorldClient"
 import GuildHandler from "../../../handlers/guild/GuildHandler"
 import Dialog from "../Dialog"
 

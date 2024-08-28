@@ -1,6 +1,6 @@
-import MarkovChain from "../../../breakEmu_Core/MarkovChain"
-import { CharacterNameSuggestionSuccessMessage } from "../../../breakEmu_Server/IO"
-import WorldClient from "../../../breakEmu_World/WorldClient"
+import MarkovChain from "@breakEmu_Core/MarkovChain"
+import { CharacterNameSuggestionSuccessMessage } from "@breakEmu_Protocol/IO"
+import WorldClient from "@breakEmu_World/WorldClient"
 
 // class RandomCharacterNameHandler {
 // 	private static syllables: string[] = [

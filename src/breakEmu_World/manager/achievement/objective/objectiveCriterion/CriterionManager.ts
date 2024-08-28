@@ -15,9 +15,7 @@ class CriterionManager {
 	}
 
 	generateCriterion(): ObjectiveCriterion[] {
-		// console.log(this.objective)
 		let listOfCriterion: ObjectiveCriterion[] = []
-		console.log("criteron", this.criterion)
 		let identifiers = this.criterion.split("&")
 			? this.criterion.split("&")
 			: this.criterion.split("")

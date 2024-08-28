@@ -588,7 +588,6 @@ export enum InteractiveTypeEnum {
 	TYPE_SAW = 2,
 	TYPE_OAK = 8,
 	TYPE_CRAFTING_TABLE = 11,
-	TYPE_WORKSHOP = 12,
 	TYPE_BENCH = 13,
 	TYPE_CAULDRON = 15,
 	TYPE_ZAAP = 16,
@@ -653,9 +652,9 @@ export enum InteractiveTypeEnum {
 	TYPE_WELL = 84,
 	TYPE_SAFE = 85,
 	TYPE_WOODEN_BENCH = 88,
+  TYPE_BREWING_STAND = 90,
 	TYPE_MAGIC_ANVIL = 92,
 	TYPE_MUNSTER_CRUSHER = 93,
-	TYPE_WORKBENCH = 94,
 	TYPE_BOMBU = 98,
 	TYPE_STRANGE_SHADOW = 99,
 	TYPE_SNAPPER = 100,
@@ -680,6 +679,7 @@ export enum InteractiveTypeEnum {
 	TYPE_LIST_OF_CRAFTSMEN = 119,
 	TYPE_PADDOCK = 120,
 	TYPE_KALIPTUS = 121,
+	TYPE_WORKSHOP = 122,
 	TYPE_SWITCH = 127,
 	TYPE_CLASS_STATUE = 128,
 	TYPE__NO_TRAD_ANY_IE = 129,
@@ -701,14 +701,14 @@ export enum InteractiveTypeEnum {
 	TYPE_GIFT_PACKAGE = 146,
 	TYPE_GIFT_WRAPPING_STATION = 147,
 	TYPE_ALCHEMISTS__WORKSHOP = 148,
-	TYPE_JEWELLERS__WORKSHOP = 149,
+	TYPE_JEWELLERS__WORKSHOP = 12,
 	TYPE_BUTCHERS__WORKSHOP = 150,
 	TYPE_BUTCHERS__AND_HUNTERS__WORKSHOP = 151,
 	TYPE_SHIELD_SMITHS__WORKSHOP = 152,
 	TYPE_BAKERS__WORKSHOP = 153,
-	TYPE_HANDYMEN_S_WORKSHOP = 154,
+	TYPE_HANDYMEN_S_WORKSHOP = 94,
 	TYPE_LUMBERJACKS__WORKSHOP = 155,
-	TYPE_HUNTERS__WORKSHOP = 156,
+	TYPE_HUNTERS__WORKSHOP = 97,
 	TYPE_SHOEMAKERS__WORKSHOP = 157,
 	TYPE_SMITHMAGI_S_WORKSHOP = 158,
 	TYPE_SMITHS__WORKSHOP = 159,
@@ -21680,7 +21680,7 @@ export interface RawObjectItemNotInContainer extends RawItem {
 }
 
 export class ObjectItemNotInContainer extends Item {
-	public static id: number = 2313
+	public static id: number = 4752
 
 	public objectGID: number | undefined = 0
 	public effects: ObjectEffect[] | undefined
@@ -34112,7 +34112,7 @@ export interface RawExchangeCraftResultMessage {
 }
 
 export class ExchangeCraftResultMessage extends DofusMessage {
-	public static id: number = 1845
+	public static id: number = 7242
 
 	public craftResult: number | undefined = 0
 
@@ -34149,7 +34149,7 @@ export interface RawExchangeCraftResultWithObjectDescMessage
 }
 
 export class ExchangeCraftResultWithObjectDescMessage extends ExchangeCraftResultMessage {
-	public static id = 5780
+	public static id = 4589
 
 	public objectInfo: ObjectItemNotInContainer | undefined
 
@@ -35271,7 +35271,7 @@ export interface RawExchangeObjectMessage {
 }
 
 export class ExchangeObjectMessage extends DofusMessage {
-	public static id: number = 3691
+	public static id: number = 3929
 
 	public remote: boolean | undefined = false
 
@@ -35308,7 +35308,7 @@ export interface RawExchangeObjectsRemovedMessage
 }
 
 export class ExchangeObjectsRemovedMessage extends ExchangeObjectMessage {
-	public static id = 2876
+	public static id = 5784
 
 	public objectUID: number[] | undefined
 
@@ -35610,7 +35610,7 @@ export interface RawExchangeObjectAddedMessage
 }
 
 export class ExchangeObjectAddedMessage extends ExchangeObjectMessage {
-	public static id = 8187
+	public static id = 5600
 
 	public object_: ObjectItem | undefined
 
@@ -38235,7 +38235,7 @@ export interface RawExchangeObjectRemovedMessage
 }
 
 export class ExchangeObjectRemovedMessage extends ExchangeObjectMessage {
-	public static id = 7088
+	public static id = 5047
 
 	public objectUID: number | undefined = 0
 
@@ -47698,7 +47698,7 @@ export interface RawExchangeObjectModifiedMessage
 }
 
 export class ExchangeObjectModifiedMessage extends ExchangeObjectMessage {
-	public static id = 4126
+	public static id = 1595
 
 	public object_: ObjectItem | undefined
 
@@ -50663,7 +50663,7 @@ export interface RawExchangeCraftCountModifiedMessage {
 }
 
 export class ExchangeCraftCountModifiedMessage extends DofusMessage {
-	public static id: number = 3137
+	public static id: number = 5488
 
 	public count: number | undefined = 0
 
@@ -53068,8 +53068,8 @@ export interface RawExchangeStartOkCraftWithInformationMessage
 }
 
 export class ExchangeStartOkCraftWithInformationMessage extends ExchangeStartOkCraftMessage {
-	public static id = 7801
-
+	public static id = 187
+  
 	public skillId: number | undefined = 0
 
 	public constructor(skillId?: number | undefined) {
@@ -61870,7 +61870,7 @@ export interface RawExchangeObjectMoveMessage {
 }
 
 export class ExchangeObjectMoveMessage extends DofusMessage {
-	public static id: number = 7963
+	public static id: number = 1070
 
 	public objectUID: number | undefined = 0
 	public quantity: number | undefined = 0
@@ -69011,7 +69011,7 @@ export interface RawExchangeCraftCountRequestMessage {
 }
 
 export class ExchangeCraftCountRequestMessage extends DofusMessage {
-	public static id: number = 1855
+	public static id: number = 3477
 
 	public count: number | undefined = 0
 
@@ -69123,7 +69123,7 @@ export interface RawExchangeSetCraftRecipeMessage {
 }
 
 export class ExchangeSetCraftRecipeMessage extends DofusMessage {
-	public static id: number = 9959
+	public static id: number = 6059
 
 	public objectGID: number | undefined = 0
 
@@ -71111,7 +71111,7 @@ export interface RawExchangeReadyMessage {
 }
 
 export class ExchangeReadyMessage extends DofusMessage {
-	public static id: number = 118
+	public static id: number = 4843
 
 	public ready: boolean | undefined = false
 	public step: number | undefined = 0
@@ -73791,7 +73791,7 @@ export const types: { [key: number]: typeof DofusType } = {
 	7508: CharacterCharacteristicForPreset,
 	6884: SpellForPreset,
 	3448: Achievement,
-	2313: ObjectItemNotInContainer,
+	4752: ObjectItemNotInContainer,
 	446: ObjectItemToSell,
 	2594: TaxCollectorFightersInformation,
 	6506: TeleportDestination,
@@ -74026,8 +74026,8 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	4852: ShortcutBarContentMessage,
 	1391: ObjectsAddedMessage,
 	9868: CharacterSelectedSuccessMessage,
-	1845: ExchangeCraftResultMessage,
-	5780: ExchangeCraftResultWithObjectDescMessage,
+	7242: ExchangeCraftResultMessage,
+	4589: ExchangeCraftResultWithObjectDescMessage,
 	995: AbstractPartyMessage,
 	2338: AbstractPartyEventMessage,
 	5580: PartyMemberRemoveMessage,
@@ -74052,14 +74052,14 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	6831: LoginQueueStatusMessage,
 	1837: PartyCancelInvitationNotificationMessage,
 	8025: DungeonPartyFinderListenErrorMessage,
-	3691: ExchangeObjectMessage,
-	2876: ExchangeObjectsRemovedMessage,
+	3929: ExchangeObjectMessage,
+	5784: ExchangeObjectsRemovedMessage,
 	8680: TextInformationMessage,
 	9296: WarnOnPermaDeathStateMessage,
 	9786: ExchangeOfflineSoldItemsMessage,
 	8726: PartyLeaveMessage,
 	3069: QueueStatusMessage,
-	8187: ExchangeObjectAddedMessage,
+	5600: ExchangeObjectAddedMessage,
 	5713: ExchangeShopStockMovementUpdatedMessage,
 	1653: AbstractTaxCollectorListMessage,
 	6709: TaxCollectorListMessage,
@@ -74113,7 +74113,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	714: StorageInventoryContentMessage,
 	1200: ExchangeShopStockMultiMovementRemovedMessage,
 	1261: TaxCollectorAttackedResultMessage,
-	7088: ExchangeObjectRemovedMessage,
+	5047: ExchangeObjectRemovedMessage,
 	1719: PrismFightAttackerAddMessage,
 	7628: LivingObjectMessageMessage,
 	1605: PartyInvitationMessage,
@@ -74307,7 +74307,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	819: ExchangeCraftInformationObjectMessage,
 	7075: PartyLoyaltyStatusMessage,
 	7514: JobCrafterDirectoryRemoveMessage,
-	4126: ExchangeObjectModifiedMessage,
+	1595: ExchangeObjectModifiedMessage,
 	9391: AnomalySubareaInformationResponseMessage,
 	9558: FriendAddFailureMessage,
 	2501: HavenBagRoomUpdateMessage,
@@ -74371,7 +74371,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	2267: PrismSetSabotagedRefusedMessage,
 	7836: MountSetMessage,
 	2521: PartyInvitationCancelledForGuestMessage,
-	3137: ExchangeCraftCountModifiedMessage,
+	5488: ExchangeCraftCountModifiedMessage,
 	678: ExchangeSellOkMessage,
 	1527: GuildCreationStartedMessage,
 	907: MimicryObjectPreviewMessage,
@@ -74425,7 +74425,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	1307: PrismFightAttackerRemoveMessage,
 	9560: AllianceLeftMessage,
 	7315: AllianceInvitationStateRecrutedMessage,
-	7801: ExchangeStartOkCraftWithInformationMessage,
+	187: ExchangeStartOkCraftWithInformationMessage,
 	1968: MountUnSetMessage,
 	5404: MountXpRatioMessage,
 	1449: JobExperienceMultiUpdateMessage,
@@ -74617,7 +74617,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	4040: ExchangePlayerRequestMessage,
 	8087: GameRolePlayPlayerFightRequestMessage,
 	8527: ExchangePlayerMultiCraftRequestMessage,
-	7963: ExchangeObjectMoveMessage,
+	1070: ExchangeObjectMoveMessage,
 	3567: ExchangeObjectMovePricedMessage,
 	3439: ExchangeStartAsVendorMessage,
 	6789: PortalUseRequestMessage,
@@ -74790,7 +74790,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	7828: ResetCharacterStatsRequestMessage,
 	2564: StatsUpgradeRequestMessage,
 	6836: StartupActionsAllAttributionMessage,
-	6059: PaddockToSellListRequestMessage,
+	6051: PaddockToSellListRequestMessage,
 	1885: PaddockToSellFilterMessage,
 	5809: HouseToSellListRequestMessage,
 	7868: HouseToSellFilterMessage,
@@ -74809,12 +74809,12 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	9508: JobCrafterDirectoryListRequestMessage,
 	3123: ExchangeObjectUseInWorkshopMessage,
 	4712: ExchangeReplayStopMessage,
-	1855: ExchangeCraftCountRequestMessage,
+	3477: ExchangeCraftCountRequestMessage,
 	4740: CharacterDeletionPrepareMessage,
 	9338: CharacterDeletionPrepareRequestMessage,
 	2252: ExchangeMultiCraftSetCrafterCanUseHisRessourcesMessage,
 	9081: ExchangeCraftPaymentModificationRequestMessage,
-	9959: ExchangeSetCraftRecipeMessage,
+	6059: ExchangeSetCraftRecipeMessage,
 	4796: MountSetXpRatioRequestMessage,
 	3596: MountHarnessDissociateRequestMessage,
 	6271: MountInformationInPaddockRequestMessage,
@@ -74866,7 +74866,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	8879: MapRunningFightDetailsRequestMessage,
 	4556: MapRunningFightListRequestMessage,
 	9042: ExchangeAcceptMessage,
-	118: ExchangeReadyMessage,
+	4843: ExchangeReadyMessage,
 	1260: FocusedExchangeReadyMessage,
 	2541: GameMapMovementCancelMessage,
 	9045: ChangeMapMessage,

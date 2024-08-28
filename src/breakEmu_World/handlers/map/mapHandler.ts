@@ -1,6 +1,6 @@
-import GameMap from "../../../breakEmu_API/model/map.model"
-import { ansiColorCodes } from "../../../breakEmu_Core/Colors"
-import Logger from "../../../breakEmu_Core/Logger"
+import GameMap from "@breakEmu_API/model/map.model"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
 import {
 	BasicNoOperationMessage,
 	ChangeMapMessage,
@@ -8,8 +8,8 @@ import {
 	GameMapMovementRequestMessage,
 	MapInformationsRequestMessage,
 	MapScrollEnum,
-} from "../../../breakEmu_Server/IO"
-import MapPoint from "../../../breakEmu_World/manager/map/MapPoint"
+} from "@breakEmu_Protocol/IO"
+import MapPoint from "@breakEmu_World/manager/map/MapPoint"
 import WorldClient from "../../WorldClient"
 
 class MapHandler {
@@ -116,10 +116,7 @@ class MapHandler {
 				const teleportedMap = GameMap.getMapById(teleportMapId)
 
 				if (teleportedMap !== undefined) {
-					if (
-						teleportedMap.isCellWalkable(cellPoint.cellId) &&
-						cellPoint.isInMap()
-					) {
+					if (teleportedMap.isCellWalkable(cellPoint.cellId)) {
 						await client.selectedCharacter.teleport(
 							teleportMapId,
 							cellPoint.cellId

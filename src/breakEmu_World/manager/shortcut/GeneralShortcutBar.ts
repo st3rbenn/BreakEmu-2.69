@@ -1,8 +1,8 @@
-import Character from "../../../breakEmu_API/model/character.model"
+import Character from "@breakEmu_API/model/character.model"
 import {
 	ShortcutBarEnum,
 	ShortcutBarRemovedMessage,
-} from "../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import ShortcutBar from "./ShortcutBar"
 import CharacterShortcut from "./character/CharacterShortcut"
 import CharacterSpellShortcut from "./character/characterSpellShortcut"

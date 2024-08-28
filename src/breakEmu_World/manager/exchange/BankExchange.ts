@@ -1,13 +1,13 @@
-import Character from "../../../breakEmu_API/model/character.model"
-import Logger from "../../../breakEmu_Core/Logger"
+import Character from "@breakEmu_API/model/character.model"
+import Logger from "@breakEmu_Core/Logger"
 import {
 	ExchangeStartedWithStorageMessage,
 	ExchangeTypeEnum,
 	ObjectItem,
 	StorageInventoryContentMessage,
-} from "../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import Exchange from "../exchange/Exchange"
-import BankItem from "../../../breakEmu_API/model/BankItem.model"
+import BankItem from "@breakEmu_API/model/BankItem.model"
 
 class BankExchange extends Exchange {
 	logger: Logger = new Logger("BankExchange")

@@ -1,4 +1,4 @@
-import ConfigurationManager from "../../../../breakEmu_Core/configuration/ConfigurationManager"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
 import {
 	ActorExtendedAlignmentInformations,
 	CharacterCharacteristic,
@@ -7,8 +7,8 @@ import {
 	CharacterCharacteristicValue,
 	StatsBoostEnum,
 	SpellModifierMessage,
-} from "../../../../breakEmu_Server/IO"
-import BreedManager from "../../../../breakEmu_World/manager/breed/BreedManager"
+} from "@breakEmu_Protocol/IO"
+import BreedManager from "@breakEmu_World/manager/breed/BreedManager"
 import ApCharacteristic from "./apCharacteristic"
 import Characteristic from "./characteristic"
 import MpCharacteristic from "./mpCharacteristic"
@@ -16,8 +16,8 @@ import ResistanceCharacteristic from "./resistanceCharacteristic"
 import PointDodgeCharacteristic from "./pointDodgeCharacteristic"
 import RelativeCharacteristic from "./relativeCharacteristic"
 import RangeCharacteristic from "./rangeCharacteristic"
-import Character from "../../../../breakEmu_API/model/character.model"
-import Experience from "../../../../breakEmu_API/model/experience.model"
+import Character from "@breakEmu_API/model/character.model"
+import Experience from "@breakEmu_API/model/experience.model"
 import WorldClient from "breakEmu_World/WorldClient"
 
 interface EntityStatsJSON {

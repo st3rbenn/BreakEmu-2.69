@@ -1,7 +1,7 @@
 import {
 	CharacterCharacteristicDetailed,
 	CharacteristicEnum,
-} from "../../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 
 class Characteristic {
 	base: number

@@ -1,10 +1,10 @@
 import { randomUUID } from "crypto"
-import CharacterController from "../../../breakEmu_API/controller/character.controller"
-import CharacterItemController from "../../../breakEmu_API/controller/characterItem.controller"
-import Character from "../../../breakEmu_API/model/character.model"
-import CharacterItem from "../../../breakEmu_API/model/characterItem.model"
-import Item from "../../../breakEmu_API/model/item.model"
-import ItemSet from "../../../breakEmu_API/model/itemSet.model"
+import CharacterController from "@breakEmu_API/controller/character.controller"
+import CharacterItemController from "@breakEmu_API/controller/characterItem.controller"
+import Character from "@breakEmu_API/model/character.model"
+import CharacterItem from "@breakEmu_API/model/characterItem.model"
+import Item from "@breakEmu_API/model/item.model"
+import ItemSet from "@breakEmu_API/model/itemSet.model"
 import {
 	CharacterInventoryPositionEnum,
 	EffectsEnum,
@@ -12,16 +12,17 @@ import {
 	InventoryWeightMessage,
 	KamasUpdateMessage,
 	ObjectAddedMessage,
+	ObjectEffect,
 	ObjectErrorEnum,
 	ObjectErrorMessage,
 	ObjectItem,
 	ObjectMovementMessage,
 	ObjectQuantityMessage,
 	SetUpdateMessage,
-} from "../../../breakEmu_Server/IO"
+} from "@breakEmu_Protocol/IO"
 import ItemEffectsManager from "../effect/ItemEffectsManager"
 import ItemCollection from "./collections/ItemCollections"
-import Logger from "../../../breakEmu_Core/Logger"
+import Logger from "@breakEmu_Core/Logger"
 
 class Inventory extends ItemCollection<CharacterItem> {
 	public maxKamas: number = 2000000000
@@ -73,115 +74,14 @@ class Inventory extends ItemCollection<CharacterItem> {
 		return weight
 	}
 
-	public async onItemAdded(item: CharacterItem): Promise<void> {
-		try {
-			const it = await item.getObjectItem()
-			await this.character.client?.Send(new ObjectAddedMessage(it, 0))
-			await this.refreshWeight()
-		} catch (error) {
-			this.logger.write(error as any)
-		}
-	}
-
-	public async onItemsAdded(items: CharacterItem[]): Promise<void> {
-		try {
-			for (const item of items) {
-				await this.onItemAdded(item)
+	public async getItemByGid(gid: number): Promise<CharacterItem | null> {
+		for (const [key, item] of this.items) {
+			if (item.gId == gid) {
+				return item
 			}
-
-			await this.refreshWeight()
-		} catch (error) {
-			this.logger.write(error as any)
 		}
-	}
 
-	public async onItemStacked(item: CharacterItem): Promise<void> {
-		try {
-			await item.save()
-			await this.updateItemQuantity(item)
-			await this.refreshWeight()
-		} catch (error) {
-			this.logger.write(error as any)
-		}
-	}
-
-	public async onItemsStackeds(items: CharacterItem[]): Promise<void> {
-		try {
-			for (const item of items) {
-				await this.onItemStacked(item)
-			}
-		} catch (error) {
-			this.logger.write(error as any)
-		}
-	}
-
-	public async onItemRemoved(item: CharacterItem): Promise<void> {
-		try {
-			const id = await CharacterItemController.getInstance().getIntIdFromUuid(
-				item.uId
-			)
-			await this.character.client?.Send(
-				new ObjectMovementMessage(id as number, -1)
-			)
-
-			await CharacterItemController.getInstance().deleteItem(item)
-			await this.refreshWeight()
-		} catch (error) {
-			this.logger.write(error as any)
-		}
-	}
-
-	public async onItemsRemoved(items: CharacterItem[]): Promise<void> {
-		try {
-			for (const item of items) {
-				await this.onItemRemoved(item)
-			}
-
-			await this.refreshWeight()
-		} catch (error) {
-			this.logger.write(error as any)
-		}
-	}
-
-	public async onItemUnstacked(item: CharacterItem): Promise<void> {
-		try {
-			await item.save()
-			await this.updateItemQuantity(item)
-			await this.refreshWeight()
-		} catch (error) {
-			this.logger.write(error as any)
-		}
-	}
-
-	public async onItemsUnstackeds(items: CharacterItem[]): Promise<void> {
-		try {
-			for (const item of items) {
-				await this.onItemUnstacked(item)
-			}
-		} catch (error) {
-			this.logger.write(error as any)
-		}
-	}
-
-	public async onItemQuantityChanged(item: CharacterItem): Promise<void> {
-		try {
-			await item.save()
-			await this.updateItemQuantity(item)
-			await this.refreshWeight()
-		} catch (error) {
-			this.logger.write(error as any)
-		}
-	}
-
-	public async onItemsQuantityChanged(items: CharacterItem[]): Promise<void> {
-		try {
-			for (const item of items) {
-				await item.save()
-				await this.updateItemQuantity(item)
-			}
-		} catch (error) {
-			this.logger.write(error as any)
-		}
+		return null
 	}
 
 	public getWeapon(): CharacterItem | null {
@@ -239,19 +139,19 @@ class Inventory extends ItemCollection<CharacterItem> {
 		}
 	}
 
-  public async addKamas(kamas: number) {
-    try {
-      if (this.character.kamas + kamas > this.maxKamas) {
-        this.character.kamas = this.maxKamas
-      } else {
-        this.character.kamas += kamas
-      }
+	public async addKamas(kamas: number) {
+		try {
+			if (this.character.kamas + kamas > this.maxKamas) {
+				this.character.kamas = this.maxKamas
+			} else {
+				this.character.kamas += kamas
+			}
 
-      await this.refreshKamas()
-    } catch (error) {
-      this.logger.write(error as any)
-    }
-  }
+			await this.refreshKamas()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
 
 	public async addNewItem(
 		gid: number,
@@ -271,7 +171,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 					return
 				}
 
-				let obj = new CharacterItem(
+				const obj = new CharacterItem(
 					this.character.id,
 					randomUUID(),
 					gid,
@@ -285,12 +185,14 @@ class Inventory extends ItemCollection<CharacterItem> {
 				await this.addItem(obj, quantity, this.character.id)
 				return obj
 			} else {
+				console.log(`Item with gid ${gid} not found`)
 				return null
 			}
 		} catch (error) {
 			this.logger.write(error as any)
 		}
 	}
+
 	public async setItemPosition(
 		item: CharacterItem,
 		position: CharacterInventoryPositionEnum,
@@ -368,29 +270,6 @@ class Inventory extends ItemCollection<CharacterItem> {
 		}
 	}
 
-	public async onError(error: ObjectErrorEnum) {
-		try {
-			await this.character.client?.Send(new ObjectErrorMessage(error))
-		} catch (error) {
-			this.logger.write(error as any)
-		}
-	}
-
-	public checkStacks(
-		item: CharacterItem,
-		position: CharacterInventoryPositionEnum,
-		checker: CharacterInventoryPositionEnum[]
-	): boolean {
-		checker.forEach(async (pos) => {
-			const equipedItem = this.getEquipedItem(pos)
-			if (equipedItem != null && equipedItem.gId == item.gId) {
-				return true
-			}
-		})
-
-		return false
-	}
-
 	public async equipItem(
 		item: CharacterItem,
 		position: CharacterInventoryPositionEnum,
@@ -416,8 +295,11 @@ class Inventory extends ItemCollection<CharacterItem> {
 					quantity
 				)
 
-				await this.addItem(newItem, quantity, item.characterId)
-				await this.updateItemQuantity(item)
+				if (newItem != null) {
+					newItem.positionEnum = position
+					await this.addItem(newItem, quantity, item.characterId)
+					await this.updateItemQuantity(item)
+				}
 			}
 
 			await item.save()
@@ -485,16 +367,25 @@ class Inventory extends ItemCollection<CharacterItem> {
 		}
 	}
 
+	public async cutItem(item: CharacterItem, quantity: number) {
+		try {
+			const newItem = item.clone()
+			newItem.quantity = quantity
+			item.quantity -= quantity
+			return newItem
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
 	public async updateItemQuantity(item: CharacterItem) {
 		try {
-			const id = await CharacterItemController.getInstance().getIntIdFromUuid(
+			const itemuId = await CharacterItemController.getInstance().getIntIdFromUuid(
 				item.uId
 			)
-			if (id) {
-				await this.character.client?.Send(
-					new ObjectQuantityMessage(id, item.quantity)
-				)
-			}
+			await this.character.client?.Send(
+				new ObjectQuantityMessage(itemuId as number, item.quantity)
+			)
 		} catch (error) {
 			this.logger.write(error as any)
 		}
@@ -527,7 +418,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 			await this.updateLook(item, flag2)
 
 			if (item.record.hasSet) {
-				const itemSetEquiped = await this.coutnItemSetEquiped(item)
+				const itemSetEquiped = await this.countItemSetEquiped(item)
 
 				if (flag2) {
 					await this.applyItemSetEffects(
@@ -592,27 +483,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 		}
 	}
 
-	public async onSetUpdated(itemSet: ItemSet, count: number) {
-		try {
-			const allItemsSetId = Array.from(itemSet.items.keys())
-
-			const objectEffects = itemSet.getEffects(count).getObjectEffects()
-
-			let test: any[] = []
-
-			objectEffects.map((effect) => {
-				test.push(effect)
-			})
-
-			await this.character.client?.Send(
-				new SetUpdateMessage(itemSet.id, allItemsSetId, test)
-			)
-		} catch (error) {
-			this.logger.write(error as any)
-		}
-	}
-
-	public async coutnItemSetEquiped(itemSet: CharacterItem): Promise<number> {
+	public async countItemSetEquiped(itemSet: CharacterItem): Promise<number> {
 		let count = 0
 
 		for (const item of await this.getEquipedItems()) {
@@ -639,24 +510,187 @@ class Inventory extends ItemCollection<CharacterItem> {
 		}
 	}
 
+	public async onError(error: ObjectErrorEnum) {
+		try {
+			await this.character.client?.Send(new ObjectErrorMessage(error))
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
+	public checkStacks(
+		item: CharacterItem,
+		position: CharacterInventoryPositionEnum,
+		checker: CharacterInventoryPositionEnum[]
+	): boolean {
+		checker.forEach(async (pos) => {
+			const equipedItem = this.getEquipedItem(pos)
+			if (equipedItem != null && equipedItem.gId == item.gId) {
+				return true
+			}
+		})
+
+		return false
+	}
+
+	public async updateItem(item: CharacterItem) {
+		try {
+			await CharacterItemController.getInstance().updateItem(item)
+			await this.refresh()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
+	public async onSetUpdated(itemSet: ItemSet, count: number) {
+		try {
+			const allItemsSetId = Array.from(itemSet.items.keys())
+			const objectEffects = itemSet.getEffects(count).getObjectEffects()
+
+			await this.character.client?.Send(
+				new SetUpdateMessage(itemSet.id, allItemsSetId, objectEffects)
+			)
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
 	public async onObjectMoved(
 		item: CharacterItem,
 		newPosition: CharacterInventoryPositionEnum
 	) {
 		try {
-			const id = await CharacterItemController.getInstance().getIntIdFromUuid(
+			const itemuId = await CharacterItemController.getInstance().getIntIdFromUuid(
 				item.uId
 			)
+			await this.character.client?.Send(
+				new ObjectMovementMessage(itemuId as number, newPosition)
+			)
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
 
-			if (id) {
-				await this.character.client?.Send(
-					new ObjectMovementMessage(id, newPosition)
-				)
+	public async onItemAdded(item: CharacterItem): Promise<void> {
+		try {
+			const it = await item.getObjectItem()
+			await this.character.client?.Send(new ObjectAddedMessage(it, 0))
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
+	public async onItemsAdded(items: CharacterItem[]): Promise<void> {
+		try {
+			for (const item of items) {
+				await this.onItemAdded(item)
+			}
+
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
+	public async onItemStacked(item: CharacterItem): Promise<void> {
+		try {
+			await item.save()
+			await this.updateItemQuantity(item)
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
+	public async onItemsStackeds(items: CharacterItem[]): Promise<void> {
+		try {
+			for (const item of items) {
+				await this.onItemStacked(item)
 			}
 		} catch (error) {
 			this.logger.write(error as any)
 		}
 	}
+
+	public async onItemRemoved(item: CharacterItem): Promise<void> {
+		try {
+			const itemUid = await CharacterItemController.getInstance().getIntIdFromUuid(
+				item.uId
+			)
+			await this.character.client?.Send(
+				new ObjectMovementMessage(itemUid as number, -1)
+			)
+
+			await CharacterItemController.getInstance().deleteItem(item)
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
+	public async onItemsRemoved(items: CharacterItem[]): Promise<void> {
+		try {
+			for (const item of items) {
+				await this.onItemRemoved(item)
+			}
+
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
+	public async onItemUnstacked(item: CharacterItem): Promise<void> {
+		try {
+			await item.save()
+			await this.updateItemQuantity(item)
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
+	public async onItemsUnstackeds(items: CharacterItem[]): Promise<void> {
+		try {
+			for (const item of items) {
+				await this.onItemUnstacked(item)
+			}
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
+	public async onItemQuantityChanged(item: CharacterItem): Promise<void> {
+		try {
+			await item.save()
+			await this.updateItemQuantity(item)
+			await this.refreshWeight()
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
+	public async onItemsQuantityChanged(items: CharacterItem[]): Promise<void> {
+		try {
+			for (const item of items) {
+				await item.save()
+				await this.updateItemQuantity(item)
+			}
+		} catch (error) {
+			this.logger.write(error as any)
+		}
+	}
+
+	// public async save() {
+	//   try {
+	//     for (const [key, item] of this.items) {
+	//       await CharacterItemController.getInstance().updateItem(item)
+	//     }
+	//   } catch (error) {
+	//     this.logger.write(error as any)
+	//   }
+	// }
 }
 
 export default Inventory

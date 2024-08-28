@@ -1,5 +1,5 @@
-import Breed from "../../../../breakEmu_API/model/breed.model"
-import { EntityLook, SubEntity } from "../../../../breakEmu_Server/IO"
+import Breed from "@breakEmu_API/model/breed.model"
+import { EntityLook, SubEntity } from "@breakEmu_Protocol/IO"
 import ContextSubEntity from "./ContextSubEntity"
 
 class ContextEntityLook {

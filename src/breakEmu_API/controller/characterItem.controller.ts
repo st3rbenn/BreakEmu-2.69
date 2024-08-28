@@ -1,9 +1,10 @@
-import Database from "../../breakEmu_API/Database"
-import Logger from "../../breakEmu_Core/Logger"
-import Effect from "../../breakEmu_World/manager/entities/effect/Effect"
-import EffectCollection from "../../breakEmu_World/manager/entities/effect/EffectCollection"
-import EffectInteger from "../../breakEmu_World/manager/entities/effect/EffectInteger"
-import AbstractItem from "../../breakEmu_World/manager/items/AbstractItem"
+import { randomUUID } from "crypto"
+import Database from "@breakEmu_API/Database"
+import Logger from "@breakEmu_Core/Logger"
+import Effect from "@breakEmu_World/manager/entities/effect/Effect"
+import EffectCollection from "@breakEmu_World/manager/entities/effect/EffectCollection"
+import EffectInteger from "@breakEmu_World/manager/entities/effect/EffectInteger"
+import AbstractItem from "@breakEmu_World/manager/items/AbstractItem"
 import CharacterItem from "../model/characterItem.model"
 
 class CharacterItemController {
@@ -26,7 +27,6 @@ class CharacterItemController {
 	) {
 		const characterItem = await this._database.prisma.characterItem.create({
 			data: {
-				uid: item.uId,
 				characterId: characterId,
 				appearanceId: item.appearanceId,
 				gid: item.gId,
@@ -47,12 +47,38 @@ class CharacterItemController {
 	}
 
 	async getIntIdFromUuid(uuid: string) {
-		const mapping = await this._database.prisma.characterItemIdMapper.findUnique(
-			{
-				where: { uuid },
+		try {
+			const mapping = await this._database.prisma.characterItemIdMapper.findUnique(
+				{
+					where: { uuid },
+				}
+			)
+			return mapping ? mapping.intId : null
+		} catch (error) {
+			this._logger.error(`Error getting intId from uuid ${uuid}`)
+		}
+	}
+
+	async getUuidFromIntId(intId: number) {
+		try {
+			const mapping = await this._database.prisma.characterItemIdMapper.findUnique(
+				{
+					where: { intId },
+				}
+			)
+			if (mapping) {
+				return mapping.uuid
+			} else {
+				await this._database.prisma.characterItemIdMapper.create({
+					data: {
+						intId,
+						uuid: randomUUID(),
+					},
+				})
 			}
-		)
-		return mapping ? mapping.intId : null
+		} catch (error) {
+			this._logger.error(`Error getting uuid from intId ${intId}`)
+		}
 	}
 
 	async getCharacterItemByGid(characterId: number, gid: number) {
@@ -77,9 +103,7 @@ class CharacterItemController {
 
 		for (const item of characterItems) {
 			let effects: EffectCollection = new EffectCollection([])
-			const effs = JSON.parse(
-				item.effects?.toString() as string
-			) as Effect[]
+			const effs = JSON.parse(item.effects?.toString() as string) as Effect[]
 
 			for (const eff of effs) {
 				effects.effects.set(
@@ -102,6 +126,7 @@ class CharacterItemController {
 					)
 				)
 			}
+
 			characterItemsArray.push(
 				new CharacterItem(
 					characterId,
@@ -116,19 +141,33 @@ class CharacterItemController {
 			)
 		}
 
-    return characterItemsArray
+		return characterItemsArray
 	}
 
 	async updateItem(item: CharacterItem) {
-		await this._database.prisma.characterItem.update({
-			where: { uid: item.uId },
-			data: {
-				position: item.position,
-				quantity: item.quantity,
-				look: item.look,
-				effects: item.effects.saveAsJson(),
-			},
-		})
+		const getUid = await this.getCharacterItemByGid(item.characterId, item.gId)
+
+		if (getUid) {
+			try {
+				await this._database.prisma.characterItem.update({
+					where: {
+						uid: getUid.uid,
+					},
+					data: {
+						appearanceId: item.appearanceId,
+						gid: item.gId,
+						position: item.position,
+						quantity: item.quantity,
+						look: item.look,
+						effects: item.effects.saveAsJson(),
+					},
+				})
+			} catch (error) {
+				this._logger.error(
+					`Error updating item ${item.uId} ${item.record.name}`
+				)
+			}
+		}
 	}
 
 	async cutItem(item: CharacterItem, quantity: number) {
@@ -139,9 +178,17 @@ class CharacterItemController {
 	}
 
 	async deleteItem(item: CharacterItem) {
-		await this._database.prisma.characterItem.delete({
-			where: { uid: item.uId },
-		})
+		try {
+			const getUid = await this.getCharacterItemByGid(
+				item.characterId,
+				item.gId
+			)
+			await this._database.prisma.characterItem.delete({
+				where: { uid: getUid?.uid as string },
+			})
+		} catch (error) {
+			this._logger.error(`Error deleting item ${item.uId} ${item.record.name}`)
+		}
 	}
 }
 

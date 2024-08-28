@@ -1,9 +1,9 @@
 import { Connection } from "amqplib"
 import { Socket } from "net"
-import UserController from "../breakEmu_API/controller/user.controller"
-import { ansiColorCodes } from "../breakEmu_Core/Colors"
-import Logger from "../breakEmu_Core/Logger"
-import TransitionServer from "../breakEmu_Server/TransitionServer"
+import UserController from "@breakEmu_API/controller/user.controller"
+import ansiColorCodes from "@breakEmu_Core/Colors"
+import Logger from "@breakEmu_Core/Logger"
+import TransitionServer from "@breakEmu_Server/TransitionServer"
 import WorldClient from "./WorldClient"
 import WorldServer from "./WorldServer"
 

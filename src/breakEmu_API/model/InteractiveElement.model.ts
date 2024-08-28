@@ -1,9 +1,9 @@
-import InteractiveElementBonus from "../../breakEmu_Core/bull/tasks/BonusTask"
-import MapInstance from "../../breakEmu_World/manager/map/MapInstance"
-import MapPoint from "../../breakEmu_World/manager/map/MapPoint"
-import MapElement from "../../breakEmu_World/manager/map/element/MapElement"
-import MapInteractiveElement from "../../breakEmu_World/manager/map/element/MapInteractiveElement"
-import MapStatedElement from "../../breakEmu_World/manager/map/element/MapStatedElement"
+import InteractiveElementBonus from "@breakEmu_Core/bull/tasks/BonusTask"
+import MapInstance from "@breakEmu_World/manager/map/MapInstance"
+import MapPoint from "@breakEmu_World/manager/map/MapPoint"
+import MapElement from "@breakEmu_World/manager/map/element/MapElement"
+import MapInteractiveElement from "@breakEmu_World/manager/map/element/MapInteractiveElement"
+import MapStatedElement from "@breakEmu_World/manager/map/element/MapStatedElement"
 import InteractiveSkill from "./InteractiveSkill.model"
 import { InteractiveElementData } from "./map.model"
 
@@ -52,6 +52,10 @@ class InteractiveElementModel {
       mapId,
       elementId
     ) as InteractiveSkill
+
+    if(this.skill === undefined) {
+      
+    }
 	}
 
 	public save(): InteractiveElementData {
