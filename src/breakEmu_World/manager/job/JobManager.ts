@@ -11,20 +11,14 @@ import {
 } from "@breakEmu_Protocol/IO"
 import AchievementManager from "../achievement/AchievementManager"
 import SkillManager from "../skills/SkillManager"
+import Container from "@breakEmu_Core/container/Container"
 
 class JobManager {
-	static instance: JobManager
+  private container: Container = Container.getInstance()
 
 	static MAX_LEVEL = 200
 	static WEIGHT_BONUS_PER_LEVEL = 12
 	static WEIGHT_BONUS_DECREASE = 1 / 200
-
-	public static getInstance(): JobManager {
-		if (!JobManager.instance) {
-			JobManager.instance = new JobManager()
-		}
-		return JobManager.instance
-	}
 
 	public async setExperience(
 		experience: number,
@@ -41,7 +35,7 @@ class JobManager {
 		if (job.experience >= nextLevelFloor && job.level < JobManager.MAX_LEVEL) {
 			job.level = Experience.getJobLevel(job.experience)
 			await this.onLevelUp(character, job.level - 1, job.level, job)
-			await AchievementManager.getInstance().checkJobLevelAchievements(
+			await this.container.get(AchievementManager).checkJobLevelAchievements(
 				character,
 				job
 			)

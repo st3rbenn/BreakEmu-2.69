@@ -5,6 +5,7 @@ import Logger from "@breakEmu_Core/Logger"
 import AuthClient from "./AuthClient"
 import AuthServer from "./AuthServer"
 import AuthTransition from "./AuthTransition"
+import Container from "@breakEmu_Core/container/Container"
 
 interface IQueue {
 	position: number
@@ -13,20 +14,11 @@ interface IQueue {
 
 class ConnectionQueue {
 	private logger: Logger = new Logger("ConnectionQueue")
-	private static _instance: ConnectionQueue
+	private container: Container = Container.getInstance()
 
 	private queue: IQueue[] = []
 
 	private isProcessing = false
-
-	private constructor() {}
-
-	public static getInstance(): ConnectionQueue {
-		if (!ConnectionQueue._instance) {
-			ConnectionQueue._instance = new ConnectionQueue()
-		}
-		return ConnectionQueue._instance
-	}
 
 	public async enqueue(socket: Socket): Promise<void> {
 		const position = this.queue.length + 1
@@ -95,8 +87,8 @@ class ConnectionQueue {
 
 	private async processConnection(socket: IQueue): Promise<void> {
 		const client = new AuthClient(socket.socket)
-		await AuthServer.getInstance().AddClient(client)
-    	client.setupEventHandlers()
+		await this.container.get(AuthServer).AddClient(client)
+		client.setupEventHandlers()
 
 		await client.initialize()
 	}

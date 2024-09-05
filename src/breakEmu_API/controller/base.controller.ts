@@ -3,10 +3,12 @@ import Logger from "@breakEmu_Core/Logger"
 import Database from "../Database"
 import AuthClient from "@breakEmu_Auth/AuthClient"
 import WorldServer from "@breakEmu_World/WorldServerManager"
+import Container from "@breakEmu_Core/container/Container"
 
 abstract class BaseController {
 	protected _logger: Logger = new Logger("BaseController")
-	protected _database: Database = Database.getInstance()
+	protected container: Container = Container.getInstance()
+	protected _database: Database = this.container.get(Database)
 
 	private _socket: AuthClient | WorldServer
 

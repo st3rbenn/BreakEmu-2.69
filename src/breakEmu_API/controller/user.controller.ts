@@ -17,10 +17,12 @@ import Account from "../model/account.model"
 import bankItemController from "./bankItem.controller"
 import BaseController from "./base.controller"
 import CharacterItemController from "./characterItem.controller"
+import Container from "@breakEmu_Core/container/Container"
 
 class UserController extends BaseController {
 	public _logger: Logger = new Logger("UserController")
-	public _database: Database = Database.getInstance()
+	public container: Container = Container.getInstance()
+	public _database: Database = this.container.get(Database)
 
 	constructor(client?: AuthClient) {
 		super(client as AuthClient)
@@ -158,11 +160,11 @@ class UserController extends BaseController {
 					character
 				)
 
-				const items = await CharacterItemController.getInstance().getCharacterItemsByCharacterId(
-					character.id
-				)
-				const bankItems = await bankItemController
-					.getInstance()
+				const items = await this.container
+					.get(CharacterItemController)
+					.getCharacterItemsByCharacterId(character.id)
+				const bankItems = await this.container
+					.get(bankItemController)
 					.getBankItems(account.id)
 
 				character.inventory = new Inventory(character, items)

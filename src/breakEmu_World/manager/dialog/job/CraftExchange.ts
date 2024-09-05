@@ -6,12 +6,13 @@ import Recipe from "@breakEmu_API/model/recipe.model"
 import Skill from "@breakEmu_API/model/skill.model"
 import Logger from "@breakEmu_Core/Logger"
 import {
-  CraftResultEnum,
-  DialogTypeEnum,
-  ExchangeCraftResultMessage,
-  ExchangeCraftResultWithObjectDescMessage,
-  ExchangeStartOkCraftWithInformationMessage,
-  ObjectItemNotInContainer,
+	CharacterInventoryPositionEnum,
+	CraftResultEnum,
+	DialogTypeEnum,
+	ExchangeCraftResultMessage,
+	ExchangeCraftResultWithObjectDescMessage,
+	ExchangeStartOkCraftWithInformationMessage,
+	ObjectItemNotInContainer,
 } from "@breakEmu_Protocol/IO"
 import DialogHandler from "@breakEmu_World/handlers/dialog/DialogHandler"
 import JobFormulas from "@breakEmu_World/manager/formulas/JobFormulas"
@@ -22,9 +23,6 @@ class CraftExchange extends JobExchange {
 	logger: Logger = new Logger("CraftExchange")
 
 	lastRecipeId: number = 0
-
-	private result: Map<number, CharacterItem> = new Map()
-	private removed: Map<number, number> = new Map()
 
 	constructor(character: Character, skill: Skill) {
 		super(character, skill)
@@ -43,13 +41,15 @@ class CraftExchange extends JobExchange {
 
 	async close(): Promise<void> {
 		try {
-			await this.jobInventory.clear()
-			this.character.removeDialog()
-			this.character.isCraftDialog = false
-			await DialogHandler.leaveDialogMessage(
-				this.character.client as WorldClient,
-				DialogTypeEnum.DIALOG_EXCHANGE
-			)
+			if (this.character.isCraftDialog) {
+				this.character.removeDialog()
+				await this.jobInventory.clear()
+				await DialogHandler.leaveDialogMessage(
+					this.character.client as WorldClient,
+					DialogTypeEnum.DIALOG_EXCHANGE
+				)
+				await this.character.inventory.refresh()
+			}
 		} catch (error) {
 			this.logger.error(error as any)
 		}
@@ -75,14 +75,11 @@ class CraftExchange extends JobExchange {
 				const result = Item.getItem(recipe.resultId)
 
 				if (result.level <= this.characterJob.level || !result) {
-					console.log("Performing craft")
 					await this.performCraft(recipe)
 				} else {
-					console.log("Craft failed because of level")
 					await this.onCraftResult(CraftResultEnum.CRAFT_FAILED)
 				}
 			} else {
-				console.log("Craft failed because of recipe")
 				await this.onCraftResult(CraftResultEnum.CRAFT_FAILED)
 			}
 		}
@@ -106,219 +103,222 @@ class CraftExchange extends JobExchange {
 		if (recipe) {
 			try {
 				console.log(`Setting recipe ${recipeId}`)
+				this.lastRecipeId = recipeId
+
 				for (const ingredient of recipe.ingredients) {
 					const characterItem = await this.character.inventory.getItemByGid(
 						ingredient.id
 					)
 
-					if (characterItem !== null) {
-						const itemRes = await CharacterItemController.getInstance().cutItem(
-							characterItem,
-							ingredient.quantity
-						)
+					if (
+						characterItem !== null &&
+						characterItem.quantity >= ingredient.quantity
+					) {
+						const itemRes = await this.container
+							.get(CharacterItemController)
+							.cutItem(
+								characterItem,
+								ingredient.quantity,
+								CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+							)
 						await this.jobInventory.moveItem(itemRes, ingredient.quantity)
+					} else {
+						console.log(`Item not found or quantity incorrect`)
 					}
 				}
-
-				this.lastRecipeId = recipeId
 			} catch (error) {
 				console.log(error)
 			}
 		}
 	}
 
-	// public async performCraft(recipe: Recipe): Promise<void> {
-	// 	const result: Map<number, CharacterItem> = new Map()
-	// 	const removed: Map<number, number> = new Map()
-
-	//   const itemToDelete: CharacterItem[] = []
-
-	// 	for (let i = 0; i < this.count; i++) {
-	// 		for (const ingredient of this.jobInventory.items.values()) {
-	// 			if (!removed.has(ingredient.gId)) {
-	// 				removed.set(ingredient.gId, ingredient.quantity)
-	// 			} else {
-	// 				removed.set(
-	// 					ingredient.gId,
-	// 					removed.get(ingredient.gId)! + ingredient.quantity
-	// 				)
-	// 			}
-	// 		}
-
-	// 		try {
-	// 			const item = await this.character.inventory.addNewItem(
-	//         recipe.resultId,
-	//         1
-	//       )
-
-	// 			if (item) {
-	// 				result.set(recipe.resultId, item)
-	// 			}
-	// 		} catch (error) {
-	// 			console.log(error)
-	// 		}
-	// 	}
-
-	// 	for (const [gid, quantity] of removed) {
-	// 		const item = await this.character.inventory.getItemByGid(gid)
-
-	// 		if (item) {
-	//       if (item.quantity < quantity) {
-	//         itemToDelete.push(item)
-	//       }
-	//     }
-	// 	}
-
-	// 	if (result.size == 1) {
-	// 		const obj = await result
-	// 			.values()
-	// 			.next()
-	// 			.value?.getObjectItemNotInContainer()
-	// 		await this.onCraftResult(CraftResultEnum.CRAFT_SUCCESS, obj)
-
-	//     // await this.character.inventory.removeItems(itemToDelete)
-	// 	} else {
-	// 		await this.onCraftResult(
-	// 			CraftResultEnum.CRAFT_SUCCESS,
-	// 			new ObjectItemNotInContainer(
-	// 				recipe.resultId,
-	// 				recipe.resultItem.effects.getObjectEffects(),
-	// 				0,
-	// 				this.count
-	// 			)
-	// 		)
-	// 	}
-
-	// 	const craftXpRatio = recipe.resultItem.craftXpRatio
-	// 	const exp = JobFormulas.getInstance().getCraftExperience(
-	// 		recipe.resultItem.level,
-	// 		this.characterJob.level,
-	// 		craftXpRatio
-	// 	)
-
-	// 	await this.character.addJobExperience(
-	// 		this.characterJob.jobId,
-	// 		exp * this.count
-	// 	)
-	// 	await this.jobInventory.clear()
-	//   await this.character.inventory.refresh()
-	// 	this.resetCount()
-	// }
-
 	public async performCraft(recipe: Recipe): Promise<void> {
-		const result: Map<number, CharacterItem> = new Map()
-		const removed: Map<number, number> = new Map()
-		const itemsToDelete: CharacterItem[] = []
-
 		try {
-			await this.processIngredients(recipe, removed)
-			await this.createCraftedItems(recipe, result)
-			await this.validateAndMarkItemsForDeletion(recipe, removed, itemsToDelete)
-			await this.handleCraftResult(recipe, result)
-			await this.addExperienceAndCleanup(recipe)
+			if (!this.jobInventory.isJobInventoryEqualsToRecipeIngredients(recipe))
+				return
+
+			const itemAndQuantityToModify = new Map<CharacterItem, number>()
+			const itemCraftedToAdd = new Map<Item, number>()
+			const ingredients = recipe.ingredients.reduce((map, ingredient) => {
+				const item = Item.getItem(ingredient.id)
+				if (item) map.set(item, ingredient.quantity)
+				return map
+			}, new Map<Item, number>())
+			const resultCraft = Item.getItem(recipe.resultId)
+
+			for (let i = 0; i < this.count; i++) {
+				for (const [ingredient, quantity] of ingredients) {
+					const itemInJobInventory = await this.jobInventory.getItemByGid(
+						ingredient.id
+					)
+					if (itemInJobInventory && itemInJobInventory.quantity >= quantity) {
+						itemAndQuantityToModify.set(
+							itemInJobInventory,
+							(itemAndQuantityToModify.get(itemInJobInventory) || 0) + quantity
+						)
+					} else {
+						console.log(
+							`Item quantity: ${
+								itemInJobInventory?.quantity ?? 0
+							} < ${quantity}`
+						)
+					}
+				}
+				itemCraftedToAdd.set(
+					resultCraft,
+					(itemCraftedToAdd.get(resultCraft) || 0) + 1
+				)
+			}
+
+			const ItemFromPlayerInventoryToSave = await Promise.all(
+				Array.from(itemAndQuantityToModify).map(async ([item, quantity]) => {
+					item.quantity -= quantity
+					return this.character.inventory.getItemByGid(item.gId)
+				})
+			)
+
+			const craftResult = (
+				await Promise.all(
+					Array.from(itemCraftedToAdd).map(([item, quantity]) =>
+						this.character.inventory.addNewItem(item.id, quantity)
+					)
+				)
+			)
+				.filter(Boolean)
+				.pop()
+
+			await Promise.all(
+				ItemFromPlayerInventoryToSave.filter(Boolean).map((item) =>
+					this.character.inventory.updateItem(item as CharacterItem)
+				)
+			)
+
+			console.log("craftResult", craftResult)
+			await this.handleCraftResult(recipe, craftResult as CharacterItem)
+			await this.addExperience(recipe)
+
+      await this.jobInventory.clear()
 		} catch (error) {
 			console.error("Error during crafting:", error)
 			await this.onCraftResult(CraftResultEnum.CRAFT_FAILED)
 		}
 	}
 
-	private async processIngredients(
-		recipe: Recipe,
-		removed: Map<number, number>
-	): Promise<void> {
-		for (let i = 0; i < this.count; i++) {
-			for (const ingredient of this.jobInventory.items.values()) {
-				const currentQuantity = removed.get(ingredient.gId) || 0
-				removed.set(ingredient.gId, currentQuantity + ingredient.quantity)
-			}
-		}
-	}
+	// public async performCraft(recipe: Recipe): Promise<void> {
+	// 	try {
+	// 		if (this.jobInventory.isJobInventoryEqualsToRecipeIngredients(recipe)) {
+	// 			const itemAndQuantityToModify: Map<CharacterItem, number> = new Map()
+	// 			const itemCraftedToAdd: Map<Item, number> = new Map()
+	// 			const igrendients: Map<Item, number> = new Map()
+	// 			const resultCraft: Item = Item.getItem(recipe.resultId)
 
-	private async createCraftedItems(
-		recipe: Recipe,
-		result: Map<number, CharacterItem>
-	): Promise<void> {
-		for (let i = 0; i < this.count; i++) {
-			try {
-				const item = await this.character.inventory.addNewItem(
-					recipe.resultId,
-					1
-				)
-				if (item) {
-					result.set(recipe.resultId, item)
-				}
-			} catch (error) {
-				console.error("Error adding new item:", error)
-			}
-		}
-	}
+	// 			const ItemFromPlayerInventoryToSave: CharacterItem[] = []
+	// 			let craftResult: CharacterItem | undefined
 
-	private async validateAndMarkItemsForDeletion(
-		recipe: Recipe,
-		removed: Map<number, number>,
-		itemsToDelete: CharacterItem[]
-	): Promise<void> {
-		for (const [gid, quantity] of removed) {
-			const item = await this.character.inventory.getItemByGid(gid)
-			const ingredient = recipe.ingredients.find((i) => i.id === gid)
-			console.log(`Checking item ${gid} - ${quantity}`)
-			if (item) {
-				if (item.quantity <= quantity) {
-					console.log(
-						`Marking item ${gid} for deletion because quantity is ${item.quantity} <= ${quantity}`
-					)
-					itemsToDelete.push(item)
-				} else {
-					item.quantity -=
-						quantity - ((ingredient && ingredient?.quantity) || 0)
-					console.log(`Reducing quantity of item ${gid} to ${item.quantity}`)
+	// 			for (const ingredient of recipe.ingredients) {
+	// 				const item = Item.getItem(ingredient.id)
+	// 				if (item) {
+	// 					igrendients.set(item, ingredient.quantity)
+	// 				}
+	// 			}
+	// 			console.log("count", this.count)
+	// 			for (let i = 0; i < this.count; i++) {
+	// 				for (const [ingredient, quantity] of igrendients) {
+	// 					const itemInJobInventory = await this.jobInventory.getItemByGid(
+	// 						ingredient.id
+	// 					)
+	// 					if (itemInJobInventory) {
+	// 						if (itemInJobInventory.quantity >= quantity) {
+	// 							if (itemAndQuantityToModify.has(itemInJobInventory)) {
+	// 								itemAndQuantityToModify.set(
+	// 									itemInJobInventory,
+	// 									(itemAndQuantityToModify.get(
+	// 										itemInJobInventory
+	// 									) as number) + quantity
+	// 								)
+	// 							} else {
+	// 								itemAndQuantityToModify.set(itemInJobInventory, quantity)
+	// 							}
+	// 						} else {
+	// 							console.log(
+	// 								`Item quantity: ${itemInJobInventory.quantity} < ${quantity}`
+	// 							)
+	// 						}
+	// 					}
+	// 				}
 
-					await this.character.inventory.updateItem(item)
-				}
-			} else {
-				console.error(`Item with gId ${gid} not found in inventory`)
-			}
-		}
+	// 				if (itemCraftedToAdd.has(resultCraft)) {
+	// 					itemCraftedToAdd.set(
+	// 						resultCraft,
+	// 						(itemCraftedToAdd.get(resultCraft) as number) + 1
+	// 					)
+	// 				} else {
+	// 					itemCraftedToAdd.set(resultCraft, 1)
+	// 				}
+	// 			}
 
-		if (itemsToDelete.length > 0) {
-			await this.character.inventory.removeItems(itemsToDelete)
-		}
-	}
+	// 			for (const [item, quantity] of itemAndQuantityToModify) {
+	// 				item.quantity -= quantity
+	// 				const itemInInventory = await this.character.inventory.getItemByGid(
+	// 					item.gId
+	// 				)
+
+	// 				if (itemInInventory) {
+	// 					ItemFromPlayerInventoryToSave.push(itemInInventory)
+	// 				}
+	// 			}
+
+	// 			for (const [item, quantity] of itemCraftedToAdd) {
+	// 				const characterItem = await this.character.inventory.addNewItem(
+	// 					item.id,
+	// 					quantity
+	// 				)
+
+	// 				if (characterItem) {
+	// 					craftResult = characterItem
+	// 				}
+	// 			}
+
+	// 			for (const item of ItemFromPlayerInventoryToSave) {
+	// 				await this.character.inventory.updateItem(item)
+	// 			}
+
+	// 			console.log("craftResult", craftResult)
+
+	// 			await this.handleCraftResult(recipe, craftResult)
+	// 			await this.addExperience(recipe)
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Error during crafting:", error)
+	// 		await this.onCraftResult(CraftResultEnum.CRAFT_FAILED)
+	// 	}
+	// }
 
 	private async handleCraftResult(
 		recipe: Recipe,
-		result: Map<number, CharacterItem>
+		resultItem: CharacterItem | undefined
 	): Promise<void> {
-		if (result.size === 1) {
-			const craftedItem = result.values().next().value
-			const obj = await craftedItem?.getObjectItemNotInContainer()
-			await this.onCraftResult(CraftResultEnum.CRAFT_SUCCESS, obj)
-		} else {
-			const obj = new ObjectItemNotInContainer(
-				recipe.resultId,
-				recipe.resultItem.effects.getObjectEffects(),
-				0,
-				this.count
-			)
-			await this.onCraftResult(CraftResultEnum.CRAFT_SUCCESS, obj)
+		console.log("handleCraftResult")
+
+		try {
+			if (resultItem) {
+				if (resultItem.quantity > 1) {
+					const obj = new ObjectItemNotInContainer(
+						resultItem.gId,
+						resultItem.effects.getObjectEffects(),
+						0,
+						resultItem.quantity
+					)
+					await this.onCraftResult(CraftResultEnum.CRAFT_SUCCESS, obj)
+				} else {
+					const obj = await resultItem.getObjectItemNotInContainer()
+					await this.onCraftResult(CraftResultEnum.CRAFT_SUCCESS, obj)
+				}
+			}
+		} catch (error) {
+			console.error("Error handling craft result:", error)
+			await this.onCraftResult(CraftResultEnum.CRAFT_FAILED)
 		}
-	}
-
-	private async addExperienceAndCleanup(recipe: Recipe): Promise<void> {
-		const craftXpRatio = recipe.resultItem.craftXpRatio
-		const exp = JobFormulas.getInstance().getCraftExperience(
-			recipe.resultItem.level,
-			this.characterJob.level,
-			craftXpRatio
-		)
-
-		await this.character.addJobExperience(
-			this.characterJob.jobId,
-			exp * this.count
-		)
-		await this.jobInventory.clear()
-		// await this.character.inventory.refresh()
-		this.resetCount()
 	}
 
 	public async onCraftResult(
@@ -332,6 +332,22 @@ class CraftExchange extends JobExchange {
 				new ExchangeCraftResultWithObjectDescMessage(result, obj)
 			)
 		}
+	}
+
+	private async addExperience(recipe: Recipe): Promise<void> {
+		const craftXpRatio = recipe.resultItem.craftXpRatio
+		const exp = this.container
+			.get(JobFormulas)
+			.getCraftExperience(
+				recipe.resultItem.level,
+				this.characterJob.level,
+				craftXpRatio
+			)
+
+		await this.character.addJobExperience(
+			this.characterJob.jobId,
+			exp * this.count
+		)
 	}
 
 	public modifyItemPriced(

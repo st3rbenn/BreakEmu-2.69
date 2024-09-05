@@ -26,9 +26,11 @@ import {
 	SequenceNumberRequestMessage,
 } from "@breakEmu_Protocol/IO"
 import WorldClient from "../../WorldClient"
+import Container from "@breakEmu_Core/container/Container"
 
 class CharacterHandler {
 	private static logger: Logger = new Logger("CharacterHandler")
+  private static container: Container = Container.getInstance()
 
 	public static async sendCharacterLevelUpMessage(
 		client: WorldClient,
@@ -70,8 +72,6 @@ class CharacterHandler {
       client.selectedCharacter.testIfCharacterDataIsValid()
       
 			await client.selectedCharacter.refreshAll()
-
-			// await character.inventory?.addNewItem(8464, 1, false)
 		} catch (error) {
 			this.logger.write(
 				`Error in handleCharacterSelectionMessage: ${(error as any).stack}`,
@@ -197,7 +197,7 @@ class CharacterHandler {
 			return
 		}
 
-		const isDeleted = await CharacterController.getInstance().deleteCharacter(
+		const isDeleted = await this.container.get(CharacterController).deleteCharacter(
 			Number(msg.characterId),
 			Number(client.account?.id)
 		)
@@ -217,7 +217,7 @@ class CharacterHandler {
 		client: WorldClient
 	) {
 		try {
-			const character = await CharacterController.getInstance().createCharacter(
+			const character = await this.container.get(CharacterController).createCharacter(
 				message,
 				client.account as Account
 			)
@@ -230,12 +230,12 @@ class CharacterHandler {
 
 			// Utiliser Promise.all pour attendre que tous les items soient ajoutés
 			await Promise.all(
-				ConfigurationManager.instance.itemStarter.map(async (itemGid) => {
+				this.container.get(ConfigurationManager).itemStarter.map(async (itemGid) => {
 					await character.inventory.addNewItem(itemGid)
 				})
 			)
 
-			await CharacterController.getInstance().updateCharacter(character)
+			await this.container.get(CharacterController).updateCharacter(character)
 
 			client.account?.characters.set(character.id, character)
 			character.account = client.account

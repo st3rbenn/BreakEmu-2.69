@@ -74,29 +74,21 @@ import MapHandler from "./handlers/map/MapHandler"
 import InteractiveMapHandler from "./handlers/map/interactive/InteractiveMapHandler"
 import TeleportHandler from "./handlers/map/teleport/TeleportHandler"
 import ServerListHandler from "./handlers/server/ServerListHandler"
+import Container from "@breakEmu_Core/container/Container"
 
 class MessageHandlers {
 	private logger = new Logger("MessageHandlers")
+  private container: Container = Container.getInstance()
 
-	private static instance: MessageHandlers
-
-	private constructor() {
-		MessageHandlers.initializeMessageHandlers()
+	constructor() {
+		this.initializeMessageHandlers()
 	}
 
-	public static getInstance(): MessageHandlers {
-		if (!MessageHandlers.instance) {
-			MessageHandlers.instance = new MessageHandlers()
-		}
-
-		return MessageHandlers.instance
-	}
-
-	static messageHandlers: {
+	messageHandlers: {
 		[id: number]: (client: WorldClient, message: DofusMessage) => Promise<void>
 	}
 
-	static initializeMessageHandlers() {
+	 initializeMessageHandlers() {
 		this.messageHandlers = {
 			[AuthenticationTicketMessage.id]: AuthentificationHandler.handleAuthenticationTicketMessage.bind(
 				AuthentificationHandler
@@ -111,15 +103,6 @@ class MessageHandlers {
 				client: WorldClient,
 				message: DofusMessage
 			) => {
-				for (const client of WorldServer.getInstance().clients.values()) {
-          console.log(`client: ${client.account?.pseudo}, selectedCharacter: ${client.selectedCharacter?.name}, inGame: ${client.selectedCharacter?.inGame}`)
-					if (client.selectedCharacter && !client.selectedCharacter.inGame) {
-						console.log(
-							`chracter: ${client.selectedCharacter.name} is not in game`
-						)
-						await ContextHandler.handleGameContextCreateMessage(client)
-					}
-				}
 				await client.Send(new BasicPongMessage(true))
 				return
 			},
@@ -419,7 +402,7 @@ class MessageHandlers {
 		worldClient: WorldClient
 	): Promise<void> {
 		try {
-			if (ConfigurationManager.getInstance().showDebugMessages) {
+			if (this.container.get(ConfigurationManager).showDebugMessages) {
 				this.logger.write(
 					`Received data from ${
 						worldClient.Socket.remoteAddress
@@ -431,7 +414,7 @@ class MessageHandlers {
 			const message = worldClient.deserialize(data)
 			if (!message) return
 
-			if (ConfigurationManager.getInstance().showProtocolMessage) {
+			if (this.container.get(ConfigurationManager).showProtocolMessage) {
 				this.logger.write(
 					`Deserialized dofus message '${
 						messages[message.id].name
@@ -440,7 +423,7 @@ class MessageHandlers {
 				)
 			}
 
-			const handler = MessageHandlers.messageHandlers[message.id]
+			const handler = this.messageHandlers[message.id]
 			if (handler) {
 				await handler(worldClient, message)
 			} else {

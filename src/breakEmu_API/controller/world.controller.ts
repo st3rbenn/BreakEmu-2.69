@@ -5,23 +5,12 @@ import WorldServerData from "@breakEmu_World/WorldServerData"
 import WorldServerManager from "@breakEmu_World/WorldServerManager"
 import Database from "../Database"
 import BaseController from "./base.controller"
+import Container from "@breakEmu_Core/container/Container"
 
 class WorldController extends BaseController {
 	protected _logger: Logger = new Logger("worldController")
-	public _database: Database = Database.getInstance()
+	public database: Database = Container.getInstance().get(Database)
 	public worldList: WorldServer[] = []
-
-	private static _instance: WorldController
-
-	public static getInstance(): WorldController {
-		if (!WorldController._instance) {
-			WorldController._instance = new WorldController(
-				WorldServerManager.getInstance()
-			)
-		}
-
-		return WorldController._instance
-	}
 
 	constructor(client: WorldServerManager) {
 		super(client)
@@ -33,7 +22,7 @@ class WorldController extends BaseController {
 
 	async getRealmList(): Promise<WorldServer[] | undefined> {
 		try {
-			const worlds = await this._database.prisma.world.findMany()
+			const worlds = await this.database.prisma.world.findMany()
 
 			if (!worlds) return []
 

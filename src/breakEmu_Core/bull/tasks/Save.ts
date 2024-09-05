@@ -15,7 +15,7 @@ class SaveTask extends Task {
 		this.queue.process(async (job, done) => {
 			// Logique de la tâche de sauvegarde
 			console.log("Exécution de la tâche de sauvegarde...");
-			WorldServer.getInstance().save();
+			this.container.get(WorldServer).save();
 			done();
 		});
 

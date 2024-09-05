@@ -10,7 +10,6 @@ class ConfigurationManager extends DofusConfiguration {
 	public logger: Logger = new Logger("ConfigurationManager")
 
 	public CONFIG_NAME: string = "config.yml"
-	public static instance: ConfigurationManager
 
 	private totalParameters: number = 0
 	private loadedParameters: number = 0
@@ -18,14 +17,6 @@ class ConfigurationManager extends DofusConfiguration {
 
 	constructor() {
 		super()
-	}
-
-	public static getInstance(): ConfigurationManager {
-		if (!ConfigurationManager.instance) {
-			ConfigurationManager.instance = new ConfigurationManager()
-		}
-
-		return ConfigurationManager.instance
 	}
 
 	public async Load(): Promise<void> {

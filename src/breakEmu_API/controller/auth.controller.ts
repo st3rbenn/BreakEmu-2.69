@@ -8,10 +8,11 @@ import {
 } from "@breakEmu_Protocol/IO"
 import Database from "../Database"
 import BaseController from "./base.controller"
+import Container from "@breakEmu_Core/container/Container"
 
 class AuthController extends BaseController {
 	public _logger: Logger = new Logger("AuthController")
-	public _database: Database = Database.getInstance()
+	public database: Database = this.container.get(Database)
 
 	constructor(client: AuthClient) {
 		super(client)
@@ -23,7 +24,7 @@ class AuthController extends BaseController {
 
 	async login(username: string, password: string) {
 		try {
-			const user = await this._database.prisma.user.findUnique({
+			const user = await this.database.prisma.user.findUnique({
 				where: {
 					username,
 				},

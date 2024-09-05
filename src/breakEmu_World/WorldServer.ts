@@ -8,6 +8,7 @@ import WorldTransition from "@breakEmu_World/WorldTransition"
 import ServerStatusEnum from "./enum/ServerStatusEnum"
 import WorldClient from "./WorldClient"
 import WorldServerData from "./WorldServerData"
+import Container from "@breakEmu_Core/container/Container"
 
 class WorldServer {
 	public logger: Logger = new Logger("WorldServer")
@@ -15,7 +16,7 @@ class WorldServer {
 
 	public worldServerData: WorldServerData
 
-	private static _instance: WorldServer
+  private container: Container = Container.getInstance()
 
 	public clients: Map<number, WorldClient> = new Map()
 
@@ -23,16 +24,6 @@ class WorldServer {
 
 	constructor(worldServerData: WorldServerData) {
 		this.worldServerData = worldServerData
-	}
-
-	public static getInstance(worldServerData?: WorldServerData): WorldServer {
-		if (!WorldServer._instance) {
-			WorldServer._instance = new WorldServer(
-				worldServerData as WorldServerData
-			)
-		}
-
-		return WorldServer._instance
 	}
 
 	public async Start(): Promise<void> {
@@ -59,13 +50,13 @@ class WorldServer {
 			)
 		})
 
-		await WorldTransition.getInstance().handleServerStatusUpdate(
+		await this.container.get(WorldTransition).handleServerStatusUpdate(
 			this.worldServerData.Id,
 			this.SERVER_STATE.toString()
 		)
 
-		TaskManager.getInstance().saveTaskHandler().setCron("*/5 * * * *").run()
-		TaskManager.getInstance().elementBonusHandler()
+		this.container.get(TaskManager).saveTaskHandler().setCron("*/5 * * * *").run()
+		this.container.get(TaskManager).elementBonusHandler()
 	}
 
 	private async saveAllCharacters(): Promise<void> {
@@ -73,7 +64,7 @@ class WorldServer {
 		for (const client of this.clients.values()) {
 			if (client?.selectedCharacter) {
 				this.logger.write(`Saving character ${client.selectedCharacter.name}`)
-				await CharacterController.getInstance().updateCharacter(
+				await this.container.get(CharacterController).updateCharacter(
 					client.selectedCharacter
 				)
 			}
@@ -91,18 +82,18 @@ class WorldServer {
 			this.SERVER_STATE = ServerStatusEnum.OFFLINE
 		})
 
-		await WorldTransition.getInstance().handleServerStatusUpdate(
+		await this.container.get(WorldTransition).handleServerStatusUpdate(
 			this.worldServerData.Id,
 			ServerStatusEnum.OFFLINE.toString()
 		)
 
 		// Stop scheduled tasks
-		TaskManager.getInstance().stopAllTasks()
+		this.container.get(TaskManager).stopAllTasks()
 	}
 
 	private async handleConnection(socket: Socket): Promise<void> {
 		this.logger.write(`New connection from ${socket.remoteAddress}`)
-		const worldClient = await WorldTransition.getInstance().handleAccountTransition(
+		const worldClient = await this.container.get(WorldTransition).handleAccountTransition(
 			socket
 		)
 

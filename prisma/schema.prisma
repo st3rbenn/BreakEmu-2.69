@@ -296,25 +296,16 @@ model itemSet {
 }
 
 model characterItem {
-  characterId           Int
-  character             character              @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  uid                   String                 @id @default(uuid())
-  gid                   Int                    
-  position              Int
-  quantity              Int
-  effects               Json                   @default("[]")
-  appearanceId          Int
-  look                  String?                @db.Text
-  characterItemIdMapper characterItemIdMapper?
-  item                  item                   @relation(fields: [gid], references: [id])
-}
-
-model characterItemIdMapper {
-  intId         Int           @id @default(autoincrement())
-  uuid          String        @unique
-  characterItem characterItem @relation(fields: [uuid], references: [uid], onDelete: Cascade)
-
-  @@index([uuid], name: "idx_uuid")
+  id           Int       @id @default(autoincrement())
+  characterId  Int
+  character    character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  gid          Int
+  position     Int
+  quantity     Int
+  effects      Json      @default("[]")
+  appearanceId Int
+  look         String?   @db.Text
+  item         item      @relation(fields: [gid], references: [id])
 }
 
 model interactiveSkill {

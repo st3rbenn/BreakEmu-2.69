@@ -5,14 +5,16 @@ import BankHandler from "@breakEmu_World/manager/map/element/interactiveElement/
 import WorldServer from "@breakEmu_World/WorldServer"
 import AccountRoleEnum from "../../../../enum/AccountRoleEnum"
 import CommandHandler, { TCommandHandler } from "../CommandHandler"
+import Container from "@breakEmu_Core/container/Container"
 
 class BankCommandHandler {
 	static logger: Logger = new Logger("BankCommandHandler")
+	private static container: Container = Container.getInstance()
 
 	static commandHandler: TCommandHandler = {
 		bank: {
 			execute: async (args, message, character) => {
-				await CommandHandler.helpCommand(character, this.commandHandler)
+				await this.container.get(CommandHandler).helpCommand(character, this.commandHandler)
 			},
 			description: "",
 			command: "bank",
@@ -81,7 +83,7 @@ class BankCommandHandler {
 
 	private static async openBank(character: Character) {
 		await new BankHandler().handle(character)
-    
+
 		// await character.client.Send(
 		//   new NpcDialogCreationMessage(
 		//     54534165,
@@ -97,7 +99,7 @@ class BankCommandHandler {
 		perfect: boolean = false,
 		commandCaster: Character
 	) {
-		const clients = Array.from(WorldServer.getInstance().clients.values())
+		const clients = Array.from(this.container.get(WorldServer).clients.values())
 
 		for (const client of clients) {
 			const character = client.selectedCharacter
@@ -134,7 +136,7 @@ class BankCommandHandler {
 		quantity: number = 0,
 		commandCaster: Character
 	) {
-		const clients = Array.from(WorldServer.getInstance().clients.values())
+		const clients = Array.from(this.container.get(WorldServer).clients.values())
 
 		for (const client of clients) {
 			const character = client.selectedCharacter

@@ -2,11 +2,13 @@ import Redis from "ioredis"
 import ansiColorCodes from "@breakEmu_Core/Colors"
 import Logger from "@breakEmu_Core/Logger"
 import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
+import Container from "@breakEmu_Core/container/Container"
 
 abstract class TransitionServer {
 	abstract logger: Logger
 	private redis: Redis | null = null
 	private readonly uri: string
+  public container: Container = Container.getInstance()
 
 	constructor(uri: string) {
 		this.uri = uri
@@ -38,7 +40,7 @@ abstract class TransitionServer {
 			throw new Error("Cannot send message: Redis client is not connected")
 		}
 
-		if (ConfigurationManager.getInstance().showDebugMessages) {
+		if (this.container.get(ConfigurationManager).showDebugMessages) {
 			await this.logger.writeAsync(`Sending ${queueName} to transition server`)
 		}
 
@@ -50,7 +52,7 @@ abstract class TransitionServer {
 			throw new Error("Cannot publish message: Redis client is not connected")
 		}
 
-		if (ConfigurationManager.getInstance().showDebugMessages) {
+		if (this.container.get(ConfigurationManager).showDebugMessages) {
 			await this.logger.writeAsync(
 				`Publishing ${channelName} to transition server`
 			)
@@ -107,6 +109,14 @@ abstract class TransitionServer {
 			return message[1]
 		}
 	}
+
+  async deleteKey(key: string): Promise<void> {
+    if (!this.redis) {
+      throw new Error("Cannot delete key: Redis client is not connected")
+    }
+
+    await this.redis.del(key)
+  }
 
 	public get redisClient(): Redis | null {
 		return this.redis

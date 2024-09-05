@@ -25,6 +25,8 @@ import {
 	TitleSelectRequestMessage,
 } from "@breakEmu_Protocol/IO/network/protocol"
 import AchievementHandler from "./achievement/AchievementHandler"
+import Container from "@breakEmu_Core/container/Container"
+import CharacterItemController from "@breakEmu_API/controller/characterItem.controller"
 
 enum AdminQuietCommande {
 	moveto = "moveto",
@@ -32,6 +34,7 @@ enum AdminQuietCommande {
 
 class ContextHandler {
 	private static logger: Logger = new Logger("ContextHandler")
+  private static container: Container = Container.getInstance()
 	public static async handleGameContextCreateMessage(client: WorldClient) {
 		const character = client.selectedCharacter
 		const inFight = false
@@ -231,7 +234,7 @@ class ContextHandler {
 
     console.log(`SENDING MOVE ITEM: ${objectUID} quantity: ${quantity} `)
 
-		// await craftExchange.moveItem(objectUID as number, quantity as number)
+		await craftExchange.moveItem(objectUID as number, quantity as number)
 	}
 
 	public static async handleExchangeCraftCountRequestMessage(
@@ -267,6 +270,7 @@ class ContextHandler {
 		returnObj.commande = splittedCommand[0]
 		returnObj.value = splittedCommand.slice(1)
 
+    console.log(`Parsed command: ${returnObj.commande} value: ${returnObj.value}`)
 		return returnObj
 	}
 }

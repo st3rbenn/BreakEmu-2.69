@@ -30,6 +30,7 @@ import SpellLevel from "./model/spellLevel.model"
 import World from "./model/world.model"
 import SubArea from "./model/SubArea.model"
 import Recipe from "./model/recipe.model"
+import Container from "@breakEmu_Core/container/Container"
 
 interface test {
 	id: number
@@ -54,9 +55,9 @@ interface Is {
 }
 
 class Database {
-	private static instance: Database
 	public logger: Logger = new Logger("Database")
 	public prisma: PrismaClient
+	private container: Container = Container.getInstance()
 
 	private static SkillsBonesIds: { [key: number]: number[] } = {
 		45: [660], // Blé
@@ -126,17 +127,9 @@ class Database {
 		72: [678], // Menthe Sauvage
 	}
 
-	public static getInstance(): Database {
-		if (!Database.instance) {
-			Database.instance = new Database()
-		}
-
-		return Database.instance
-	}
-
-	private constructor() {
+	constructor() {
 		this.prisma = new PrismaClient({
-			log: ConfigurationManager.getInstance().showDatabaseLogs
+			log: this.container.get(ConfigurationManager).showDatabaseLogs
 				? ["query", "info", "warn", "error"]
 				: [],
 		})
@@ -178,8 +171,8 @@ class Database {
 			await this.loadAchievements()
 			await this.loadSkills()
 			await this.loadInteractiveSkills()
-      await this.loadItemSets()
-      await this.loadItems()
+			await this.loadItemSets()
+			await this.loadItems()
 			await this.loadRecipes()
 			await Promise.all([
 				this.loadWorlds(),
@@ -194,7 +187,8 @@ class Database {
 				this.loadInteractiveElements(),
 			])
 
-			await this.loadMaps(), await Promise.resolve()
+			await this.loadMaps()
+			await Promise.resolve()
 		} catch (error) {
 			await this.logger.writeAsync(
 				`Error loading all: ${(error as any).stack}`,

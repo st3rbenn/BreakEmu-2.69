@@ -8,7 +8,8 @@ import Item from "@breakEmu_API/model/item.model"
 import CharacterItem from "@breakEmu_API/model/characterItem.model"
 
 abstract class AbstractItem {
-	uId: string
+	id: number
+  intId: number
 	gId: number
 	position: number
 	quantity: number
@@ -28,7 +29,6 @@ abstract class AbstractItem {
 	}
 
 	constructor(
-		uId: string,
 		gId: number,
 		position: number,
 		quantity: number,
@@ -36,7 +36,6 @@ abstract class AbstractItem {
 		appearanceId: number,
 		look: string
 	) {
-		this.uId = uId
 		this.gId = gId
 		this.position = position
 		this.quantity = quantity
@@ -65,20 +64,6 @@ abstract class AbstractItem {
 	//     // Implémentation de la méthode
 	//     return new MerchantItemRecord();
 	// }
-
-	toCharacterItemRecord(characterId: number): CharacterItem {
-		// Implémentation de la méthode
-		return new CharacterItem(
-			characterId,
-			this.uId,
-			this.gId,
-			this.quantity,
-			this.position,
-			this.look,
-			this.effects,
-			this.appearanceId
-		)
-	}
 
 	// ... Autres méthodes ...
 }

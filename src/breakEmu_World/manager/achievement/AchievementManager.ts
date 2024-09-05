@@ -45,13 +45,6 @@ class AchievementManager {
 		})
 	}
 
-	public static getInstance() {
-		if (!this.instance) {
-			this.instance = new AchievementManager()
-		}
-		return this.instance
-	}
-
 	private take(
 		n: number,
 		achievements: Map<number, Achievement> = AchievementManager.achievements

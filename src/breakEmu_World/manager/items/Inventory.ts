@@ -18,11 +18,13 @@ import {
 	ObjectItem,
 	ObjectMovementMessage,
 	ObjectQuantityMessage,
+	ObjectsQuantityMessage,
 	SetUpdateMessage,
 } from "@breakEmu_Protocol/IO"
 import ItemEffectsManager from "../effect/ItemEffectsManager"
 import ItemCollection from "./collections/ItemCollections"
 import Logger from "@breakEmu_Core/Logger"
+import Container from "@breakEmu_Core/container/Container"
 
 class Inventory extends ItemCollection<CharacterItem> {
 	public maxKamas: number = 2000000000
@@ -173,7 +175,6 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 				const obj = new CharacterItem(
 					this.character.id,
-					randomUUID(),
 					gid,
 					quantity,
 					CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
@@ -199,11 +200,11 @@ class Inventory extends ItemCollection<CharacterItem> {
 		quantity: number
 	) {
 		try {
-			this._isChangingStuff = true
 			if (
 				position !=
 				CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
 			) {
+				this._isChangingStuff = true
 				if (this.character.level < item.record.level) {
 					await this.onError(ObjectErrorEnum.LEVEL_TOO_LOW)
 					return
@@ -220,16 +221,13 @@ class Inventory extends ItemCollection<CharacterItem> {
 					return
 				}
 
-				if (
-					this.checkStacks(item, position, this.ringPositions) &&
-					item.hasSet()
-				) {
+				if (this.checkStacks(item, this.ringPositions) && item.hasSet()) {
 					await this.onError(ObjectErrorEnum.CANNOT_EQUIP_HERE)
 					return
 				}
 
 				if (
-					this.checkStacks(item, position, this.dofusPositions) &&
+					this.checkStacks(item, this.dofusPositions) &&
 					item.positionEnum ==
 						CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
 				) {
@@ -260,7 +258,9 @@ class Inventory extends ItemCollection<CharacterItem> {
 			await item.save()
 			await this.onObjectMoved(item, position)
 			await this.refreshWeight()
-			await CharacterController.getInstance().updateCharacter(this.character)
+			await this.container
+				.get(CharacterController)
+				.updateCharacter(this.character)
 			await this.character.refreshActorOnMap()
 			await this.character.refreshStats()
 
@@ -279,7 +279,10 @@ class Inventory extends ItemCollection<CharacterItem> {
 			const alreadyEquiped = this.getEquipedItem(position)
 			const lastPosition = item.positionEnum
 
+			console.log(`equipItem: ${item.gId} ${position} ${quantity}`)
+
 			if (alreadyEquiped != null) {
+				console.log(`item ${item.record.name} already equiped`)
 				await this.unequipItem(alreadyEquiped, quantity)
 				await this.onObjectMoved(
 					alreadyEquiped,
@@ -290,10 +293,9 @@ class Inventory extends ItemCollection<CharacterItem> {
 			if (item.quantity == 1) {
 				item.positionEnum = position
 			} else {
-				const newItem = await CharacterItemController.getInstance().cutItem(
-					item,
-					quantity
-				)
+				const newItem = await this.container
+					.get(CharacterItemController)
+					.cutItem(item, quantity, position)
 
 				if (newItem != null) {
 					newItem.positionEnum = position
@@ -338,26 +340,28 @@ class Inventory extends ItemCollection<CharacterItem> {
 				item.positionEnum !=
 				CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
 			) {
-				const sameItem = await this.getSameItem(item)
+				const sameItem = await this.getSameItem(item.gId, item.effects)
 				const lastPosition = item.positionEnum
 
 				if (sameItem != null) {
-					if (item.uId != sameItem.uId) {
+					if (item.gId != sameItem.gId) {
 						item.positionEnum =
 							CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
 						sameItem.quantity += quantity
-						await CharacterItemController.getInstance().updateItem(sameItem)
+						await this.container
+							.get(CharacterItemController)
+							.updateItem(sameItem)
 						await this.updateItemQuantity(sameItem)
 						await this.removeItem(item, item.quantity)
 					} else {
 						item.positionEnum =
 							CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
-						await CharacterItemController.getInstance().updateItem(item)
+						await this.container.get(CharacterItemController).updateItem(item)
 					}
 				} else {
 					item.positionEnum =
 						CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
-					await CharacterItemController.getInstance().updateItem(item)
+					await this.container.get(CharacterItemController).updateItem(item)
 				}
 
 				await this.onItemMoved(item, lastPosition)
@@ -367,24 +371,24 @@ class Inventory extends ItemCollection<CharacterItem> {
 		}
 	}
 
-	public async cutItem(item: CharacterItem, quantity: number) {
+	public async updateItemQuantity(item: CharacterItem) {
 		try {
-			const newItem = item.clone()
-			newItem.quantity = quantity
-			item.quantity -= quantity
-			return newItem
+			await this.character.client?.Send(
+				new ObjectQuantityMessage(item.id, item.quantity)
+			)
 		} catch (error) {
 			this.logger.write(error as any)
 		}
 	}
 
-	public async updateItemQuantity(item: CharacterItem) {
+	public async updateItemsQuantity(items: CharacterItem[]) {
 		try {
-			const itemuId = await CharacterItemController.getInstance().getIntIdFromUuid(
-				item.uId
-			)
+			const objUidAndQty = items.map((item) => {
+				return item.getObjectQuantity()
+			})
+
 			await this.character.client?.Send(
-				new ObjectQuantityMessage(itemuId as number, item.quantity)
+				new ObjectsQuantityMessage(objUidAndQty)
 			)
 		} catch (error) {
 			this.logger.write(error as any)
@@ -520,22 +524,21 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 	public checkStacks(
 		item: CharacterItem,
-		position: CharacterInventoryPositionEnum,
 		checker: CharacterInventoryPositionEnum[]
 	): boolean {
-		checker.forEach(async (pos) => {
-			const equipedItem = this.getEquipedItem(pos)
+		for (const pos in checker) {
+			const equipedItem = this.getEquipedItem(checker[pos])
 			if (equipedItem != null && equipedItem.gId == item.gId) {
 				return true
 			}
-		})
+		}
 
 		return false
 	}
 
 	public async updateItem(item: CharacterItem) {
 		try {
-			await CharacterItemController.getInstance().updateItem(item)
+			await this.container.get(CharacterItemController).updateItem(item)
 			await this.refresh()
 		} catch (error) {
 			this.logger.write(error as any)
@@ -560,11 +563,8 @@ class Inventory extends ItemCollection<CharacterItem> {
 		newPosition: CharacterInventoryPositionEnum
 	) {
 		try {
-			const itemuId = await CharacterItemController.getInstance().getIntIdFromUuid(
-				item.uId
-			)
 			await this.character.client?.Send(
-				new ObjectMovementMessage(itemuId as number, newPosition)
+				new ObjectMovementMessage(item.id, newPosition)
 			)
 		} catch (error) {
 			this.logger.write(error as any)
@@ -606,8 +606,16 @@ class Inventory extends ItemCollection<CharacterItem> {
 	public async onItemsStackeds(items: CharacterItem[]): Promise<void> {
 		try {
 			for (const item of items) {
-				await this.onItemStacked(item)
+				await item.save()
 			}
+
+			await this.character.client.Send(
+				new ObjectsQuantityMessage(
+					items.map((item) => item.getObjectQuantity())
+				)
+			)
+
+			await this.refreshWeight()
 		} catch (error) {
 			this.logger.write(error as any)
 		}
@@ -615,14 +623,9 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 	public async onItemRemoved(item: CharacterItem): Promise<void> {
 		try {
-			const itemUid = await CharacterItemController.getInstance().getIntIdFromUuid(
-				item.uId
-			)
-			await this.character.client?.Send(
-				new ObjectMovementMessage(itemUid as number, -1)
-			)
+			await this.container.get(CharacterItemController).deleteItem(item)
+			await this.character.client?.Send(new ObjectMovementMessage(item.id, -1))
 
-			await CharacterItemController.getInstance().deleteItem(item)
 			await this.refreshWeight()
 		} catch (error) {
 			this.logger.write(error as any)
@@ -631,8 +634,17 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 	public async onItemsRemoved(items: CharacterItem[]): Promise<void> {
 		try {
+			console.log(`onItemsRemoved: ${items.length}`)
 			for (const item of items) {
 				await this.onItemRemoved(item)
+			}
+
+			await this.refreshWeight()
+
+
+			for (const item of items) {
+        await this.container.get(CharacterItemController).deleteItem(item)
+        await this.character.client?.Send(new ObjectMovementMessage(item.id, -1))
 			}
 
 			await this.refreshWeight()
@@ -654,8 +666,16 @@ class Inventory extends ItemCollection<CharacterItem> {
 	public async onItemsUnstackeds(items: CharacterItem[]): Promise<void> {
 		try {
 			for (const item of items) {
-				await this.onItemUnstacked(item)
+				await item.save()
 			}
+
+			await this.character.client.Send(
+				new ObjectsQuantityMessage(
+					items.map((item) => item.getObjectQuantity())
+				)
+			)
+
+			await this.refreshWeight()
 		} catch (error) {
 			this.logger.write(error as any)
 		}
@@ -675,22 +695,12 @@ class Inventory extends ItemCollection<CharacterItem> {
 		try {
 			for (const item of items) {
 				await item.save()
-				await this.updateItemQuantity(item)
 			}
+			await this.updateItemsQuantity(items)
 		} catch (error) {
 			this.logger.write(error as any)
 		}
 	}
-
-	// public async save() {
-	//   try {
-	//     for (const [key, item] of this.items) {
-	//       await CharacterItemController.getInstance().updateItem(item)
-	//     }
-	//   } catch (error) {
-	//     this.logger.write(error as any)
-	//   }
-	// }
 }
 
 export default Inventory

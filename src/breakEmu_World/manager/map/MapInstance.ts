@@ -25,6 +25,7 @@ import MapElement from "./element/MapElement"
 import MapInteractiveElement from "./element/MapInteractiveElement"
 import MapStatedElement from "./element/MapStatedElement"
 import HandlerRegistry from "./element/interactiveElement/HandlerRegistry"
+import InteractiveSkill from "@breakEmu_API/model/InteractiveSkill.model"
 
 class MapInstance {
 	/*get monsterGroupCount(): number {
@@ -42,10 +43,6 @@ class MapInstance {
 
 	constructor(map: GameMap) {
 		this.record = map
-
-		this.record.elements.forEach((element: InteractiveElementModel) => {
-			this.addElement(element)
-		})
 	}
 
 	public async init(): Promise<MapInstance> {
@@ -84,10 +81,6 @@ class MapInstance {
 		if (this.entities.has(entity.id)) {
 			return
 		}
-		console.log(
-			`Add entity: (${entity.name}) on map: (${this.record.id}) at cell: (${entity.cellId})`
-		)
-
 		let actorInformations = entity.getActorInformations()
 		try {
 			await this.send(new GameRolePlayShowActorMessage(actorInformations))
@@ -176,44 +169,71 @@ class MapInstance {
 		skillInstanceUid: number
 	) {
 		try {
-			let element = this.getElements<MapElement>(MapElement as any).find(
-				(element: MapElement) => element.record.elementId === elementId
-			)
+			const element = this.elements.get(elementId)
 
-			console.log(
-				"use interactive element",
-				elementId,
-				skillInstanceUid,
-				element?.record?.skill?.type
-			)
-
-			if (!element) {
-				await character.client?.Send(
-					new InteractiveUseErrorMessage(elementId, skillInstanceUid)
+			if (!element || (!element.canUse(character) && character.busy)) {
+				await this.sendInteractiveUseError(
+					character,
+					elementId,
+					skillInstanceUid
 				)
 				return
 			}
-			if (!element.caneUse(character) && character.busy) {
-				await character.client?.Send(
-					new InteractiveUseErrorMessage(elementId, skillInstanceUid)
+
+			const skill = element.record.skill
+			if (!skill) {
+				console.error("Skill not found for element", elementId)
+				await this.sendInteractiveUseError(
+					character,
+					elementId,
+					skillInstanceUid
 				)
 				return
 			}
-			const canMove =
-				element?.record?.skill?.record?.gatheredRessourceItem == -1
-			let duration = 0
 
-			if (element?.record?.skill?.record) {
-				if (!canMove) {
-					duration = SkillManager.SKILL_DURATION
-				} else {
-					duration = 0
-				}
+			const duration = this.calculateDuration(skill)
+
+			await this.sendInteractiveUsedMessage(character, element, duration)
+
+			const handler = this.handlerRegistry.getHandler(
+				skill.type as InteractiveTypeEnum
+			)
+			if (handler) {
+				await handler.handle(character, element)
+			} else if (skill.type === 0) {
+				await this.handleTeleportationElement(character, element)
 			} else {
-				duration = 0
+				console.warn("No handler for type", skill.type)
 			}
+		} catch (error) {
+			console.error("Error in useInteractiveElement:", error)
+			await this.sendInteractiveUseError(character, elementId, skillInstanceUid)
+		}
+	}
 
-			await character.sendMap(
+	private calculateDuration(skill: InteractiveSkill): number {
+		return skill.record?.gatheredRessourceItem === -1
+			? 0
+			: SkillManager.SKILL_DURATION
+	}
+
+	private async sendInteractiveUseError(
+		character: Character,
+		elementId: number,
+		skillInstanceUid: number
+	) {
+		await character.client?.Send(
+			new InteractiveUseErrorMessage(elementId, skillInstanceUid)
+		)
+	}
+
+	private async sendInteractiveUsedMessage(
+		character: Character,
+		element: MapElement,
+		duration: number
+	) {
+		try {
+			await this.send(
 				new InteractiveUsedMessage(
 					character.id,
 					element.record.elementId,
@@ -222,51 +242,8 @@ class MapInstance {
 					true
 				)
 			)
-
-			const type = element?.record?.skill?.type
-			const handler = this.handlerRegistry.getHandler(
-				type as InteractiveTypeEnum
-			)
-
-			if (element?.record?.skill?.record === undefined) {
-				console.log("the InteractiveSkill skill record is undefined")
-				const skill = Skill.getSkill(element?.record?.skill?.skillId)
-
-				if (skill) {
-					element.record.skill.record = skill
-				}
-			}
-
-			if (handler) {
-				await handler.handle(character, element)
-			} else if (type === 0) {
-				await this.handleTeleportationElement(character, element)
-			} else {
-				console.log("no handler for type", type)
-				// console.log("element", element)
-			}
-
-			// else if (
-			// 	type === 0 &&
-			// 	element?.record?.skill?.param1 !== undefined &&
-			// 	element?.record?.skill?.param2 !== undefined
-			// ) {
-			// 	// Traitement spécifique pour le type 0
-			// 	await character.teleport(
-			// 		parseInt(element?.record?.skill?.param1),
-			// 		parseInt(element?.record?.skill?.param2)
-			// 	)
-			// } else {
-			// 	// Gérer l'erreur ou le cas par défaut
-			// 	await character.client?.Send(
-			// 		new InteractiveUseErrorMessage(elementId, skillInstanceUid)
-			// 	)
-			// }
 		} catch (error) {
 			console.log(error)
-			await character.client?.Send(
-				new InteractiveUseErrorMessage(elementId, skillInstanceUid)
-			)
 		}
 	}
 
@@ -284,10 +261,14 @@ class MapInstance {
 				return
 			}
 
-			await character.teleport(
-				parseInt(element.record.skill.param1),
-				parseInt(element.record.skill.param2)
-			)
+			try {
+				await character.teleport(
+					parseInt(element.record.skill.param1),
+					parseInt(element.record.skill.param2)
+				)
+			} catch (error) {
+				console.log(error)
+			}
 		} else {
 			console.log("try Teleportation element without params ?")
 			console.log(element.record)
@@ -302,17 +283,14 @@ class MapInstance {
 	) {
 		try {
 			const map = GameMap.getMapById(mapId)!
-			const element = map
-				.instance()
-				.getElements<MapElement>(MapElement as any)
-				.find((element: MapElement) => element.record.elementId === elementId)
+			const element = map.instance().elements.get(elementId)
 
 			if (!element) {
 				await character.client?.Send(
 					new InteractiveUseErrorMessage(elementId, skillInstanceUid)
 				)
 			} else {
-				await character.sendMap(
+				await this.send(
 					new InteractiveUsedMessage(
 						character.id,
 						element.record.elementId,

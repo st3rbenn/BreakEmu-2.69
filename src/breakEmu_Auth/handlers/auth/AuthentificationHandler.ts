@@ -16,9 +16,11 @@ import {
 	IdentificationSuccessMessage,
 } from "@breakEmu_Protocol/IO"
 import ServerListHandler from "../server/ServerListHandler"
+import Container from "@breakEmu_Core/container/Container"
 
 class AuthentificationHandler {
 	private static logger: Logger = new Logger("AuthentificationHandler")
+  private static container: Container = Container.getInstance()
 
 	static async handleIdentificationMessage(
 		attrs: Attributes,
@@ -51,7 +53,7 @@ class AuthentificationHandler {
 			credentialsReader.getReadableSize()
 		)
 
-		if (ConfigurationManager.getInstance().showDebugMessages) {
+		if (this.container.get(ConfigurationManager).showDebugMessages) {
 			await this.logger.writeAsync(
 				`AESKey: ${AESKey.toString(
 					"hex"
@@ -85,7 +87,7 @@ class AuthentificationHandler {
 		)
 
 		if (user?.pseudo !== null && user?.pseudo !== "") {
-			if (ConfigurationManager.getInstance().showProtocolMessage) {
+			if (this.container.get(ConfigurationManager).showProtocolMessage) {
 				await this.logger.writeAsync(
 					"Sending CredentialsAknowledgementMessage message"
 				)
@@ -115,7 +117,7 @@ class AuthentificationHandler {
 			subscriptionEndDateUnix,
 			0
 		)
-		if (ConfigurationManager.getInstance().showProtocolMessage) {
+		if (this.container.get(ConfigurationManager).showProtocolMessage) {
 			await this.logger.writeAsync(
 				"Sending IdentificationSuccessMessage message"
 			)

@@ -3,7 +3,7 @@ import LimitCharacteristic from "./limitCharacteristic"
 
 class MpCharacteristic extends LimitCharacteristic {
   public override get limit(): number {
-    return ConfigurationManager.getInstance().apLimit
+    return this.container.get(ConfigurationManager).apLimit
   }
 
   public override get contextLimit(): boolean {

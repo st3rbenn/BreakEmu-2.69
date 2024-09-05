@@ -45,12 +45,11 @@ abstract class JobExchange extends Exchange {
 		)
 	}
 
-	public async moveItem(uid: string, quantity: number): Promise<void> {
-		const item = this.character.inventory.items.get(uid)
+	public async moveItem(id: number, quantity: number): Promise<void> {
+		const item = this.character.inventory.items.get(id)
 
 		if (item) {
 			console.log(`Item found ${item.record.name} - Q: ${quantity}`)
-
 			await this.jobInventory.moveItem(item, quantity)
 		} else {
 			console.log(`Item not found`)

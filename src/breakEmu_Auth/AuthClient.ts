@@ -24,18 +24,19 @@ import {
 import AuthentificationHandler from "./handlers/auth/AuthentificationHandler"
 import NicknameHandlers from "./handlers/nickname/NicknameHandlers"
 import ServerListHandler from "./handlers/server/ServerListHandler"
+import Container from "@breakEmu_Core/container/Container"
 
 export type Attributes = {
-  publicKey: string
-  privateKey: string
-  salt: string
+	publicKey: string
+	privateKey: string
+	salt: string
 }
 
 class AuthClient extends ServerClient {
 	public logger: Logger = new Logger("AuthClient")
 
 	public _RSAKeyHandler: RSAKeyHandler = RSAKeyHandler.getInstance()
-
+  public ipAddress: string = ""
 	private _account: Account | null = null
 
 	public constructor(socket: Socket) {
@@ -44,7 +45,9 @@ class AuthClient extends ServerClient {
 
 	public async initialize(): Promise<void> {
 		try {
-			if (AuthServer.getInstance().ServerState === ServerStatus.Maintenance) {
+			if (
+				this.container.get(AuthServer).ServerState === ServerStatus.Maintenance
+			) {
 				this.logger.write("Sending Maintenance message")
 				await this.Send(new SystemMessageDisplayMessage(true, 13, []))
 
@@ -54,7 +57,7 @@ class AuthClient extends ServerClient {
 
 			await this.Send(
 				new ProtocolRequired(
-					ConfigurationManager.getInstance().dofusProtocolVersion
+					this.container.get(ConfigurationManager).dofusProtocolVersion
 				)
 			)
 
@@ -67,6 +70,7 @@ class AuthClient extends ServerClient {
 			)
 
 			this.Socket.on("data", async (data) => await this.handleData(data, attrs))
+      this.ipAddress = this.Socket.remoteAddress as string
 		} catch (error) {
 			await this.logger.writeAsync(
 				`Error initializing client: ${error}`,
@@ -78,7 +82,7 @@ class AuthClient extends ServerClient {
 	public async handleData(data: Buffer, attrs: Attributes): Promise<void> {
 		const message = this.deserialize(data) as DofusMessage
 
-		if (ConfigurationManager.getInstance().showProtocolMessage) {
+		if (this.container.get(ConfigurationManager).showProtocolMessage) {
 			await this.logger.writeAsync(
 				`Deserialized dofus message '${messages[message.id].name}'`,
 				ansiColorCodes.lightGray
@@ -105,7 +109,7 @@ class AuthClient extends ServerClient {
 	}
 
 	public OnClose(): void {
-		AuthServer.getInstance().RemoveClient(this)
+		this.container.get(AuthServer).RemoveClient(this)
 		this.logger.write(
 			`Client ${this.Socket.remoteAddress}:${this.Socket.remotePort} disconnected`,
 			ansiColorCodes.red

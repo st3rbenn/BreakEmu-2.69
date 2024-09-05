@@ -30,7 +30,7 @@ abstract class Exchange extends Dialog {
 
   public abstract modifyItemPriced(objectUID: number, quantity: number, price: number): void;
 
-  public abstract moveItem(uid: string, quantity: number): void;
+  public abstract moveItem(objectUID: number, quantity: number): void;
 
   public abstract ready(ready: boolean, step: number): void;
 

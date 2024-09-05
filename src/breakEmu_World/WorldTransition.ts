@@ -10,17 +10,6 @@ import WorldServer from "./WorldServer"
 class WorldTransition extends TransitionServer {
 	logger: Logger = new Logger("WorldTransition")
 	connection: Connection | null = null
-	private static _instance: WorldTransition
-
-	public static getInstance(): WorldTransition {
-		if (!WorldTransition._instance) {
-			WorldTransition._instance = new WorldTransition(
-				process.env.REDIS_URI as string
-			)
-		}
-
-		return WorldTransition._instance
-	}
 
 	constructor(uri: string) {
 		super(uri)
@@ -30,18 +19,23 @@ class WorldTransition extends TransitionServer {
 		socket: Socket
 	): Promise<WorldClient | null> {
 		try {
-			const userController = new UserController()
-			let worldClient: WorldClient | null = null
+			const accountReceived = await this.receiveAndDeleteAccountTransfer()
+			if (!accountReceived?.pseudo) {
+				throw new Error("No account transfer data found")
+			}
 
-			const msg = await this.receive("accountTransfer")
-
-			const message = JSON.parse(msg as string)
 			this.logger.write(
-				`Received account transfer request for ${message.pseudo}`,
+				`Received account transfer request for ${accountReceived?.pseudo}`,
 				ansiColorCodes.dim
 			)
 
-			return new WorldClient(socket, message.pseudo)
+			if (accountReceived?.ipAddress == socket.remoteAddress) {
+				return new WorldClient(socket, accountReceived?.pseudo)
+			} else {
+				this.tryNextAccountTransfer(accountReceived)
+			}
+
+			return null
 		} catch (error) {
 			await this.logger.writeAsync(
 				`Error while handling account transition: ${(error as any).message}`,
@@ -49,6 +43,48 @@ class WorldTransition extends TransitionServer {
 			)
 			return Promise.resolve(null)
 		}
+	}
+
+	private async tryNextAccountTransfer(accountReceived: {
+		pseudo: string
+		ipAddress: string
+	}): Promise<{
+		pseudo: string
+		ipAddress: string
+	} | null> {
+		const account = await this.receiveAndDeleteAccountTransfer()
+		if (account?.pseudo) {
+			this.logger.write(
+				`Received account transfer request for ${account?.pseudo}`,
+				ansiColorCodes.dim
+			)
+		} else {
+			this.logger.write(
+				`No account transfer data found for ${accountReceived.pseudo}`,
+				ansiColorCodes.dim
+			)
+		}
+
+		return account
+	}
+
+	private async receiveAndDeleteAccountTransfer(): Promise<{
+		pseudo: string
+		ipAddress: string
+	} | null> {
+		const keys = await this.redisClient?.keys("accountTransfer:*")
+		if (!keys || keys.length === 0) return null
+
+		const key = keys[0]
+		const value = await this.redisClient?.get(key)
+		await this.deleteKey(key)
+
+		if (!value) return null
+
+		const message = JSON.parse(value)
+		const res = { pseudo: message.pseudo, ipAddress: message.ipAddress }
+
+		return res
 	}
 
 	async handleServerStatusUpdate(serverId: number, status: string) {

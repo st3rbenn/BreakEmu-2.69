@@ -3,10 +3,11 @@ import AuthClient from "@breakEmu_Auth/AuthClient"
 import AuthTransition from "@breakEmu_Auth/AuthTransition"
 import Logger from "@breakEmu_Core/Logger"
 import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
+import Container from "@breakEmu_Core/container/Container"
 import {
-  SelectedServerDataMessage,
-  SelectedServerRefusedMessage,
-  ServersListMessage,
+	SelectedServerDataMessage,
+	SelectedServerRefusedMessage,
+	ServersListMessage,
 } from "@breakEmu_Protocol/IO"
 import WorldServer from "@breakEmu_World/WorldServer"
 import WorldServerManager from "@breakEmu_World/WorldServerManager"
@@ -15,31 +16,30 @@ import ServerStatusEnum from "@breakEmu_World/enum/ServerStatusEnum"
 
 class ServerListHandler {
 	private static logger: Logger = new Logger("ServerListHandler")
+	private static container: Container = Container.getInstance()
 
 	static async handleServersListMessage(client: AuthClient): Promise<void> {
-		if (ConfigurationManager.getInstance().showProtocolMessage) {
+		if (this.container.get(ConfigurationManager).showProtocolMessage) {
 			await this.logger.writeAsync("Sending ServersListMessage message")
 		}
 
-		const gameServerInformationArray = await WorldServerManager.getInstance().gameServerInformationArray(
-			client
-		)
+		const gameServerInformationArray = await this.container
+			.get(WorldServerManager)
+			.gameServerInformationArray(client)
 
-		client.Send(
-			new ServersListMessage(gameServerInformationArray, true)
-		)
+		client.Send(new ServersListMessage(gameServerInformationArray, true))
 	}
 
 	static async handleServerSelectionMessage(client: AuthClient): Promise<void> {
-		const server = WorldController.getInstance().worldList
+		const server = this.container.get(WorldController).worldList
 
 		if (server.length <= 0) {
 			await client.Send(
 				new SelectedServerRefusedMessage(
-          server[0].worldServerData?.Id,
-          ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_NO_REASON,
-          0
-        )
+					server[0].worldServerData?.Id,
+					ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_NO_REASON,
+					0
+				)
 			)
 			return
 		}
@@ -47,10 +47,10 @@ class ServerListHandler {
 		if (server[0].SERVER_STATE != ServerStatusEnum.ONLINE) {
 			await client.Send(
 				new SelectedServerRefusedMessage(
-          server[0].worldServerData?.Id,
-          ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_DUE_TO_STATUS,
-          0
-        )
+					server[0].worldServerData?.Id,
+					ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_DUE_TO_STATUS,
+					0
+				)
 			)
 			return
 		}
@@ -61,10 +61,10 @@ class ServerListHandler {
 		) {
 			await client.Send(
 				new SelectedServerRefusedMessage(
-          server[0].worldServerData?.Id,
-          ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_ACCOUNT_RESTRICTED,
-          0
-        )
+					server[0].worldServerData?.Id,
+					ServerConnectionErrorEnum.SERVER_CONNECTION_ERROR_ACCOUNT_RESTRICTED,
+					0
+				)
 			)
 			return
 		}
@@ -91,9 +91,9 @@ class ServerListHandler {
 
 		await client.Send(selectedServerDataMessage)
 
-		await AuthTransition.getInstance().sendAccountTransferMessage(
-			client.account?.pseudo as string
-		)
+		await this.container
+			.get(AuthTransition)
+			.sendAccountTransferMessage(client.account?.pseudo as string, client.ipAddress)
 
 		await client.disconnect()
 	}

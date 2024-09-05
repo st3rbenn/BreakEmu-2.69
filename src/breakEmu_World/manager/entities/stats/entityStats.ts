@@ -19,6 +19,7 @@ import RangeCharacteristic from "./rangeCharacteristic"
 import Character from "@breakEmu_API/model/character.model"
 import Experience from "@breakEmu_API/model/experience.model"
 import WorldClient from "breakEmu_World/WorldClient"
+import Container from "@breakEmu_Core/container/Container"
 
 interface EntityStatsJSON {
 	lifePoints: number
@@ -105,6 +106,7 @@ const relativeCharacteristics = [
 ]
 
 class EntityStats {
+  private static container: Container = Container.getInstance()
 	private static _baseSummonsLimit: number = 1
 	private _lifePoints: number
 	private _maxLifePoints: number
@@ -330,11 +332,11 @@ class EntityStats {
 
 		stats.setCharacteristic(
 			CharacteristicEnum.ACTION_POINTS,
-			ApCharacteristic.new(ConfigurationManager.getInstance().startAp)
+			ApCharacteristic.new(this.container.get(ConfigurationManager).startAp)
 		)
 		stats.setCharacteristic(
 			CharacteristicEnum.MOVEMENT_POINTS,
-			MpCharacteristic.new(ConfigurationManager.getInstance().startMp)
+			MpCharacteristic.new(this.container.get(ConfigurationManager).startMp)
 		)
 
 		stats.setCharacteristic(

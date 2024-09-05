@@ -14,34 +14,34 @@ class Bank extends ItemCollection<BankItem> {
   }
 
 
-  public onItemAdded(item: BankItem): void {
-    // await 
-  }
-  public onItemStacked(item: BankItem): void {
+  public onItemAdded(item: BankItem): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  public onItemRemoved(item: BankItem): void {
+  public onItemStacked(item: BankItem): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  public onItemUnstacked(item: BankItem): void {
+  public onItemRemoved(item: BankItem): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  public onItemsAdded(items: BankItem[]): void {
+  public onItemUnstacked(item: BankItem): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  public onItemsStackeds(items: BankItem[]): void {
+  public onItemsAdded(items: BankItem[]): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  public onItemsRemoved(items: BankItem[]): void {
+  public onItemsStackeds(items: BankItem[]): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  public onItemsUnstackeds(items: BankItem[]): void {
+  public onItemsRemoved(items: BankItem[]): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  public onItemQuantityChanged(item: BankItem): void {
+  public onItemsUnstackeds(items: BankItem[]): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  public onItemsQuantityChanged(item: BankItem[]): void {
+  public onItemQuantityChanged(item: BankItem): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  public onItemsQuantityChanged(item: BankItem[]): Promise<void> {
     throw new Error("Method not implemented.");
   }
 }

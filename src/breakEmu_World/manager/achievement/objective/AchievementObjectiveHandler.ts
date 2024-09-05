@@ -4,8 +4,10 @@ import Character from "@breakEmu_API/model/character.model"
 import ObjectiveCriterion from "./objectiveCriterion/ObjectiveCriterion"
 import CriterionManager from "./objectiveCriterion/CriterionManager"
 import AchievementManager from "../AchievementManager"
+import Container from "@breakEmu_Core/container/Container"
 
 class AchievementObjectiveHandler {
+  private container: Container = Container.getInstance()
 	character: Character
 	achievementObjective: AchievementObjective
 	achievement: Achievement
@@ -35,7 +37,7 @@ class AchievementObjectiveHandler {
 		)
 			return
 		this.achievementObjective.completeObjective(this.character)
-		await AchievementManager.getInstance().checkAchievementCompletion(
+		await this.container.get(AchievementManager).checkAchievementCompletion(
 			this.character,
 			this.achievement
 		)

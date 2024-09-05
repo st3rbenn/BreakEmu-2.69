@@ -1,8 +1,10 @@
+import Container from "@breakEmu_Core/container/Container"
 import * as Bull from "bull" // Assurez-vous que Bull est correctement importé
 
 abstract class Task {
 	static queue: Bull.Queue // Assurez-vous que la queue est initialisée ailleurs
 	public cronTime: string = "* * * * *" // Initialisez avec une valeur par défaut
+  public container: Container = Container.getInstance()
 
 	private seconds: number = 0
 	private minutes: number = 0

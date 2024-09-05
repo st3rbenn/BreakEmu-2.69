@@ -1,3 +1,4 @@
+import Container from "@breakEmu_Core/container/Container"
 import {
 	CharacterCharacteristicDetailed,
 	CharacteristicEnum,
@@ -8,6 +9,7 @@ class Characteristic {
 	additional: number
 	objects: number
 	context: number
+  public container: Container = Container.getInstance()
 
 	constructor(base: number, additional = 0, objects = 0, context = 0) {
 		this.base = base

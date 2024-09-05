@@ -3,20 +3,14 @@ import Logger from "@breakEmu_Core/Logger"
 import AbstractItem from "@breakEmu_World/manager/items/AbstractItem"
 import Database from "../Database"
 import Character from "../model/character.model"
+import Container from "@breakEmu_Core/container/Container"
 
 class bankItemController {
-	private static instance: bankItemController
 	private static logger: Logger = new Logger("bankItemController")
-	public _database: Database = Database.getInstance()
+  private container: Container = Container.getInstance()
+	public _database: Database = this.container.get(Database)
 
-	private constructor() {}
-
-	public static getInstance(): bankItemController {
-		if (!bankItemController.instance) {
-			bankItemController.instance = new bankItemController()
-		}
-		return bankItemController.instance
-	}
+	constructor() {}
 
 	async createBankItem(item: AbstractItem, character: Character) {
 		const bankItem = await this._database.prisma.bankItem.create({

@@ -18,9 +18,11 @@ import WorldClient from "@breakEmu_World/WorldClient"
 import Achievement from "@breakEmu_API/model/achievement.model"
 import AchievementManager from "@breakEmu_World/manager/achievement/AchievementManager"
 import Character from "@breakEmu_API/model/character.model"
+import Container from "@breakEmu_Core/container/Container"
 
 class AchievementHandler {
 	private static logger: Logger = new Logger("AchievementHandler")
+  private static container: Container = Container.getInstance()
 
 	public static async handleAchievementListMessage(character: Character) {
 		const achievedAchievements: AchievementAchieved[] = []
@@ -67,7 +69,7 @@ class AchievementHandler {
 		client: WorldClient,
 		message: AchievementDetailedListRequestMessage
 	) {
-		let achievementByCategory = AchievementManager.getInstance().getAchievementsByCategoryId(
+		let achievementByCategory = this.container.get(AchievementManager).getAchievementsByCategoryId(
 			message.categoryId as number
 		)
 
@@ -129,7 +131,7 @@ class AchievementHandler {
 
 			if (message.achievementId && message.achievementId > 0) {
 				if (achievement) {
-					await AchievementManager.getInstance().rewardAchievement(
+					await this.container.get(AchievementManager).rewardAchievement(
 						client.selectedCharacter,
 						achievement
 					)
@@ -168,7 +170,7 @@ class AchievementHandler {
 				)
 
 				for (const achievement of finishedAchievements) {
-					await AchievementManager.getInstance().rewardAchievement(
+					await this.container.get(AchievementManager).rewardAchievement(
 						client.selectedCharacter,
 						achievement
 					)

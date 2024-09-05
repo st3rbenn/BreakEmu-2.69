@@ -32,9 +32,11 @@ interface ICommandHandler {
 export type TCommandHandler = Record<string, ICommandHandler>
 
 class CommandHandler {
-	static logger: Logger = new Logger("CommandHandler")
+	logger: Logger = new Logger("CommandHandler")
 
-	static commandHandlers: TCommandHandler = {
+  constructor() {}
+
+	commandHandlers: TCommandHandler = {
 		help: {
 			execute: async (args, message, character) => {
 				await this.helpCommand(character)
@@ -53,11 +55,11 @@ class CommandHandler {
 		},
 	}
 
-	static registerCommandHandlers(newHandlers: TCommandHandler) {
+	registerCommandHandlers(newHandlers: TCommandHandler) {
 		this.commandHandlers = { ...this.commandHandlers, ...newHandlers }
 	}
 
-	static loadCommandHandlers() {
+	loadCommandHandlers() {
 		this.registerCommandHandlers(InventoryCommandHandler.commandHandler)
 		this.registerCommandHandlers(JobCommandHandler.commandHandler)
 		this.registerCommandHandlers(WarpCommandHandler.commandHandler)
@@ -70,7 +72,7 @@ class CommandHandler {
 		this.logger.write("Command handlers loaded.")
 	}
 
-	static async onMessageReceived(
+	async onMessageReceived(
 		command: string,
 		args: string[],
 		message: string,
@@ -86,7 +88,7 @@ class CommandHandler {
 		}
 	}
 
-	static async routeSubCommands(
+	async routeSubCommands(
 		mainCommand: string,
 		subArgs: string[],
 		message: string,
@@ -126,7 +128,7 @@ class CommandHandler {
 		await character.reply("Sub-command executed.")
 	}
 
-	static async checkConditions(
+	async checkConditions(
 		commandName: string,
 		args: string[],
 		message: string,
@@ -161,7 +163,7 @@ class CommandHandler {
 		await character.reply("Command executed.")
 	}
 
-	static async helpCommand(
+	async helpCommand(
 		character: Character,
 		commandHandlers: TCommandHandler = this.commandHandlers
 	) {

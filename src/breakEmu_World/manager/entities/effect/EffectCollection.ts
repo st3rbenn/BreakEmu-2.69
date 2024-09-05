@@ -25,13 +25,13 @@ class EffectCollection {
 	public effects: Map<number, Effect> = new Map<number, Effect>()
 
 	constructor(effects: Effect[] = []) {
-		if(effects) {
-      for (const effect of effects) {
-        this.effects.set(effect.effectId, effect)
-      }
-    } else {
-      this.effects = new Map<number, Effect>()
-    }
+		if (effects) {
+			for (const effect of effects) {
+				this.effects.set(effect.effectId, effect)
+			}
+		} else {
+			this.effects = new Map<number, Effect>()
+		}
 	}
 
 	*[Symbol.iterator]() {
@@ -54,15 +54,14 @@ class EffectCollection {
 		const random = new AsyncRandom()
 
 		for (const effect of this.ofType<EffectDice>(EffectDice)) {
-      if (EffectCollection.diceEffects.includes(effect.effectEnum)) {
-        result.effects.set(effect.effectId, effect.clone())
+			if (EffectCollection.diceEffects.includes(effect.effectEnum)) {
+				result.effects.set(effect.effectId, effect.clone())
 			} else {
 				result.effects.set(effect.effectId, effect.generate(random, perfect))
-      }
-			
+			}
 		}
 
-    return result
+		return result
 	}
 
 	public getObjectEffects(): ObjectEffect[] {
@@ -91,41 +90,58 @@ class EffectCollection {
 		return this.effects.has(effectId)
 	}
 
-  public sequenceEqual(effectCollection: EffectCollection): boolean {
-    if(this.effects.size !== effectCollection.effects.size) {
-      return false
-    }
+	public sameValue(effectId: number, value: number): boolean {
+		if (!this.exists(effectId)) {
+			return false
+		}
 
-    for(const effect of this.effects.values()) {
-      if(!effectCollection.effects.has(effect.effectId)) {
-        return false
-      }
-    }
+		return this.effects.get(effectId)?.value === value
+	}
 
-    return true
-  }
+	public sequenceEqual(effectCollection: EffectCollection): boolean {
+		if (this.effects.size !== effectCollection.effects.size) {
+			return false
+		}
 
-  public saveAsJson(): string {
-    const result: any = []
+		for (const effect of this.effects.values()) {
+			if (!this.exists(effect.effectId)) {
+				return false
+			}
 
-    for(const effect of this.effects.values()) {
-      result.push(effect.saveAsJson())
-    }
+			if (
+				!this.sameValue(
+					effect.effectId,
+					effectCollection.effects.get(effect.effectId)!.value
+				)
+			) {
+				return false
+			}
+		}
 
-    return JSON.stringify(result)
-  }
+		return true
+	}
 
-  public static loadFromJson(json: string): EffectCollection {
-    const result: EffectCollection = new EffectCollection()
+	public saveAsJson(): string {
+		const result: any = []
 
-    const effects = JSON.parse(json)
+		for (const effect of this.effects.values()) {
+			result.push(effect.saveAsJson())
+		}
 
-    // for(const effect of effects) {
-    //   result.effects.set(effect.effectId, )
-    // }
+		return JSON.stringify(result)
+	}
 
-    return result
-  }
+	public static loadFromJson(json: string): EffectCollection {
+		const result: EffectCollection = new EffectCollection()
+
+		const effects = JSON.parse(json)
+
+		// for(const effect of effects) {
+		//   result.effects.set(effect.effectId, )
+		// }
+
+		return result
+	}
 }
 
 export default EffectCollection

@@ -9,13 +9,15 @@ import EffectCollection from "@breakEmu_World/manager/entities/effect/EffectColl
 import AbstractItem from "@breakEmu_World/manager/items/AbstractItem"
 import CharacterItemController from "../controller/characterItem.controller"
 import Item from "./item.model"
+import Container from "@breakEmu_Core/container/Container"
+import { randomUUID } from "crypto"
 
 class CharacterItem extends AbstractItem {
-	private _characterId: number
+	characterId: number
+  private container: Container = Container.getInstance()
 
 	constructor(
 		characterId: number,
-		uid: string,
 		gId: number,
 		quantity: number,
 		position: number,
@@ -23,8 +25,8 @@ class CharacterItem extends AbstractItem {
 		effects: EffectCollection,
 		appearanceId: number
 	) {
-		super(uid, gId, position, quantity, effects, appearanceId, look)
-		this._characterId = characterId
+		super(gId, position, quantity, effects, appearanceId, look)
+		this.characterId = characterId
 	}
 
 	public isEquiped(): boolean {
@@ -35,25 +37,27 @@ class CharacterItem extends AbstractItem {
 	}
 
 	public async getObjectItemNotInContainer(): Promise<ObjectItemNotInContainer> {
-    const itemuId = await CharacterItemController.getInstance().getIntIdFromUuid(this.uId)
 		return new ObjectItemNotInContainer(
 			this.gId,
 			this.effects.getObjectEffects(),
-			itemuId as number,
+			this.id,
 			this.quantity
 		)
 	}
 
 	public override async getObjectItem(): Promise<ObjectItem> {
-    const itemuId = await CharacterItemController.getInstance().getIntIdFromUuid(this.uId)
 		return new ObjectItem(
 			this.position,
 			this.gId,
 			this.effects.getObjectEffects(),
-			itemuId as number,
+			this.id,
 			this.quantity
 		)
 	}
+
+  public getObjectQuantity(): ObjectItemQuantity {
+    return new ObjectItemQuantity(this.gId, this.quantity)
+  }
 
 	public getObjectItemQuantity(): ObjectItemQuantity {
 		throw new Error("Method not implemented.")
@@ -71,14 +75,6 @@ class CharacterItem extends AbstractItem {
 		return
 	}
 
-	public get characterId(): number {
-		return this._characterId
-	}
-
-	public set characterId(value: number) {
-		this._characterId = value
-	}
-
 	public canBeExchanged(): boolean {
 		return this.record.exchangeable
 	}
@@ -88,9 +84,8 @@ class CharacterItem extends AbstractItem {
   }
 
   public clone(): CharacterItem {
-    return new CharacterItem(
+    const clone = new CharacterItem(
       this.characterId,
-      this.uId,
       this.gId,
       this.quantity,
       this.position,
@@ -98,10 +93,28 @@ class CharacterItem extends AbstractItem {
       this.effects,
       this.appearanceId
     )
+
+    clone.id = this.id
+    return clone
   }
 
   public async save(): Promise<void> {
-    await CharacterItemController.getInstance().updateItem(this)
+    await this.container.get(CharacterItemController).updateItem(this)
+  }
+
+  public static async createFromItem(item: Item, characterId: number): Promise<CharacterItem> {
+    const characterItem = new CharacterItem(
+      characterId,
+      item.id,
+      1,
+      CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
+      "",
+      item.effects,
+      item.appearanceId
+    )
+
+    await characterItem.save()
+    return characterItem
   }
 
   public getEffects(itemCount: number): EffectCollection {

@@ -1,39 +1,27 @@
-import { createServer } from "net"
 import ansiColorCodes from "@breakEmu_Core/Colors"
 import Logger from "@breakEmu_Core/Logger"
-import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
+import { createServer } from "net"
 import AuthClient from "./AuthClient"
 import ConnectionQueue from "./ConnectionQueue"
 import ServerStatus from "./enum/ServerStatus"
-import AuthTransition from "./AuthTransition";
+import Container from "@breakEmu_Core/container/Container"
 
 class AuthServer {
 	public logger: Logger = new Logger("AuthServer")
-
+  private container: Container = Container.getInstance()
 	private SERVER_STATE: number = ServerStatus.Offline
 	public MAX_DOFUS_MESSAGE_HEADER_SIZE: number = 10
 
 	private clients: AuthClient[] = []
 
-	private static _instance: AuthServer
-
 	private ip: string
 	private port: number
 
-	public constructor(ip: string, port: number) {
+	constructor(ip: string, port: number) {
 		this.ip = ip
 		this.port = port
-	}
 
-	public static getInstance(): AuthServer {
-		if (!AuthServer._instance) {
-			AuthServer._instance = new AuthServer(
-				ConfigurationManager.getInstance().authServerHost,
-				ConfigurationManager.getInstance().authServerPort
-			)
-		}
-
-		return AuthServer._instance
+    this.container.register(ConnectionQueue, new ConnectionQueue())
 	}
 
 	public get ServerState(): number {
@@ -42,7 +30,7 @@ class AuthServer {
 
 	public async Start(): Promise<void> {
 		const server = createServer(
-			async (socket) => await ConnectionQueue.getInstance().enqueue(socket)
+			async (socket) => await this.container.get(ConnectionQueue).enqueue(socket)
 		)
 
 		/*setInterval(async () => {

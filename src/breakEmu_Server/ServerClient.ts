@@ -10,12 +10,15 @@ import {
 	DofusNetworkMessage,
 	messages,
 } from "@breakEmu_Protocol/IO"
+import Container from "@breakEmu_Core/container/Container"
 
 abstract class ServerClient {
 	public abstract logger: Logger
 	public socket: Socket
 
-	private _messageTemp: any
+  public container: Container = Container.getInstance()
+
+  private _messageTemp: DofusMessage | null = null
 
 	private static readonly MAX_DOFUS_MESSAGE_HEADER_SIZE: number = 10
 
@@ -98,7 +101,7 @@ abstract class ServerClient {
 
 			if (
 				!(messageId in messages) &&
-				ConfigurationManager.getInstance().showProtocolMessage
+				this.container.get(ConfigurationManager).showProtocolMessage
 			) {
 				this.logger.writeAsync(
 					`Undefined message (id: ${messageId})`,

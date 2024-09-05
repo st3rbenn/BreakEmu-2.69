@@ -12,26 +12,21 @@ import {
 	GameServerInformations,
 	messages,
 } from "@breakEmu_Protocol/IO"
-import WorldServer from "./WorldServer"
+import WorldServer from "@breakEmu_World/WorldServer"
+import Container from "@breakEmu_Core/container/Container"
 
 class WorldServerManager {
 	public logger: Logger = new Logger("WorldServerManager")
 
-	private static _instance: WorldServerManager
+  private container: Container = Container.getInstance()
 
-	public constructor() {}
+	public constructor() {
+  }
 
 	public allowedIps: string[] = ["127.0.0.1"]
 
 	public _realmList: WorldServer[] = []
 
-	public static getInstance(): WorldServerManager {
-		if (!WorldServerManager._instance) {
-			WorldServerManager._instance = new WorldServerManager()
-		}
-
-		return WorldServerManager._instance
-	}
 
 	public deserialize(data: Buffer): DofusMessage {
 		const reader = new BinaryBigEndianReader({
@@ -59,7 +54,7 @@ class WorldServerManager {
 	public async gameServerInformationArray(
 		client: AuthClient
 	): Promise<GameServerInformations[]> {
-		const gsif = WorldController.getInstance()
+		const gsif = this.container.get(WorldController)
 			.worldList.filter((server) => client.canAccessWorld(server))
 			.map(async (server) => await this.gameServerInformation(server, client))
 
@@ -73,7 +68,7 @@ class WorldServerManager {
 	): Promise<GameServerInformations> {
 		let charCount: Character[] | undefined = undefined
 		if (client instanceof AuthClient) {
-			charCount = await CharacterController.getInstance().getCharactersByAccountId(
+			charCount = await this.container.get(CharacterController).getCharactersByAccountId(
 				client?.account?.id || 0
 			)
 		}

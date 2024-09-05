@@ -3,7 +3,7 @@ import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationMana
 
 class ApCharacteristic extends LimitCharacteristic {
   public override get limit(): number {
-    return ConfigurationManager.getInstance().apLimit
+    return this.container.get(ConfigurationManager).apLimit
   }
 
   public override get contextLimit(): boolean {

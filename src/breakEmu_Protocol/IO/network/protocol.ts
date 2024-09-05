@@ -23908,7 +23908,7 @@ export interface RawObjectItemQuantity extends RawItem {
 }
 
 export class ObjectItemQuantity extends Item {
-	public static id: number = 9732
+	public static id: number = 3184
 
 	public objectUID: number | undefined = 0
 	public quantity: number | undefined = 0
@@ -56454,7 +56454,7 @@ export interface RawExchangeObjectsAddedMessage
 }
 
 export class ExchangeObjectsAddedMessage extends ExchangeObjectMessage {
-	public static id = 1507
+	public static id = 697
 
 	public object_: ObjectItem[] | undefined
 
@@ -56551,7 +56551,7 @@ export interface RawExchangeObjectsModifiedMessage
 }
 
 export class ExchangeObjectsModifiedMessage extends ExchangeObjectMessage {
-	public static id = 9650
+	public static id = 1269
 
 	public object_: ObjectItem[] | undefined
 
@@ -57048,7 +57048,7 @@ export interface RawObjectsQuantityMessage {
 }
 
 export class ObjectsQuantityMessage extends DofusMessage {
-	public static id: number = 9021
+	public static id: number = 8051
 
 	public objectsUIDAndQty: ObjectItemQuantity[] | undefined
 
@@ -73823,7 +73823,7 @@ export const types: { [key: number]: typeof DofusType } = {
 	8818: JobBookSubscription,
 	4296: GoldItem,
 	8040: ObjectItemToSellInHumanVendorShop,
-	9732: ObjectItemQuantity,
+	3184: ObjectItemQuantity,
 	8915: EntityMovementInformations,
 	9234: BidExchangerObjectInfo,
 	1189: LeagueFriendInformations,
@@ -74498,9 +74498,9 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	2786: MountEmoteIconUsedOkMessage,
 	5795: QuestStartedMessage,
 	2798: MountRenamedMessage,
-	1507: ExchangeObjectsAddedMessage,
+	697: ExchangeObjectsAddedMessage,
 	5232: GuestLimitationMessage,
-	9650: ExchangeObjectsModifiedMessage,
+	1269: ExchangeObjectsModifiedMessage,
 	6972: WrapperObjectErrorMessage,
 	2157: ExchangeRequestedMessage,
 	4929: ExchangeRequestedTradeMessage,
@@ -74510,7 +74510,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	5814: ExchangeStartOkHumanVendorMessage,
 	5776: FriendDeleteResultMessage,
 	3014: PresetsMessage,
-	9021: ObjectsQuantityMessage,
+	8051: ObjectsQuantityMessage,
 	8139: QuestObjectiveValidatedMessage,
 	5626: GameRolePlayAggressionMessage,
 	7251: GuildInformationsMembersMessage,

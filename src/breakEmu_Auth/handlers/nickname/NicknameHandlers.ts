@@ -12,17 +12,18 @@ import {
 import AuthClient from "../../AuthClient"
 import AuthentificationHandler from "../auth/AuthentificationHandler"
 import ServerListHandler from "../server/ServerListHandler"
+import Container from "@breakEmu_Core/container/Container"
 
 class NicknameHandlers {
 	private static logger: Logger = new Logger("NicknameHandlers")
-	private static _database: Database = Database.getInstance()
+	private static container: Container = Container.getInstance()
 
 	static async setNickname(
 		nickname: string,
 		client: AuthClient
 	): Promise<boolean> {
 		try {
-			const user = await this._database.prisma.user.findMany({
+			const user = await this.container.get(Database).prisma.user.findMany({
 				where: {
 					pseudo: nickname,
 				},
@@ -51,7 +52,7 @@ class NicknameHandlers {
 				return false
 			}
 
-			await this._database.prisma.user.update({
+			await this.container.get(Database).prisma.user.update({
 				where: {
 					username: client.account?.username,
 				},
@@ -77,7 +78,7 @@ class NicknameHandlers {
 	): Promise<void> {
 		const nickname = (message as NicknameChoiceRequestMessage).nickname
 
-		if (ConfigurationManager.getInstance().showDebugMessages) {
+		if (this.container.get(ConfigurationManager).showDebugMessages) {
 			await this.logger.writeAsync(
 				`Nickname: ${nickname}`,
 				ansiColorCodes.lightGray

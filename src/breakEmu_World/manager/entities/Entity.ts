@@ -41,9 +41,9 @@ abstract class Entity {
 
 	public async refreshActorOnMap() {
 		try {
-			await this.sendMap(
-				new GameRolePlayShowActorMessage(this.getActorInformations())
-			)
+			await this.map
+				.instance()
+				.send(new GameRolePlayShowActorMessage(this.getActorInformations()))
 		} catch (e) {
 			this.logger.error(`${(e as any).message} - ${(e as any).stack}`)
 		}

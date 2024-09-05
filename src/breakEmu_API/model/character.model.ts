@@ -74,8 +74,10 @@ import Job from "./job.model"
 import GameMap from "./map.model"
 import Skill from "./skill.model"
 import Spell from "./spell.model"
+import Container from "@breakEmu_Core/container/Container"
 
 class Character extends Entity {
+	private container: Container = Container.getInstance()
 	point: MapPoint
 	id: number
 	accountId: number
@@ -247,7 +249,7 @@ class Character extends Entity {
 			cellId,
 			direction,
 			kamas,
-			ConfigurationManager.getInstance().startStatsPoints,
+			5,
 			[1],
 			new Map<number, CharacterShortcut>(),
 			[],
@@ -434,14 +436,6 @@ class Character extends Entity {
 		await this.refreshStats()
 	}
 
-	public async addExperienceToJob(jobId: number, experience: number) {
-		const job = this.getJobs(jobId)
-
-		if (job) {
-			JobManager.getInstance().setExperience(experience, this, job)
-		}
-	}
-
 	public async setDialog(dialog: Dialog) {
 		if (this.dialog) {
 			console.log(`Closing dialog ${this.dialog}`)
@@ -454,17 +448,14 @@ class Character extends Entity {
 
 	public removeDialog() {
 		this.dialog = null
+    this.isCraftDialog = false
 	}
 
 	public async leaveDialog() {
-		console.log("leaving dialog", this.whatDialog())
 		try {
 			if (this.dialog) {
 				await this.dialog.close()
 			}
-			//  else {
-			// 	await this.client?.Send(new BasicNoOperationMessage())
-			// }
 		} catch (error) {
 			console.log(error)
 		}
@@ -547,11 +538,10 @@ class Character extends Entity {
 			if (this.untakenAchievementsReward.length === 0) return
 			for (const achiev of this.untakenAchievementsReward) {
 				if (achiev === 0) continue
-				const achievement = AchievementManager.getInstance().getAchievementById(
-					achiev
-				)
+				const achievement = this.container
+					.get(AchievementManager)
+					.getAchievementById(achiev)
 				if (achievement) {
-					console.log("Resending untaken reward achievement", achievement)
 					await AchievementHandler.handleSendAchievementFinishedMessage(
 						this,
 						achievement
@@ -566,9 +556,9 @@ class Character extends Entity {
 	public getFinishedAchievementsByCategory(categoryId: number): Achievement[] {
 		let achievements: Achievement[] = []
 		this.finishedAchievements.filter((achievement) => {
-			const ach = AchievementManager.getInstance().getAchievementById(
-				achievement
-			)
+			const ach = this.container
+				.get(AchievementManager)
+				.getAchievementById(achievement)
 			if (ach) {
 				if (ach.categoryId === categoryId) {
 					achievements.push(ach)
@@ -748,23 +738,37 @@ class Character extends Entity {
 		}
 	}
 
-	public async move(keys: number[]) {
-		try {
-			if (!this.busy) {
-				const clientCellId = PathReader.readCell(keys[0] as number)
+	public async simulateMove(): Promise<boolean> {
+		if (this.busy) return false
 
-				if (clientCellId === this.cellId) {
-					this.direction = PathReader.readDirection(
-						keys[keys.length - 1] as number
-					)
-					this.movedCell = PathReader.readCell(keys[keys.length - 1] as number)
-					this.isMoving = true
-					this.movementKeys = keys
-					await this.sendMap(new GameMapMovementMessage(keys, 0, this.id))
+		const cell = this.map?.randomWalkableCell()
+		if (cell) {
+			this.cellId = cell.id
+			this.mapPoint = new MapPoint(cell.id)
+			await this.map.instance().send(new GameMapMovementMessage([], 0, this.id))
+			return true
+		}
+
+		return false
+	}
+
+	public async move(keys: number[]) {
+		if (!this.busy) {
+			const clientCellId = PathReader.readCell(keys[0] as number)
+
+			if (clientCellId === this.cellId) {
+				this.direction = PathReader.readDirection(
+					keys[keys.length - 1] as number
+				)
+				this.movedCell = PathReader.readCell(keys[keys.length - 1] as number)
+				this.isMoving = true
+				this.movementKeys = keys
+				try {
+					await this.map.instance().send(new GameMapMovementMessage(keys, 0, this.id))
+				} catch (error) {
+					console.log(error)
 				}
 			}
-		} catch (error) {
-			console.log(error)
 		}
 	}
 
@@ -776,10 +780,10 @@ class Character extends Entity {
 	}
 
 	public async noMove() {
+		this.isMoving = false
+		this.movementKeys = []
+		this.movedCell = 0
 		try {
-			this.isMoving = false
-			this.movementKeys = []
-			this.movedCell = 0
 			await this.client?.Send(
 				new GameMapNoMovementMessage(
 					this.mapPoint?.x as number,
@@ -792,26 +796,26 @@ class Character extends Entity {
 	}
 
 	public async cancelMove(cellId: number) {
-		try {
-			this.isMoving = false
-			this.movementKeys = []
-			this.movedCell = 0
-			this.cellId = cellId
-			// await this.client?.Send(new BasicNoOperationMessage())
-		} catch (error) {
-			console.log(error)
-		}
+		this.isMoving = false
+		this.movementKeys = []
+		this.movedCell = 0
+		this.cellId = cellId
+		// try {
+		// 	// await this.client?.Send(new BasicNoOperationMessage())
+		// } catch (error) {
+		// 	console.log(error)
+		// }
 	}
 
 	public async teleport(mapId: number, cellId: number | null = null) {
 		const gameMap = GameMap.getMapById(mapId)
-		try {
-			if (gameMap) {
+		if (gameMap) {
+			try {
 				await this.teleportPlayer(gameMap as GameMap, cellId)
+				await this.refreshStats()
+			} catch (error) {
+				console.log(error)
 			}
-			await this.refreshStats()
-		} catch (error) {
-			console.log(error)
 		}
 	}
 
@@ -819,17 +823,18 @@ class Character extends Entity {
 		teleportMap: GameMap,
 		cellId: number | null = null
 	) {
+		if (this.busy) return
+
+		this.changeMap = true
+
+		if (cellId === null) {
+			cellId = teleportMap.getNearestCellId(this.cellId)
+		}
+
+		this.cellId = cellId
+		this.mapId = teleportMap.id
+
 		try {
-			if (this.busy) return
-
-			this.changeMap = true
-
-			if (cellId === null) {
-				cellId = teleportMap.getNearestCellId(this.cellId)
-			}
-
-			this.cellId = cellId
-			this.mapId = teleportMap.id
 			if (this.map !== null && this.map.instance) {
 				await this.map.instance().removeEntity(this)
 			} else {
@@ -852,21 +857,25 @@ class Character extends Entity {
 	public async setSpawnPoint() {
 		this.spawnMapId = this.mapId
 
-		await this.textInformation(
-			TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
-			6,
-			[this.mapId.toString()]
-		)
+		try {
+			await this.textInformation(
+				TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
+				6,
+				[this.mapId.toString()]
+			)
 
-		await TeleportHandler.handleSetSpawnPoint(
-			this.client as WorldClient,
-			this.mapId
-		)
+			await TeleportHandler.handleSetSpawnPoint(
+				this.client as WorldClient,
+				this.mapId
+			)
+		} catch (error) {
+			console.log(error)
+		}
 	}
 
 	public async currentMapMessage(mapId: number) {
+		this.changeMap = false
 		try {
-			this.changeMap = false
 			await this?.client?.Send(new CurrentMapMessage(mapId))
 		} catch (error) {
 			console.log(error)
@@ -874,9 +883,8 @@ class Character extends Entity {
 	}
 
 	public async onEnterMap() {
+		this.changeMap = false
 		try {
-			this.changeMap = false
-
 			await this.map?.instance().addEntity(this)
 
 			await this.map?.instance().sendMapComplementaryInformations(this.client)
@@ -899,7 +907,9 @@ class Character extends Entity {
 				await this.discoverZaap(this.mapId)
 			}
 
-			await AchievementManager.getInstance().checkIsInMapAchievements(this)
+			await this.container
+				.get(AchievementManager)
+				.checkIsInMapAchievements(this)
 
 			const date = new Date()
 			const unixTime = Math.round(date.getTime() / 1000)
@@ -910,10 +920,10 @@ class Character extends Entity {
 	}
 
 	public async discoverZaap(mapId: number) {
-		try {
-			if (this.knownZaaps.has(mapId)) return
+		if (this.knownZaaps.has(mapId)) return
 
-			this.knownZaaps.set(mapId, GameMap.getMapById(mapId) as GameMap)
+		this.knownZaaps.set(mapId, GameMap.getMapById(mapId) as GameMap)
+		try {
 			await this.refreshZaaps()
 			await this.textInformation(
 				TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
@@ -926,8 +936,8 @@ class Character extends Entity {
 	}
 
 	public async createContext(context: number) {
+		this.context = context
 		try {
-			this.context = context
 			await this.client.Send(new GameContextCreateMessage(context))
 		} catch (error) {
 			console.log(error)
@@ -959,7 +969,7 @@ class Character extends Entity {
 	public async destroyContext() {
 		try {
 			await Promise.all([
-				CharacterController.getInstance().updateCharacter(this),
+				this.container.get(CharacterController).updateCharacter(this),
 				this.map?.instance().removeEntity(this),
 			])
 		} catch (error) {
@@ -971,7 +981,7 @@ class Character extends Entity {
 		try {
 			await this.client?.Send(
 				new ServerExperienceModificatorMessage(
-					ConfigurationManager.getInstance().XpRate * 100
+					this.container.get(ConfigurationManager).XpRate * 100
 				)
 			)
 		} catch (error) {
@@ -990,7 +1000,11 @@ class Character extends Entity {
 	}
 
 	public async replyWarning(value: any): Promise<void> {
-		await this.reply(`<br>${value}`, "ED7F10", false, false)
+		try {
+			await this.reply(`<br>${value}`, "ED7F10", false, false)
+		} catch (error) {
+			console.log(error)
+		}
 	}
 
 	public async replyError(value: any): Promise<void> {
@@ -1008,9 +1022,8 @@ class Character extends Entity {
 		underline: boolean = false,
 		size: number = 14
 	): Promise<void> {
+		value = this.applyPolice(value, bold, underline)
 		try {
-			value = this.applyPolice(value, bold, underline)
-
 			await this.client?.Send(
 				new TextInformationMessage(0, 0, [
 					`<font color="#${color}" size="${size}px">${value}</font>`,
@@ -1036,14 +1049,15 @@ class Character extends Entity {
 	}
 
 	public async addJobExperience(jobId: number, experience: number) {
-		try {
-			const job = this.getJobs(jobId)
-
-			if (job) {
-				await JobManager.getInstance().setExperience(experience, this, job)
+		const job = this.getJobs(jobId)
+		if (job) {
+			try {
+				await this.container
+					.get(JobManager)
+					.setExperience(experience, this, job)
+			} catch (error) {
+				console.log(error)
 			}
-		} catch (error) {
-			console.log(error)
 		}
 	}
 
@@ -1051,26 +1065,42 @@ class Character extends Entity {
 		if (this.knownEmotes.includes(emoteId)) return
 
 		this.knownEmotes.push(emoteId)
-		await ContextHandler.handleNewEmote(this.client, emoteId)
+		try {
+			await ContextHandler.handleNewEmote(this.client, emoteId)
+		} catch (error) {
+			console.log(error)
+		}
 	}
 
 	public async addTitle(titleId: number) {
 		if (this.knownTitles.includes(titleId)) return
 
 		this.knownTitles.push(titleId)
-		await ContextHandler.handleNewTitle(this.client, titleId)
+		try {
+			await ContextHandler.handleNewTitle(this.client, titleId)
+		} catch (error) {
+			console.log(error)
+		}
 	}
 
 	public async addOrnament(ornamentId: number) {
 		if (this.knownOrnaments.includes(ornamentId)) return
 
 		this.knownOrnaments.push(ornamentId)
-		await ContextHandler.handleNewOrnament(this.client, ornamentId)
+		try {
+			await ContextHandler.handleNewOrnament(this.client, ornamentId)
+		} catch (error) {
+			console.log(error)
+		}
 	}
 
 	public async equipeOrnament(ornamentId: number) {
 		this.activeOrnament = ornamentId
-		await this.refreshStats()
+		try {
+			await this.refreshStats()
+		} catch (error) {
+			console.log(error)
+		}
 	}
 
 	public async OnLevelChanged(currentLevel: number, difference: number) {
@@ -1153,7 +1183,7 @@ class Character extends Entity {
 				}
 			}
 
-			AchievementManager.getInstance().checkLevelAchievements(this)
+			this.container.get(AchievementManager).checkLevelAchievements(this)
 		} catch (error) {
 			console.log(error)
 		}
@@ -1166,12 +1196,11 @@ class Character extends Entity {
 	}
 
 	public async learnSpell(spellId: number, notify: boolean) {
+		if (this.hasSpell(spellId)) return
+
+		let spell = new CharacterSpell(spellId, false, this)
+		this.spells.set(spellId, spell)
 		try {
-			if (this.hasSpell(spellId)) return
-
-			let spell = new CharacterSpell(spellId, false, this)
-			this.spells.set(spellId, spell)
-
 			if (spell.learned()) {
 				if (this.spellShortcutBar.canAdd()) {
 					const spellShortcut = new CharacterSpellShortcut(
@@ -1214,7 +1243,11 @@ class Character extends Entity {
 	}
 
 	public async disconnect() {
-		await this.destroyContext()
+		try {
+			await this.destroyContext()
+		} catch (error) {
+			console.log(error)
+		}
 	}
 
 	public static loadShortcutsFromJson(

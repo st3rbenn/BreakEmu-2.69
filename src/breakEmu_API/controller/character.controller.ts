@@ -15,24 +15,16 @@ import EntityStats from "@breakEmu_World/manager/entities/stats/entityStats"
 import CharacterShortcut from "@breakEmu_World/manager/shortcut/character/CharacterShortcut"
 import Database from "../Database"
 import Character from "../model/character.model"
+import Container from "@breakEmu_Core/container/Container"
 
 class CharacterController {
 	public _logger: Logger = new Logger("CharacterController")
-	public database: Database = Database.getInstance()
-
-	private static _instance: CharacterController
+  private container: Container = Container.getInstance()
+	public database: Database = this.container.get(Database)
 
 	private NAME_REGEX: RegExp = /^[A-Z][a-z]{2,9}(?:-[A-Za-z][a-z]{2,9}|[a-z]{1,10})$/
 
 	MaxCharacterSlots: number = 5
-
-	public static getInstance(): CharacterController {
-		if (!this._instance) {
-			this._instance = new CharacterController()
-		}
-
-		return this._instance
-	}
 
 	public async getCharactersByAccountId(
 		accountId: number
@@ -161,7 +153,7 @@ class CharacterController {
 		)
 
 		const startLevel = Experience.experiences.get(
-			ConfigurationManager.getInstance().startLevel
+			this.container.get(ConfigurationManager).startLevel
 		) as Experience
 
 		const jobs: Job[] = Array.from(JobManager.new().values())
@@ -180,11 +172,11 @@ class CharacterController {
 					sex: message.sex as boolean,
 					experience: startLevel.characterExp,
 					look: ContextEntityLook.convertToString(look),
-					cellId: ConfigurationManager.getInstance().startCellId.toString(),
-					mapId: ConfigurationManager.getInstance().startMapId.toString(),
+					cellId: this.container.get(ConfigurationManager).startCellId.toString(),
+					mapId: this.container.get(ConfigurationManager).startMapId.toString(),
 					direction: 1,
-					kamas: ConfigurationManager.getInstance().startKamas,
-					statsPoints: ConfigurationManager.getInstance().startStatsPoints,
+					kamas: this.container.get(ConfigurationManager).startKamas,
+					statsPoints: this.container.get(ConfigurationManager).startStatsPoints,
 					stats: JSON.stringify(stats),
 					jobs: JSON.stringify(jobs),
 					shortcuts: JSON.stringify([]),
@@ -200,8 +192,8 @@ class CharacterController {
 				newCharacter.cosmeticId,
 				newCharacter.name,
 				look,
-				ConfigurationManager.getInstance().startMapId,
-				ConfigurationManager.getInstance().startCellId,
+				this.container.get(ConfigurationManager).startMapId,
+				this.container.get(ConfigurationManager).startCellId,
 				newCharacter.direction,
 				newCharacter.kamas,
 				Finishmoves.getFinishmovesByFree(true),

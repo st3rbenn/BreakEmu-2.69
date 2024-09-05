@@ -4,14 +4,18 @@ import Logger from "@breakEmu_Core/Logger"
 import WorldServer from "@breakEmu_World/WorldServer"
 import AccountRoleEnum from "../../../../enum/AccountRoleEnum"
 import CommandHandler, { TCommandHandler } from "../CommandHandler"
+import Container from "@breakEmu_Core/container/Container"
 
 class JobCommandHandler {
 	static logger: Logger = new Logger("JobCommandHandler")
+	public static container: Container = Container.getInstance()
 
 	static commandHandler: TCommandHandler = {
 		job: {
 			execute: async (args, message, character) => {
-				await CommandHandler.helpCommand(character, this.commandHandler)
+				await this.container
+					.get(CommandHandler)
+					.helpCommand(character, this.commandHandler)
 			},
 			description: "",
 			command: "job",
@@ -43,11 +47,11 @@ class JobCommandHandler {
 
 	private static async experienceHandler(
 		characterId: number,
-    jobId: number,
+		jobId: number,
 		experience: number,
 		commandCaster: Character
 	) {
-		const clients = WorldServer.getInstance().clients.values()
+		const clients = this.container.get(WorldServer).clients.values()
 
 		for (const client of clients) {
 			const character = client.selectedCharacter

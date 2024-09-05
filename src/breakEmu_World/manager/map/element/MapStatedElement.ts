@@ -135,7 +135,7 @@ class MapStatedElement extends MapInteractiveElement {
 				)
 
 				if (skill) {
-					const itemQuantity = JobFormulas.getInstance().getCollectedItemQuantity(
+					const itemQuantity = this.container.get(JobFormulas).getCollectedItemQuantity(
 						job !== undefined ? job.level : 1,
 						skill
 					)
@@ -156,7 +156,7 @@ class MapStatedElement extends MapInteractiveElement {
 							this.calculateBonus(
 								5 *
 									skill.levelMin *
-									ConfigurationManager.getInstance().jobXpRate,
+									this.container.get(ConfigurationManager).jobXpRate,
 								this.currentBonus
 							)
 						)
@@ -176,8 +176,8 @@ class MapStatedElement extends MapInteractiveElement {
 		return Math.round(total)
 	}
 
-	public caneUse(character: Character): boolean {
-		return super.caneUse(character) && this.state == StatedElementState.Active
+	public override canUse(character: Character): boolean {
+		return super.canUse(character) && this.state == StatedElementState.Active
 	}
 
 	get skill(): InteractiveSkill {

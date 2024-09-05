@@ -3,21 +3,12 @@ import Skill from "@breakEmu_API/model/skill.model"
 import AsyncRandom from "../AsyncRandom"
 import Experience from "@breakEmu_API/model/experience.model"
 import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
+import Container from "@breakEmu_Core/container/Container"
 
 class JobFormulas {
 	private static logger: Logger = new Logger("JobFormulas")
-
-	private static _instance: JobFormulas
-
+  private container: Container = Container.getInstance()
   public static readonly MAX_JOB_LEVEL_GAP = 100
-
-	public static getInstance(): JobFormulas {
-		if (!JobFormulas._instance) {
-			JobFormulas._instance = new JobFormulas()
-		}
-
-		return JobFormulas._instance
-	}
 
 	public getCollectedItemQuantity(jobLevel: number, skill: Skill): number {
 		const random = new AsyncRandom()
@@ -46,7 +37,7 @@ class JobFormulas {
         result = value;
     }
 
-    return Math.floor(result) * ConfigurationManager.getInstance().jobXpRate;
+    return Math.floor(result) * this.container.get(ConfigurationManager).jobXpRate;
 }
 }
 
