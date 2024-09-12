@@ -11,12 +11,8 @@ import Container from "@breakEmu_Core/container/Container"
 
 abstract class ItemCollection<T extends AbstractItem> {
 	private _items: Map<number, T> = new Map<number, T>()
-	public _count: number = 0
+	public count: number = 0
 	public container: Container = Container.getInstance()
-
-	public get count(): number {
-		return this._count
-	}
 
 	constructor(items: T[] = []) {
 		this._items = this.createContainer()
@@ -67,7 +63,8 @@ abstract class ItemCollection<T extends AbstractItem> {
 
 				let sameItem: T | undefined = await this.getSameItem(
 					item.gId,
-					item.effects
+					item.effects,
+          item.position
 				)
 
 				if (sameItem) {
@@ -99,7 +96,7 @@ abstract class ItemCollection<T extends AbstractItem> {
 			const unstackedItems: T[] = []
 
 			for (const item of items) {
-				const sameItem = await this.getSameItem(item.gId, item.effects)
+				const sameItem = await this.getSameItem(item.gId, item.effects, item.position)
 
 				if (sameItem) {
 					if (sameItem.quantity > item.quantity) {
@@ -137,10 +134,11 @@ abstract class ItemCollection<T extends AbstractItem> {
 
 			let sameItem: T | undefined = await this.getSameItem(
 				item.gId,
-				item.effects
+				item.effects,
+        item.position
 			)
 
-			if (sameItem) {
+			if (sameItem != undefined) {
 				console.log(
 					`sameItem found for addItem: ${sameItem.quantity} > ${quantity}`
 				)
@@ -153,10 +151,10 @@ abstract class ItemCollection<T extends AbstractItem> {
 					.createCharacterItem(item, characterId)
 
 				if (result) {
-          console.log(
-            `new item created with id: ${result.id} and quantity: ${result.quantity} (name: ${result.record.name})`
-          )
-          item.id = result.id
+					console.log(
+						`new item created with id: ${result.id} and quantity: ${result.quantity} (name: ${result.record.name})`
+					)
+					item.id = result.id
 					this.items.set(result.id, item)
 					this.onItemAdded(item)
 				}
@@ -190,12 +188,17 @@ abstract class ItemCollection<T extends AbstractItem> {
 
 	public async getSameItem(
 		itemGid: number,
-		effects: EffectCollection
+		effects: EffectCollection,
+		positionEnum: CharacterInventoryPositionEnum
 	): Promise<T | undefined> {
 		let same: T
 
 		for (const [key, value] of this.items) {
-			if (value.gId == itemGid && value.effects.sequenceEqual(effects)) {
+			if (
+				value.gId == itemGid &&
+				value.effects.sequenceEqual(effects) &&
+				value.positionEnum == positionEnum
+			) {
 				same = value
 				return same
 			}

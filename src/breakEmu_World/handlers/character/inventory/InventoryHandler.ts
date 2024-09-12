@@ -12,8 +12,6 @@ class InventoryHandler {
 		client: WorldClient,
 		message: ObjectSetPositionMessage
 	): Promise<void> {
-		console.log("handleObjectSetPositionMessage")
-		console.log("objectUID", message.objectUID)
 		const item = await client.selectedCharacter.inventory.getItem(
 			message.objectUID as number
 		)
@@ -21,12 +19,16 @@ class InventoryHandler {
 			this.logger.write(
 				`handleObjectSetPositionMessage: ${message.objectUID} ${message.position} ${message.quantity}`
 			)
-			await client.selectedCharacter?.inventory?.setItemPosition(
+			await client.selectedCharacter.inventory.setItemPosition(
 				item,
 				message.position as number,
 				message.quantity as number
 			)
-		}
+		} else {
+      this.logger.write(
+        `object UID ${message.objectUID} not found in inventory`,
+      )
+    }
 	}
 }
 

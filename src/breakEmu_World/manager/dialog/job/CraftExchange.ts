@@ -9,6 +9,7 @@ import {
 	CharacterInventoryPositionEnum,
 	CraftResultEnum,
 	DialogTypeEnum,
+	ExchangeCraftCountModifiedMessage,
 	ExchangeCraftResultMessage,
 	ExchangeCraftResultWithObjectDescMessage,
 	ExchangeStartOkCraftWithInformationMessage,
@@ -43,7 +44,7 @@ class CraftExchange extends JobExchange {
 		try {
 			if (this.character.isCraftDialog) {
 				this.character.removeDialog()
-				await this.jobInventory.clear()
+				await this.jobInventory.clear(this)
 				await DialogHandler.leaveDialogMessage(
 					this.character.client as WorldClient,
 					DialogTypeEnum.DIALOG_EXCHANGE
@@ -89,15 +90,11 @@ class CraftExchange extends JobExchange {
 		return Recipe.getRecipeByResultId(this.lastRecipeId)
 	}
 
-	public moveKamas(quantity: number): void {
-		throw new Error("Method not implemented.")
-	}
-
 	public async setRecipe(recipeId: number): Promise<void> {
 		const recipe = Recipe.getRecipeByResultId(recipeId)
 
 		if (this.jobInventory.items.size > 0) {
-			await this.jobInventory.clear()
+			await this.jobInventory.clear(this)
 		}
 
 		if (recipe) {
@@ -110,20 +107,11 @@ class CraftExchange extends JobExchange {
 						ingredient.id
 					)
 
-					if (
-						characterItem !== null &&
-						characterItem.quantity >= ingredient.quantity
-					) {
-						const itemRes = await this.container
-							.get(CharacterItemController)
-							.cutItem(
-								characterItem,
-								ingredient.quantity,
-								CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
-							)
-						await this.jobInventory.moveItem(itemRes, ingredient.quantity)
-					} else {
-						console.log(`Item not found or quantity incorrect`)
+					if (characterItem) {
+						await this.jobInventory.addItem(
+							characterItem,
+							ingredient.quantity
+						)
 					}
 				}
 			} catch (error) {
@@ -156,12 +144,6 @@ class CraftExchange extends JobExchange {
 							itemInJobInventory,
 							(itemAndQuantityToModify.get(itemInJobInventory) || 0) + quantity
 						)
-					} else {
-						console.log(
-							`Item quantity: ${
-								itemInJobInventory?.quantity ?? 0
-							} < ${quantity}`
-						)
 					}
 				}
 				itemCraftedToAdd.set(
@@ -193,106 +175,15 @@ class CraftExchange extends JobExchange {
 				)
 			)
 
-			console.log("craftResult", craftResult)
 			await this.handleCraftResult(recipe, craftResult as CharacterItem)
 			await this.addExperience(recipe)
 
-      await this.jobInventory.clear()
+			await this.jobInventory.clear(this)
 		} catch (error) {
 			console.error("Error during crafting:", error)
 			await this.onCraftResult(CraftResultEnum.CRAFT_FAILED)
 		}
 	}
-
-	// public async performCraft(recipe: Recipe): Promise<void> {
-	// 	try {
-	// 		if (this.jobInventory.isJobInventoryEqualsToRecipeIngredients(recipe)) {
-	// 			const itemAndQuantityToModify: Map<CharacterItem, number> = new Map()
-	// 			const itemCraftedToAdd: Map<Item, number> = new Map()
-	// 			const igrendients: Map<Item, number> = new Map()
-	// 			const resultCraft: Item = Item.getItem(recipe.resultId)
-
-	// 			const ItemFromPlayerInventoryToSave: CharacterItem[] = []
-	// 			let craftResult: CharacterItem | undefined
-
-	// 			for (const ingredient of recipe.ingredients) {
-	// 				const item = Item.getItem(ingredient.id)
-	// 				if (item) {
-	// 					igrendients.set(item, ingredient.quantity)
-	// 				}
-	// 			}
-	// 			console.log("count", this.count)
-	// 			for (let i = 0; i < this.count; i++) {
-	// 				for (const [ingredient, quantity] of igrendients) {
-	// 					const itemInJobInventory = await this.jobInventory.getItemByGid(
-	// 						ingredient.id
-	// 					)
-	// 					if (itemInJobInventory) {
-	// 						if (itemInJobInventory.quantity >= quantity) {
-	// 							if (itemAndQuantityToModify.has(itemInJobInventory)) {
-	// 								itemAndQuantityToModify.set(
-	// 									itemInJobInventory,
-	// 									(itemAndQuantityToModify.get(
-	// 										itemInJobInventory
-	// 									) as number) + quantity
-	// 								)
-	// 							} else {
-	// 								itemAndQuantityToModify.set(itemInJobInventory, quantity)
-	// 							}
-	// 						} else {
-	// 							console.log(
-	// 								`Item quantity: ${itemInJobInventory.quantity} < ${quantity}`
-	// 							)
-	// 						}
-	// 					}
-	// 				}
-
-	// 				if (itemCraftedToAdd.has(resultCraft)) {
-	// 					itemCraftedToAdd.set(
-	// 						resultCraft,
-	// 						(itemCraftedToAdd.get(resultCraft) as number) + 1
-	// 					)
-	// 				} else {
-	// 					itemCraftedToAdd.set(resultCraft, 1)
-	// 				}
-	// 			}
-
-	// 			for (const [item, quantity] of itemAndQuantityToModify) {
-	// 				item.quantity -= quantity
-	// 				const itemInInventory = await this.character.inventory.getItemByGid(
-	// 					item.gId
-	// 				)
-
-	// 				if (itemInInventory) {
-	// 					ItemFromPlayerInventoryToSave.push(itemInInventory)
-	// 				}
-	// 			}
-
-	// 			for (const [item, quantity] of itemCraftedToAdd) {
-	// 				const characterItem = await this.character.inventory.addNewItem(
-	// 					item.id,
-	// 					quantity
-	// 				)
-
-	// 				if (characterItem) {
-	// 					craftResult = characterItem
-	// 				}
-	// 			}
-
-	// 			for (const item of ItemFromPlayerInventoryToSave) {
-	// 				await this.character.inventory.updateItem(item)
-	// 			}
-
-	// 			console.log("craftResult", craftResult)
-
-	// 			await this.handleCraftResult(recipe, craftResult)
-	// 			await this.addExperience(recipe)
-	// 		}
-	// 	} catch (error) {
-	// 		console.error("Error during crafting:", error)
-	// 		await this.onCraftResult(CraftResultEnum.CRAFT_FAILED)
-	// 	}
-	// }
 
 	private async handleCraftResult(
 		recipe: Recipe,
@@ -350,11 +241,19 @@ class CraftExchange extends JobExchange {
 		)
 	}
 
+	public async onJobInventoryCleared(): Promise<void> {
+		this.resetCount()
+	}
+
 	public modifyItemPriced(
 		objectUID: number,
 		quantity: number,
 		price: number
 	): void {
+		throw new Error("Method not implemented.")
+	}
+
+	public moveKamas(quantity: number): void {
 		throw new Error("Method not implemented.")
 	}
 }

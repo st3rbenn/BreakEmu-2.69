@@ -35,6 +35,8 @@ enum AdminQuietCommande {
 class ContextHandler {
 	private static logger: Logger = new Logger("ContextHandler")
   private static container: Container = Container.getInstance()
+
+
 	public static async handleGameContextCreateMessage(client: WorldClient) {
 		const character = client.selectedCharacter
 		const inFight = false
@@ -171,35 +173,6 @@ class ContextHandler {
 		}
 	}
 
-	public static async handleAdminQuietCommandMessage(
-		client: WorldClient,
-		message: AdminQuietCommandMessage
-	) {
-		const parsedCommand = this.parseAdminCommand(message.content as string)
-
-		try {
-			switch (parsedCommand.commande) {
-				case AdminQuietCommande.moveto:
-					await client.selectedCharacter?.teleport(
-						parseInt(parsedCommand.value[0])
-					)
-					break
-				default:
-					this.logger.write(
-						`Unknown AdminQuietCommande: ${message.content}`,
-						"red"
-					)
-			}
-		} catch (error) {
-			this.logger.write(
-				`Error while handling AdminQuietCommandMessage: ${
-					(error as any).stack
-				}`,
-				"red"
-			)
-		}
-	}
-
 	public static async handleExchangeSetCraftRecipeMessage(
 		client: WorldClient,
 		message: ExchangeSetCraftRecipeMessage
@@ -257,6 +230,35 @@ class ContextHandler {
 		if (client.selectedCharacter.dialog instanceof Exchange) {
 			const exchange = client.selectedCharacter.dialog as CraftExchange
 			await exchange.ready(message.ready as boolean, message.step as number)
+		}
+	}
+
+	public static async handleAdminQuietCommandMessage(
+		client: WorldClient,
+		message: AdminQuietCommandMessage
+	) {
+		const parsedCommand = this.parseAdminCommand(message.content as string)
+
+		try {
+			switch (parsedCommand.commande) {
+				case AdminQuietCommande.moveto:
+					await client.selectedCharacter?.teleport(
+						parseInt(parsedCommand.value[0])
+					)
+					break
+				default:
+					this.logger.write(
+						`Unknown AdminQuietCommande: ${message.content}`,
+						"red"
+					)
+			}
+		} catch (error) {
+			this.logger.write(
+				`Error while handling AdminQuietCommandMessage: ${
+					(error as any).stack
+				}`,
+				"red"
+			)
 		}
 	}
 

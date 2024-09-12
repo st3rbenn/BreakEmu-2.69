@@ -73,18 +73,6 @@ class CharacterItemController {
 		return null
 	}
 
-	async getCharacterItemByGid(characterId: number, gid: number) {
-		console.log(`getCharacterItemByGid: ${characterId} ${gid}`)
-		const characterItem = await this._database.prisma.characterItem.findFirst({
-			where: {
-				characterId,
-				gid,
-			},
-		})
-
-		return characterItem
-	}
-
 	async getCharacterItemsByCharacterId(characterId: number) {
 		const characterItems = await this._database.prisma.characterItem.findMany({
 			where: {
@@ -130,7 +118,7 @@ class CharacterItemController {
 				item.appearanceId
 			)
 
-      characterItem.id = item.id
+			characterItem.id = item.id
 
 			characterItemsArray.push(characterItem)
 		}
@@ -143,12 +131,20 @@ class CharacterItemController {
 			console.log(`updateItem: ${item.id} - ${item.record.name}`)
 			const existingItem = await this._database.prisma.characterItem.findUnique(
 				{
-					where: { id: item.id },
+					where: {
+            id: item.id,
+						AND: {
+							gid: item.gId,
+							characterId: item.characterId,
+						},
+					},
 				}
 			)
 
 			if (!existingItem) {
 				throw new Error(`Item with uId ${item.id} not found`)
+			} else {
+				console.log(`Item found: ${existingItem.id} - ${existingItem.gid}`)
 			}
 
 			await this._database.prisma.characterItem.update({
@@ -185,13 +181,13 @@ class CharacterItemController {
 
 	async deleteItem(item: CharacterItem) {
 		try {
-			const getUid = await this.getCharacterItemByGid(
-				item.characterId,
-				item.gId
-			)
-			if (getUid) {
+			const isItemExist = await this._database.prisma.characterItem.findUnique({
+				where: { id: item.id },
+			})
+
+			if (isItemExist) {
 				await this._database.prisma.characterItem.delete({
-					where: { id: getUid.id, characterId: item.characterId },
+					where: { id: item.id, characterId: item.characterId },
 				})
 			}
 		} catch (error) {

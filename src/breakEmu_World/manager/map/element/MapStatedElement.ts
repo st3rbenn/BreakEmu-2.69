@@ -67,14 +67,14 @@ class MapStatedElement extends MapInteractiveElement {
 
 		const job = this.character.jobs.get(skill.parentJobId as number)
 
-		if (job === undefined) {
-			console.log(
-				`Character ${character.name} doesn't have the job ${
-					(this.skill.record as Skill).parentJobId
-				} required to use the element ${this.record.elementId}`
-			)
-			return
-		}
+		// if (job === undefined) {
+		// 	console.log(
+		// 		`Character ${character.name} doesn't have the job ${
+		// 			(this.skill.record as Skill).parentJobId
+		// 		} required to use the element ${this.record.elementId}`
+		// 	)
+		// 	return
+		// }
 
 		try {
 			if (this.state == StatedElementState.Active) {
@@ -112,7 +112,7 @@ class MapStatedElement extends MapInteractiveElement {
 		}
 	}
 
-	public async onUsed(job: Job, skill: Skill | undefined = this.skill.record) {
+	public async onUsed(job: Job | undefined, skill: Skill | undefined = this.skill.record) {
 		this.growCallback.dispose()
 		this.record.harvestable = false
 		try {
@@ -127,7 +127,7 @@ class MapStatedElement extends MapInteractiveElement {
 		this.growCallback.start()
 	}
 
-	public async collect(job: Job, skill: Skill | undefined = this.skill.record) {
+	public async collect(job: Job | undefined, skill: Skill | undefined = this.skill.record) {
 		try {
 			if (this.state == StatedElementState.Used) {
 				await this.mapInstance.refresh(
@@ -150,17 +150,17 @@ class MapStatedElement extends MapInteractiveElement {
 					)
 					await this.character?.inventory.refresh()
 
-					if (job !== undefined) {
-						this.character?.addJobExperience(
-							job.jobId,
-							this.calculateBonus(
-								5 *
-									skill.levelMin *
-									this.container.get(ConfigurationManager).jobXpRate,
-								this.currentBonus
-							)
-						)
-					}
+					if(job) {
+            await this.character?.addJobExperience(
+              job.jobId,
+              this.calculateBonus(
+                5 *
+                  skill.levelMin *
+                  this.container.get(ConfigurationManager).jobXpRate,
+                this.currentBonus
+              )
+            )
+          }
 					this.character!.collecting = false
 				}
 			}

@@ -1,20 +1,18 @@
-import CharacterItemController from "@breakEmu_API/controller/characterItem.controller"
 import Character from "@breakEmu_API/model/character.model"
 import CharacterItem from "@breakEmu_API/model/characterItem.model"
-import {
-	CharacterInventoryPositionEnum,
-	ExchangeObjectAddedMessage,
-	ExchangeObjectModifiedMessage,
-	ExchangeObjectMoveMessage,
-	ExchangeObjectRemovedMessage,
-	ExchangeObjectsAddedMessage,
-	ExchangeObjectsModifiedMessage,
-	ExchangeObjectsRemovedMessage,
-	ObjectItem,
-} from "@breakEmu_Protocol/IO"
-import ItemCollection from "./ItemCollections"
-import { randomUUID } from "crypto"
 import Recipe from "@breakEmu_API/model/recipe.model"
+import {
+  CharacterInventoryPositionEnum,
+  ExchangeObjectAddedMessage,
+  ExchangeObjectModifiedMessage,
+  ExchangeObjectRemovedMessage,
+  ExchangeObjectsAddedMessage,
+  ExchangeObjectsModifiedMessage,
+  ExchangeObjectsRemovedMessage,
+  ObjectItem
+} from "@breakEmu_Protocol/IO"
+import CraftExchange from "@breakEmu_World/manager/dialog/job/CraftExchange"
+import ItemCollection from "./ItemCollections"
 
 class JobItemCollection extends ItemCollection<CharacterItem> {
 	private character: Character
@@ -24,11 +22,8 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 		this.character = character
 	}
 
-	public async getItemByGid(gid: number): Promise<CharacterItem | undefined> {
-		return (
-			Array.from(this.items.values()).find((item) => item.gId === gid) ||
-			undefined
-		)
+	public async getItemByGid(gId: number): Promise<CharacterItem | undefined> {
+		return Array.from(this.items.values()).find((item) => item.gId === gId)
 	}
 
 	public async canAddItem(
@@ -55,24 +50,27 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 		}
 	}
 
-	public async moveItem(item: CharacterItem, quantity: number) {
-		let itemRes: CharacterItem | undefined = undefined
+	public async moveItem(itemId: number, quantity: number) {
 		try {
-			if (quantity > 0) {
-				itemRes = this.character.inventory.items.get(item.id)
+			let item: CharacterItem | undefined = undefined
 
-				if (itemRes && (await this.canAddItem(item, quantity))) {
-					await this.addItem(item, quantity)
+			if (quantity > 0) {
+				item = await this.character.inventory.getItem(itemId)
+				if (item) {
+					console.log(
+						`MOVING ITEM from jobItemCollection: ${item.gId} quantity: ${quantity}`
+					)
+					const itemRes = await this.character.inventory.getItemByGid(item.gId)
+
+					if (itemRes != null && (await this.canAddItem(item, quantity))) {
+						// await this.addItem(item, quantity, this.character.id, false)
+					}
 				}
 			} else if (quantity < 0) {
-				itemRes = await this.getItemByGid(item.gId)
-				if (itemRes) {
+				item = this.items.get(itemId)
+				if (item) {
 					await this.removeItem(item, Math.abs(quantity))
-				} else {
-					console.log(`Item not found in player inventory`)
 				}
-			} else {
-				return
 			}
 		} catch (error) {
 			console.log(error)
@@ -81,50 +79,51 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 
 	public async addItem(item: CharacterItem, quantity: number): Promise<void> {
 		try {
-			let sameItem: CharacterItem | undefined = await this.getItemByGid(
-				item.gId
-			)
+			let sameItem: CharacterItem | undefined = this.items.get(item.id)
 
 			if (sameItem) {
 				sameItem.quantity += quantity
-				this.onItemQuantityChanged(sameItem)
-				this.onItemStacked(sameItem)
+				await this.onItemQuantityChanged(sameItem)
+				await this.onItemStacked(sameItem)
 			} else {
-				this.items.set(item.id, item)
-				this.onItemAdded(item)
+				const itemCuted = await this.character.inventory.cutItem(
+					item,
+					quantity,
+					CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
+					false
+				)
+        itemCuted.id = item.id
+				this.items.set(itemCuted.id, itemCuted)
+				await this.onItemAdded(itemCuted)
+				// await this.character.inventory.onItemQuantityChanged(item, false)
 			}
 		} catch (error) {
 			console.log(error)
 		}
 	}
 
-	public async clear(): Promise<void> {
+	public async clear(craftExchange: CraftExchange): Promise<void> {
 		console.log(`CLEARING JOB INVENTORY`)
 		try {
 			const items = Array.from(this.items.values())
 
 			const itemsModified: CharacterItem[] = []
 
-			console.log(`items: ${items.length}`)
-
 			for (const item of items) {
-				console.log(`item: ${item.record.name} - ${item.quantity}`)
 				const getItemFromPlayerInventory = await this.character.inventory.getItemByGid(
 					item.gId
 				)
 				if (getItemFromPlayerInventory) {
 					getItemFromPlayerInventory.quantity += item.quantity
 					itemsModified.push(getItemFromPlayerInventory)
-				} else {
-					console.log(`Item not found in player inventory`)
 				}
 			}
+			this.items.clear()
+			await craftExchange.onJobInventoryCleared()
 
 			await this.character.inventory.onItemsQuantityChanged(itemsModified)
 			await this.character.inventory.onItemsStackeds(itemsModified)
 			await this.onItemsRemoved(itemsModified)
-
-			this.items.clear()
 		} catch (error) {
 			console.log(error)
 		}
@@ -209,9 +208,7 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 	): Promise<void> {
 		const itemsToRemove: CharacterItem[] = []
 		try {
-			const sameItem: CharacterItem | undefined = await this.getItemByGid(
-				item.gId
-			)
+			const sameItem: CharacterItem | undefined = this.items.get(item.id)
 
 			if (sameItem) {
 				if (sameItem.quantity > quantity) {
@@ -264,7 +261,11 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 			const unstackedItems: CharacterItem[] = []
 
 			for (const item of items) {
-				const sameItem = await this.getSameItem(item.gId, item.effects)
+				const sameItem = await this.getSameItem(
+					item.gId,
+					item.effects,
+					item.position
+				)
 
 				if (sameItem) {
 					if (sameItem.quantity > item.quantity) {
@@ -364,7 +365,7 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 	// 	try {
 	// 		const itemUid = await this.container
 	// 			.get(CharacterItemController)
-	// 			.getIntIdFromUuid(item.uId)
+	// 			.getidFromUuid(item.uId)
 	// 		await this.character.client.Send(
 	// 			new ExchangeObjectRemovedMessage(false, itemUid as number)
 	// 		)

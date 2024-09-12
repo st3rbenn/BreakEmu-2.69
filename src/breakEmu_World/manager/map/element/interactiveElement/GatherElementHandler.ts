@@ -9,14 +9,6 @@ class GatherElementHandler implements IInteractiveElementHandler {
 
 	async handle(character: Character, element: MapElement): Promise<void> {
 		try {
-			await this.gatherElement(element, character)
-		} catch (error) {
-			GatherElementHandler.logger.error(error as string)
-		}
-	}
-
-	private async gatherElement(element: MapElement, character: Character) {
-		try {
 			if (element instanceof MapStatedElement) {
 				await element.use(character)
 			}

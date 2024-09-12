@@ -9,7 +9,6 @@ import CharacterItem from "@breakEmu_API/model/characterItem.model"
 
 abstract class AbstractItem {
 	id: number
-  intId: number
 	gId: number
 	position: number
 	quantity: number

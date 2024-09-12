@@ -16,6 +16,7 @@ import CharacterShortcut from "@breakEmu_World/manager/shortcut/character/Charac
 import Database from "../Database"
 import Character from "../model/character.model"
 import Container from "@breakEmu_Core/container/Container"
+import WorldClient from "@breakEmu_World/WorldClient"
 
 class CharacterController {
 	public _logger: Logger = new Logger("CharacterController")
@@ -106,9 +107,9 @@ class CharacterController {
 
 	public async createCharacter(
 		message: CharacterCreationRequestMessage,
-		account: Account
+		client: WorldClient
 	): Promise<Character> {
-		const characters = account.characters
+		const characters = client.account.characters
 
 		if (characters && characters.size >= this.MaxCharacterSlots) {
 			await this._logger.writeAsync(
@@ -164,7 +165,7 @@ class CharacterController {
 		try {
 			const newCharacter = await this.database.prisma.character.create({
 				data: {
-					userId: account.id as number,
+					userId: client.account.id as number,
 					name: message.name as string,
 					breed_id: message.breed as number,
 					colors: this.serializeColors(message.colors as number[]),
@@ -186,7 +187,7 @@ class CharacterController {
 
 			const character = await Character.create(
 				newCharacter.id,
-				account.id,
+				client.account.id,
 				newCharacter.breed_id,
 				newCharacter.sex,
 				newCharacter.cosmeticId,
@@ -201,6 +202,7 @@ class CharacterController {
 				stats
 			)
 
+      character.client = client
 			return character
 		} catch (error) {
 			this._logger.write(

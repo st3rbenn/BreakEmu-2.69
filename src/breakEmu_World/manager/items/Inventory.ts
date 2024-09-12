@@ -257,7 +257,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 			await item.save()
 			await this.onObjectMoved(item, position)
-			await this.refreshWeight()
+			await this.refresh()
 			await this.container
 				.get(CharacterController)
 				.updateCharacter(this.character)
@@ -275,51 +275,49 @@ class Inventory extends ItemCollection<CharacterItem> {
 		position: CharacterInventoryPositionEnum,
 		quantity: number = 1
 	) {
+		console.log(`equipItem: ${item.record.name} ${position} ${quantity}`)
 		try {
 			const alreadyEquiped = this.getEquipedItem(position)
 			const lastPosition = item.positionEnum
 
-			console.log(`equipItem: ${item.gId} ${position} ${quantity}`)
-
+			// Si un objet est déjà équipé à cette position, on le déséquipe d'abord
 			if (alreadyEquiped != null) {
-				console.log(`item ${item.record.name} already equiped`)
-				await this.unequipItem(alreadyEquiped, quantity)
+				await this.unequipItem(alreadyEquiped, alreadyEquiped.quantity)
 				await this.onObjectMoved(
 					alreadyEquiped,
 					CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
 				)
 			}
 
-			if (item.quantity == 1) {
+			if (item.quantity == quantity) {
 				item.positionEnum = position
 			} else {
-				const newItem = await this.container
-					.get(CharacterItemController)
-					.cutItem(item, quantity, position)
-
-				if (newItem != null) {
-					newItem.positionEnum = position
-					await this.addItem(newItem, quantity, item.characterId)
-					await this.updateItemQuantity(item)
-				}
+				await this.cutItem(item, quantity, position)
+				await this.updateItemQuantity(item)
 			}
 
-			await item.save()
+			await this.updateItem(item)
 			await this.onItemMoved(item, lastPosition)
-
-			// let equipedItems = await this.getEquipedItems()
-			// for (const equipedItem of equipedItems) {
-			// 	if (equipedItem.gId != item.gId) {
-			// 		await this.setItemPosition(
-			// 			equipedItem,
-			// 			CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
-			// 			equipedItem.quantity
-			// 		)
-			// 	}
-			// }
 		} catch (error) {
 			console.log(error as any)
 		}
+	}
+
+	public async cutItem(
+		item: CharacterItem,
+		newQuantity: number,
+		newPos: CharacterInventoryPositionEnum,
+    addItem: boolean = true
+	): Promise<CharacterItem> {
+		const newItem = item.clone()
+		item.quantity -= newQuantity
+		newItem.quantity = newQuantity
+		newItem.position = newPos
+
+		if(addItem) {
+      await this.addItem(newItem, newQuantity, this.character.id)
+    }
+		return newItem
 	}
 
 	public async getEquipedItems(): Promise<CharacterItem[]> {
@@ -340,11 +338,21 @@ class Inventory extends ItemCollection<CharacterItem> {
 				item.positionEnum !=
 				CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
 			) {
-				const sameItem = await this.getSameItem(item.gId, item.effects)
+				const sameItem = await this.getSameItem(
+					item.gId,
+					item.effects,
+					CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
+				)
 				const lastPosition = item.positionEnum
 
 				if (sameItem != null) {
-					if (item.gId != sameItem.gId) {
+					console.log(
+						`sameItem found for unequipItem: ${sameItem.quantity} > ${quantity}`
+					)
+					if (item.id != sameItem.id) {
+						console.log(
+							`sameItem found for unequipItem: ${item.id} != ${sameItem.id}`
+						)
 						item.positionEnum =
 							CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED
 						sameItem.quantity += quantity
@@ -641,10 +649,11 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 			await this.refreshWeight()
 
-
 			for (const item of items) {
-        await this.container.get(CharacterItemController).deleteItem(item)
-        await this.character.client?.Send(new ObjectMovementMessage(item.id, -1))
+				await this.container.get(CharacterItemController).deleteItem(item)
+				await this.character.client?.Send(
+					new ObjectMovementMessage(item.id, -1)
+				)
 			}
 
 			await this.refreshWeight()
@@ -681,9 +690,11 @@ class Inventory extends ItemCollection<CharacterItem> {
 		}
 	}
 
-	public async onItemQuantityChanged(item: CharacterItem): Promise<void> {
+	public async onItemQuantityChanged(item: CharacterItem, save: boolean = true): Promise<void> {
 		try {
-			await item.save()
+			if(save) {
+        await item.save()
+      }
 			await this.updateItemQuantity(item)
 			await this.refreshWeight()
 		} catch (error) {

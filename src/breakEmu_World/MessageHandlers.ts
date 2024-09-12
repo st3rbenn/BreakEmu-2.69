@@ -78,7 +78,7 @@ import Container from "@breakEmu_Core/container/Container"
 
 class MessageHandlers {
 	private logger = new Logger("MessageHandlers")
-  private container: Container = Container.getInstance()
+	private container: Container = Container.getInstance()
 
 	constructor() {
 		this.initializeMessageHandlers()
@@ -88,7 +88,7 @@ class MessageHandlers {
 		[id: number]: (client: WorldClient, message: DofusMessage) => Promise<void>
 	}
 
-	 initializeMessageHandlers() {
+	initializeMessageHandlers() {
 		this.messageHandlers = {
 			[AuthenticationTicketMessage.id]: AuthentificationHandler.handleAuthenticationTicketMessage.bind(
 				AuthentificationHandler
@@ -236,12 +236,13 @@ class MessageHandlers {
 				),
 			[ObjectSetPositionMessage.id]: async (
 				client: WorldClient,
-				message: DofusMessage
-			) =>
+				message: ObjectSetPositionMessage
+			) => {
 				await InventoryHandler.handleObjectSetPositionMessage(
 					client,
 					message as ObjectSetPositionMessage
-				),
+				)
+			},
 			[StatsUpgradeRequestMessage.id]: async (
 				client: WorldClient,
 				message: DofusMessage

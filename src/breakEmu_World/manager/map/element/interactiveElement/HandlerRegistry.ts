@@ -11,6 +11,11 @@ class HandlerRegistry {
 		Record<InteractiveTypeEnum, IInteractiveElementHandler>
 	> = {}
 
+	gatherHandler = new GatherElementHandler()
+	zaapHandler = new ZaapHandler()
+	bankHandler = new BankHandler()
+	craftHandler = new CraftHandler()
+
 	private constructor() {
 		this.registerHandlers()
 	}
@@ -23,37 +28,39 @@ class HandlerRegistry {
 	}
 
 	private registerHandlers() {
-		const gatherHandler = new GatherElementHandler()
-		const zaapHandler = new ZaapHandler()
-		const bankHandler = new BankHandler()
-		const craftHandler = new CraftHandler()
+		this.handlers[InteractiveTypeEnum.TYPE_WELL] = this.gatherHandler
+		this.handlers[InteractiveTypeEnum.TYPE_WHEAT] = this.gatherHandler
+		this.handlers[InteractiveTypeEnum.TYPE_NETTLE] = this.gatherHandler
+		this.handlers[InteractiveTypeEnum.TYPE_GUDGEON] = this.gatherHandler
+		this.handlers[InteractiveTypeEnum.TYPE_ASH] = this.gatherHandler
+		this.handlers[InteractiveTypeEnum.TYPE_IRON] = this.gatherHandler
+		this.handlers[InteractiveTypeEnum.TYPE_GRAWN] = this.gatherHandler
 
-		this.handlers[InteractiveTypeEnum.TYPE_WHEAT] = gatherHandler
-		this.handlers[InteractiveTypeEnum.TYPE_NETTLE] = gatherHandler
-		this.handlers[InteractiveTypeEnum.TYPE_GUDGEON] = gatherHandler
-		this.handlers[InteractiveTypeEnum.TYPE_ASH] = gatherHandler
-		this.handlers[InteractiveTypeEnum.TYPE_IRON] = gatherHandler
-		this.handlers[InteractiveTypeEnum.TYPE_GRAWN] = gatherHandler
-
-		this.handlers[InteractiveTypeEnum.TYPE_ZAAP] = zaapHandler
-		this.handlers[InteractiveTypeEnum.TYPE_ZAAPI] = zaapHandler
-		this.handlers[InteractiveTypeEnum.TYPE_BANK] = bankHandler
+		this.handlers[InteractiveTypeEnum.TYPE_ZAAP] = this.zaapHandler
+		this.handlers[InteractiveTypeEnum.TYPE_ZAAPI] = this.zaapHandler
+		this.handlers[InteractiveTypeEnum.TYPE_BANK] = this.bankHandler
 
 		//job craft handler
-		this.handlers[InteractiveTypeEnum.TYPE_CRUSHER] = craftHandler
-		this.handlers[InteractiveTypeEnum.TYPE_OVEN] = craftHandler
-		this.handlers[InteractiveTypeEnum.TYPE_CRAFTING_TABLE] = craftHandler
-		this.handlers[InteractiveTypeEnum.TYPE_WORKSHOP] = craftHandler
-		this.handlers[InteractiveTypeEnum.TYPE_ANVIL] = craftHandler
-		this.handlers[InteractiveTypeEnum.TYPE_GRIND] = craftHandler
-		this.handlers[InteractiveTypeEnum.TYPE_MOULD] = craftHandler
-		this.handlers[InteractiveTypeEnum.TYPE_BENCH] = craftHandler
-		this.handlers[InteractiveTypeEnum.TYPE_SAW] = craftHandler
-		this.handlers[InteractiveTypeEnum.TYPE_SEWING_MACHINE] = craftHandler
-		this.handlers[InteractiveTypeEnum.TYPE_HANDYMEN_S_WORKSHOP] = craftHandler
-		this.handlers[InteractiveTypeEnum.TYPE_HUNTERS__WORKSHOP] = craftHandler
-		this.handlers[InteractiveTypeEnum.TYPE_BREWING_STAND] = craftHandler
-    this.handlers[InteractiveTypeEnum.TYPE_JEWELLERS__WORKSHOP] = craftHandler
+		this.handlers[InteractiveTypeEnum.TYPE_CRUSHER] = this.craftHandler
+		this.handlers[InteractiveTypeEnum.TYPE_OVEN] = this.craftHandler
+		this.handlers[InteractiveTypeEnum.TYPE_CRAFTING_TABLE] = this.craftHandler
+		this.handlers[InteractiveTypeEnum.TYPE_WORKSHOP] = this.craftHandler
+		this.handlers[InteractiveTypeEnum.TYPE_ANVIL] = this.craftHandler
+		this.handlers[InteractiveTypeEnum.TYPE_GRIND] = this.craftHandler
+		this.handlers[InteractiveTypeEnum.TYPE_MOULD] = this.craftHandler
+		this.handlers[InteractiveTypeEnum.TYPE_BENCH] = this.craftHandler
+		this.handlers[InteractiveTypeEnum.TYPE_SAW] = this.craftHandler
+		this.handlers[InteractiveTypeEnum.TYPE_SEWING_MACHINE] = this.craftHandler
+		this.handlers[
+			InteractiveTypeEnum.TYPE_HANDYMEN_S_WORKSHOP
+		] = this.craftHandler
+		this.handlers[
+			InteractiveTypeEnum.TYPE_HUNTERS__WORKSHOP
+		] = this.craftHandler
+		this.handlers[InteractiveTypeEnum.TYPE_BREWING_STAND] = this.craftHandler
+		this.handlers[
+			InteractiveTypeEnum.TYPE_JEWELLERS__WORKSHOP
+		] = this.craftHandler
 	}
 
 	public getHandler(

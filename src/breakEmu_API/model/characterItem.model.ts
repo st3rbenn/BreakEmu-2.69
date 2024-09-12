@@ -56,7 +56,7 @@ class CharacterItem extends AbstractItem {
 	}
 
   public getObjectQuantity(): ObjectItemQuantity {
-    return new ObjectItemQuantity(this.gId, this.quantity)
+    return new ObjectItemQuantity(this.id, this.quantity)
   }
 
 	public getObjectItemQuantity(): ObjectItemQuantity {
@@ -83,18 +83,16 @@ class CharacterItem extends AbstractItem {
     return this.record.itemSetid !== 0
   }
 
-  public clone(): CharacterItem {
+  public clone(quantity?: number): CharacterItem {
     const clone = new CharacterItem(
       this.characterId,
       this.gId,
-      this.quantity,
+      quantity || this.quantity,
       this.position,
       this.look,
       this.effects,
       this.appearanceId
     )
-
-    clone.id = this.id
     return clone
   }
 

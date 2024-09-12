@@ -219,7 +219,7 @@ class CharacterHandler {
 		try {
 			const character = await this.container.get(CharacterController).createCharacter(
 				message,
-				client.account as Account
+				client
 			)
 
 			await client.Send(new CharacterCreationResultMessage(0, 0))
