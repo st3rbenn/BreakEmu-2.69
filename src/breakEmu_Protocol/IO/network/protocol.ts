@@ -50825,7 +50825,7 @@ export interface RawStorageObjectUpdateMessage {
 }
 
 export class StorageObjectUpdateMessage extends DofusMessage {
-	public static id: number = 7486
+	public static id: number = 1698
 
 	public object_: ObjectItem | undefined
 
@@ -56059,7 +56059,7 @@ export interface RawStorageObjectRemoveMessage {
 }
 
 export class StorageObjectRemoveMessage extends DofusMessage {
-	public static id: number = 7419
+	public static id: number = 7366
 
 	public objectUID: number | undefined = 0
 
@@ -74376,7 +74376,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	1527: GuildCreationStartedMessage,
 	907: MimicryObjectPreviewMessage,
 	7372: NotificationListMessage,
-	7486: StorageObjectUpdateMessage,
+	1698: StorageObjectUpdateMessage,
 	6801: CharactersListErrorMessage,
 	9887: JobCrafterDirectoryListMessage,
 	9636: EditHavenBagFinishedMessage,
@@ -74489,7 +74489,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	5749: TaxCollectorAttackedMessage,
 	666: ServerSettingsMessage,
 	1543: AcquaintanceAddedMessage,
-	7419: StorageObjectRemoveMessage,
+	7366: StorageObjectRemoveMessage,
 	3134: FollowedQuestsMessage,
 	3329: ServerSessionConstantsMessage,
 	5177: DungeonPartyFinderAvailableDungeonsMessage,

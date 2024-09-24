@@ -2,10 +2,12 @@ import Achievement from "@breakEmu_API/model/achievement.model"
 import AchievementObjective from "@breakEmu_API/model/achievementObjective.model"
 import Character from "@breakEmu_API/model/character.model"
 import Job from "@breakEmu_API/model/job.model"
+import Logger from "@breakEmu_Core/Logger"
 import AchievementHandler from "@breakEmu_World/handlers/achievement/AchievementHandler"
 import AchievementObjectiveHandler from "./objective/AchievementObjectiveHandler"
 
 class AchievementManager {
+	logger: Logger = new Logger("AchievementManager")
 	static achievements: Map<number, Achievement> = new Map<number, Achievement>()
 	static achievementObjectives: Map<number, AchievementObjective> = new Map<
 		number,
@@ -173,6 +175,10 @@ class AchievementManager {
 			experience = 7200
 		}
 
+		this.logger.write(
+			`Rewarding achievement ${achievement.id} to ${character.name} with ${experience} experience and ${kamas} kamas`
+		)
+
 		await character.addExperience(experience)
 
 		if (kamas > 0) {
@@ -208,55 +214,43 @@ class AchievementManager {
 		await character.refreshStats()
 	}
 
-	private calculateWonExperience(
+	public calculateWonExperience(
 		character: Character,
 		achievement: Achievement
 	): number {
-		const achievementLevel = achievement.level
-		if (character.level > achievementLevel) {
-			const adjustedRewardLevel = Math.min(
-				character.level,
-				achievementLevel * AchievementManager.LEVEL_ADJUSTMENT_FACTOR
-			)
-			const optimalLevelExperience = this.getFixedExperienceReward(
-				achievementLevel,
+		const level = achievement.level
+		if (character.level > level) {
+			const rewardLevel = Math.min(character.level, level * 0.7)
+			const fixeOptimalLevelExperienceReward = this.getFixExperienceReward(
+				Math.floor(level),
 				1
 			)
-			const adjustedLevelExperience = this.getFixedExperienceReward(
-				adjustedRewardLevel,
+			const fixeLevelExperienceReward = this.getFixExperienceReward(
+				Math.floor(rewardLevel),
 				1
 			)
-
-			// Calculate reduced rewards
-			const reducedOptimalExperience =
-				(1 - AchievementManager.LEVEL_ADJUSTMENT_FACTOR) *
-				optimalLevelExperience
-			const reducedAdjustedExperience =
-				AchievementManager.LEVEL_ADJUSTMENT_FACTOR * adjustedLevelExperience
-
-			const totalExperience = Math.floor(
-				reducedOptimalExperience + reducedAdjustedExperience
+			const reducedOptimalExperienceReward =
+				(1 - 0.7) * fixeOptimalLevelExperienceReward
+			const reducedExperienceReward = 0.7 * fixeLevelExperienceReward
+			const sumExperienceRewards = Math.floor(
+				reducedOptimalExperienceReward + reducedExperienceReward
 			)
-			return Math.floor(
-				totalExperience * AchievementManager.EXPERIENCE_MULTIPLIER
-			)
+			return Math.floor(sumExperienceRewards * 2.25)
 		} else {
-			return Math.floor(
-				this.getFixedExperienceReward(achievementLevel, 1) *
-					AchievementManager.EXPERIENCE_MULTIPLIER
-			)
+			return Math.floor(this.getFixExperienceReward(character.level, 1))
 		}
 	}
 
-	private getFixedExperienceReward(level: number, duration: number): number {
-		const baseLevelFactor = 100 + 2 * level
-		const levelPow = Math.pow(baseLevelFactor, 2)
-		const result = ((level * levelPow) / 20) * duration
+	private getFixExperienceReward(level: number, duration: number): number {
+		const levelPow = Math.pow(100 + 2 * level, 2)
+		const result = ((level * levelPow) / 20) * duration * 1
 		return result
 	}
 
-	public getKamasReward(achievement: Achievement) {
-		return Math.pow(achievement.level, 2) + 20 * achievement.level - 20
+	public getKamasReward(achievement: Achievement): number {
+		return Math.floor(
+			Math.pow(achievement.level, 2) + 20 * achievement.level - 20
+		)
 	}
 }
 

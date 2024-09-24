@@ -317,6 +317,11 @@ class Inventory extends ItemCollection<CharacterItem> {
 		if(addItem) {
       await this.addItem(newItem, newQuantity, this.character.id)
     }
+
+    if(item.quantity <= 0) {
+      await this.removeItem(item, item.quantity)
+    }
+
 		return newItem
 	}
 

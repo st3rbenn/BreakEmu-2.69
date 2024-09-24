@@ -11,6 +11,7 @@ import CharacterItemController from "../controller/characterItem.controller"
 import Item from "./item.model"
 import Container from "@breakEmu_Core/container/Container"
 import { randomUUID } from "crypto"
+import BankItem from "./BankItem.model"
 
 class CharacterItem extends AbstractItem {
 	characterId: number
@@ -23,9 +24,10 @@ class CharacterItem extends AbstractItem {
 		position: number,
 		look: string,
 		effects: EffectCollection,
-		appearanceId: number
+		appearanceId: number,
+    id?: number
 	) {
-		super(gId, position, quantity, effects, appearanceId, look)
+		super(gId, position, quantity, effects, appearanceId, look, id)
 		this.characterId = characterId
 	}
 
@@ -36,7 +38,7 @@ class CharacterItem extends AbstractItem {
 		)
 	}
 
-	public async getObjectItemNotInContainer(): Promise<ObjectItemNotInContainer> {
+	public getObjectItemNotInContainer(): ObjectItemNotInContainer {
 		return new ObjectItemNotInContainer(
 			this.gId,
 			this.effects.getObjectEffects(),
@@ -45,7 +47,7 @@ class CharacterItem extends AbstractItem {
 		)
 	}
 
-	public override async getObjectItem(): Promise<ObjectItem> {
+	public getObjectItem(): ObjectItem {
 		return new ObjectItem(
 			this.position,
 			this.gId,
@@ -129,6 +131,19 @@ class CharacterItem extends AbstractItem {
     } else {
       return new EffectCollection()
     }
+  }
+
+  public toBankItem(): BankItem {
+    return new BankItem(
+      this.id,
+      this.gId,
+      this.position,
+      this.quantity,
+      this.effects,
+      this.appearanceId,
+      this.look,
+      this.characterId
+    )
   }
 }
 

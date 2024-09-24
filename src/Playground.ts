@@ -1,25 +1,15 @@
-import { genSaltSync, hashSync } from "bcrypt"
-import Logger from "./breakEmu_Core/Logger"
-import { Socket } from "net"
-import ConnectionQueue from "./breakEmu_Auth/ConnectionQueue"
-import Database from "./breakEmu_API/Database"
 import * as fs from "fs"
+import Database from "./breakEmu_API/Database"
 import ansiColorCodes from "./breakEmu_Core/Colors"
-import * as path from "node:path"
-import GameMap from "./breakEmu_API/model/map.model"
-import Cell from "./breakEmu_World/manager/map/cell/Cell"
-import InteractiveElementModel from "./breakEmu_API/model/InteractiveElement.model"
-import InteractiveSkill from "./breakEmu_API/model/InteractiveSkill.model"
-import CriterionManager from "./breakEmu_World/manager/achievement/objective/objectiveCriterion/CriterionManager"
-import AchievementObjective from "./breakEmu_API/model/achievementObjective.model"
-import AchievementObjectiveHandler from "./breakEmu_World/manager/achievement/objective/AchievementObjectiveHandler"
-import Character from "./breakEmu_API/model/character.model"
-import CharacterShortcut from "./breakEmu_World/manager/shortcut/character/CharacterShortcut"
-import Job from "./breakEmu_API/model/job.model"
-import Finishmoves from "./breakEmu_API/model/finishmoves.model"
-import EntityStats from "./breakEmu_World/manager/entities/stats/entityStats"
-import ContextEntityLook from "./breakEmu_World/manager/entities/look/ContextEntityLook"
-import AchievementManager from "./breakEmu_World/manager/achievement/AchievementManager"
+import Logger from "./breakEmu_Core/Logger"
+
+import {
+	BinaryBigEndianReader,
+	BinaryBigEndianWriter,
+	DofusMessage,
+	DofusNetworkMessage,
+	messages,
+} from "./breakEmu_Protocol/IO"
 
 interface BreedRoles {
 	breedId: number
@@ -399,7 +389,6 @@ interface Recipe {
 
 class Playground {
 	public logger: Logger = new Logger("Playground")
-	public database: Database = Database.getInstance()
 
 	messageId: number = 0
 
@@ -434,33 +423,78 @@ class Playground {
 		 */
 
 		try {
-			const recipesJson: string = "recipes"
-			const jsonFile = this.readJsonFile(recipesJson)
-			const recipesData = JSON.parse(jsonFile) as Recipe[]
+			// const recipesJson: string = "recipes"
+			// const jsonFile = this.readJsonFile(recipesJson)
+			// const recipesData = JSON.parse(jsonFile) as Recipe[]
 
-			for (const recipe of recipesData) {
-				await this?.database?.prisma?.recipe?.create({
-					data: {
-						resultId: recipe.resultId,
-						resultName: recipe.resultName,
-						resultType: recipe.resultType,
-						resultLevel: recipe.resultLevel,
-						ingredients: recipe.ingredients,
-						quantities: recipe.quantities,
-						jobId: recipe.jobId,
-						skillId: recipe.skillId,
-					},
-				})
+			// for (const recipe of recipesData) {
+			// 	await this?.database?.prisma?.recipe?.create({
+			// 		data: {
+			// 			resultId: recipe.resultId,
+			// 			resultName: recipe.resultName,
+			// 			resultType: recipe.resultType,
+			// 			resultLevel: recipe.resultLevel,
+			// 			ingredients: recipe.ingredients,
+			// 			quantities: recipe.quantities,
+			// 			jobId: recipe.jobId,
+			// 			skillId: recipe.skillId,
+			// 		},
+			// 	})
 
-				this.logger.write(
-					`Recipe ${recipe.resultName} added`,
-					ansiColorCodes.bgGreen
+			// 	this.logger.write(
+			// 		`Recipe ${recipe.resultName} added`,
+			// 		ansiColorCodes.bgGreen
+			// 	)
+			// }
+
+			const dataHex = "4c350101"
+
+			const buffer = Buffer.from(dataHex, "hex")
+
+			const res = this.deserialize(buffer)
+
+      if (res) {
+        console.log(res)
+      }
+
+      this.logger.write("finish ✨")
+		} catch (error) {
+			this.logger.write(error + "TRACE : " + error.stack, ansiColorCodes.bgRed)
+		}
+	}
+
+	public deserialize(data: Buffer): DofusMessage | null {
+		let messageId // Déclarer messageId en dehors du bloc try
+
+		try {
+			const reader = new BinaryBigEndianReader({
+				maxBufferLength: data.length,
+			}).writeBuffer(data)
+
+			const header = DofusNetworkMessage.readHeader(reader)
+			messageId = header.messageId // Affecter la valeur à messageId
+			const instanceId = header.instanceId
+			const payloadSize = header.payloadSize
+
+			if (!(messageId in messages)) {
+				this.logger.writeAsync(
+					`Undefined message (id: ${messageId})`,
+					ansiColorCodes.red
 				)
 			}
 
-			this.logger.write("finish ✨")
+			const message = new messages[messageId]()
+			message.deserialize(reader)
+
+			return message
 		} catch (error) {
-			this.logger.write(error + "TRACE : " + error.stack, ansiColorCodes.bgRed)
+			// Utiliser messageId ici
+			this.logger.writeAsync(
+				`Error while deserializing message with ID ${messageId}: ${error}`,
+				ansiColorCodes.red
+			)
+
+			return null
 		}
 	}
 
@@ -468,15 +502,15 @@ class Playground {
 	// 	return map.values().next().value
 	// }
 
-	async sendDataWithVariableDelay<D>(
-		data: D[],
-		startDelay: number
-	): Promise<void> {
-		for (let i = 0; i < data.length; i++) {
-			await new Promise((resolve) => setTimeout(resolve, startDelay))
-			await ConnectionQueue.getInstance().enqueue(data[i] as Socket)
-		}
-	}
+	// async sendDataWithVariableDelay<D>(
+	// 	data: D[],
+	// 	startDelay: number
+	// ): Promise<void> {
+	// 	for (let i = 0; i < data.length; i++) {
+	// 		await new Promise((resolve) => setTimeout(resolve, startDelay))
+	// 		await ConnectionQueue.getInstance().enqueue(data[i] as Socket)
+	// 	}
+	// }
 
 	readJsonFile(fileName: string): string {
 		return fs.readFileSync(`./src/breakEmu_API/data/${fileName}.json`, "utf-8")

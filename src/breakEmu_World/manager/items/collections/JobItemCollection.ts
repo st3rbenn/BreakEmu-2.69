@@ -63,7 +63,7 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 					const itemRes = await this.character.inventory.getItemByGid(item.gId)
 
 					if (itemRes != null && (await this.canAddItem(item, quantity))) {
-						// await this.addItem(item, quantity, this.character.id, false)
+						await this.addItem(item, quantity)
 					}
 				}
 			} else if (quantity < 0) {
@@ -95,7 +95,6 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
         itemCuted.id = item.id
 				this.items.set(itemCuted.id, itemCuted)
 				await this.onItemAdded(itemCuted)
-				// await this.character.inventory.onItemQuantityChanged(item, false)
 			}
 		} catch (error) {
 			console.log(error)
@@ -131,7 +130,7 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 
 	public async onItemAdded(item: CharacterItem): Promise<void> {
 		try {
-			const itemObj = await item.getObjectItem()
+			const itemObj = item.getObjectItem()
 			await this.character.client.Send(
 				new ExchangeObjectAddedMessage(false, itemObj)
 			)
@@ -152,7 +151,7 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 
 	public async onItemQuantityChanged(item: CharacterItem): Promise<void> {
 		try {
-			const itemObj = await item.getObjectItem()
+			const itemObj = item.getObjectItem()
 			await this.character.client.Send(
 				new ExchangeObjectModifiedMessage(false, itemObj)
 			)
@@ -182,7 +181,7 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 
 	public async onItemStacked(item: CharacterItem): Promise<void> {
 		try {
-			const itemObj = await item.getObjectItem()
+			const itemObj = item.getObjectItem()
 			await this.character.client.Send(
 				new ExchangeObjectModifiedMessage(true, itemObj)
 			)
@@ -193,7 +192,7 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 
 	public async onItemUnstacked(item: CharacterItem): Promise<void> {
 		try {
-			const itemObj = await item.getObjectItem()
+			const itemObj = item.getObjectItem()
 			await this.character.client.Send(
 				new ExchangeObjectModifiedMessage(true, itemObj)
 			)
@@ -212,15 +211,9 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 
 			if (sameItem) {
 				if (sameItem.quantity > quantity) {
-					console.log(
-						`sameItem found for removeItem from jobItemCollection: ${sameItem.quantity} > ${quantity}`
-					)
 					sameItem.quantity -= quantity
 					this.onItemQuantityChanged(sameItem)
 				} else if (sameItem.quantity === quantity) {
-					console.log(
-						`sameItem found for removeItem from jobItemCollection: ${sameItem.quantity} === ${quantity}`
-					)
 					this.items.delete(item.id)
 
 					// add item to player inventory
@@ -233,16 +226,8 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 						getItemFromPlayerInventory.quantity = newQuantity
 
 						itemsToRemove.push(getItemFromPlayerInventory)
-					} else {
-						console.log(`Item not found in player inventory`)
 					}
-				} else {
-					console.warn(
-						`Item quantity incorrect: ${sameItem.quantity} < ${quantity}`
-					)
 				}
-			} else {
-				console.warn(`Item not found in inventory: ${item.id}`)
 			}
 
 			if (itemsToRemove.length > 1) {
@@ -346,48 +331,6 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 	public onItemsStackeds(items: CharacterItem[]): Promise<void> {
 		throw new Error("Method not implemented.")
 	}
-
-	// public async onItemMoved(
-	// 	item: CharacterItem,
-	// 	quantity: number
-	// ): Promise<void> {
-	// 	console.log(`onItemMoved job: ${item.gId} quantity: ${quantity} `)
-	// 	try {
-	// 		await this.character.client.Send(
-	// 			new ExchangeObjectMoveMessage(item.gId, quantity)
-	// 		)
-	// 	} catch (error) {
-	// 		console.log(error)
-	// 	}
-	// }
-
-	// public async onItemRemoved(item: CharacterItem): Promise<void> {
-	// 	try {
-	// 		const itemUid = await this.container
-	// 			.get(CharacterItemController)
-	// 			.getidFromUuid(item.uId)
-	// 		await this.character.client.Send(
-	// 			new ExchangeObjectRemovedMessage(false, itemUid as number)
-	// 		)
-	// 	} catch (error) {
-	// 		console.log(error)
-	// 	}
-	// }
-
-	// public async onItemsRemoved(items: CharacterItem[]): Promise<void> {
-	// 	try {
-	//     console.log(`REMOVING ITEMS onItemsRemoved from jobItemCollection: ${items.length}`)
-	// 		const itemsObj = items.map((item) => item.record.id)
-
-	// 		await this.character.client.Send(
-	// 			new ExchangeObjectsRemovedMessage(false, itemsObj)
-	// 		)
-
-	// 		this.items.clear()
-	// 	} catch (error) {
-	// 		console.log(error)
-	// 	}
-	// }
 }
 
 export default JobItemCollection

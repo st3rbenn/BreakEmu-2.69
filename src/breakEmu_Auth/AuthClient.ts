@@ -37,7 +37,7 @@ class AuthClient extends ServerClient {
 
 	public _RSAKeyHandler: RSAKeyHandler = RSAKeyHandler.getInstance()
   public ipAddress: string = ""
-	private _account: Account | null = null
+	public account: Account
 
 	public constructor(socket: Socket) {
 		super(socket)
@@ -135,14 +135,6 @@ class AuthClient extends ServerClient {
 
 	public async disconnect() {
 		this.Socket.end()
-	}
-
-	public get account(): Account | null {
-		return this._account
-	}
-
-	public set account(account: Account | null) {
-		this._account = account
 	}
 }
 

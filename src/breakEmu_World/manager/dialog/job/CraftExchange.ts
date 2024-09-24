@@ -1,4 +1,3 @@
-import CharacterItemController from "@breakEmu_API/controller/characterItem.controller"
 import Character from "@breakEmu_API/model/character.model"
 import CharacterItem from "@breakEmu_API/model/characterItem.model"
 import Item from "@breakEmu_API/model/item.model"
@@ -6,10 +5,8 @@ import Recipe from "@breakEmu_API/model/recipe.model"
 import Skill from "@breakEmu_API/model/skill.model"
 import Logger from "@breakEmu_Core/Logger"
 import {
-	CharacterInventoryPositionEnum,
 	CraftResultEnum,
 	DialogTypeEnum,
-	ExchangeCraftCountModifiedMessage,
 	ExchangeCraftResultMessage,
 	ExchangeCraftResultWithObjectDescMessage,
 	ExchangeStartOkCraftWithInformationMessage,
@@ -36,7 +33,7 @@ class CraftExchange extends JobExchange {
 				new ExchangeStartOkCraftWithInformationMessage(this.skill.id)
 			)
 		} catch (error) {
-			this.logger.error(error as any)
+			this.logger.error("Error while opening craft exchange: ", error as any)
 		}
 	}
 
@@ -52,7 +49,7 @@ class CraftExchange extends JobExchange {
 				await this.character.inventory.refresh()
 			}
 		} catch (error) {
-			this.logger.error(error as any)
+			this.logger.error("Error while closing craft exchange: ", error as any)
 		}
 	}
 
@@ -108,10 +105,7 @@ class CraftExchange extends JobExchange {
 					)
 
 					if (characterItem) {
-						await this.jobInventory.addItem(
-							characterItem,
-							ingredient.quantity
-						)
+						await this.jobInventory.addItem(characterItem, ingredient.quantity)
 					}
 				}
 			} catch (error) {

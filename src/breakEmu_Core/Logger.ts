@@ -6,14 +6,14 @@ class Logger {
 	private totalParameters: number = 0
 	private loadedParameters: number = 0
 
-  private static instance: Logger
+	private static instance: Logger
 
-  public static getInstance(name: string): Logger {
-    if (!this.instance) {
-      this.instance = new Logger(name)
-    }
-    return this.instance
-  }
+	public static getInstance(name: string): Logger {
+		if (!this.instance) {
+			this.instance = new Logger(name)
+		}
+		return this.instance
+	}
 
 	constructor(msgPrefix: string = "breakEmu") {
 		this.logger = PinoLogger.default({
@@ -34,8 +34,8 @@ class Logger {
 		return `${color ? color : ansiColorCodes.bright}${msg}\x1b[0m`
 	}
 
-	public error(msg: string): void {
-		this.logger.error(msg)
+	public error(msg: string, error: Error): void {
+		this.logger.error(`${msg} \n [Stack]:  ${error.stack}`)
 	}
 
 	public warn(msg: string): void {
@@ -50,9 +50,9 @@ class Logger {
 		}
 	}
 
-  public info(msg: string): void {
-    this.logger.info(this.Colorize(msg, ansiColorCodes.orange))
-  }
+	public info(msg: string): void {
+		this.logger.info(this.Colorize(msg, ansiColorCodes.orange))
+	}
 
 	private async supressLoggerLevel(msg: string, color?: string): Promise<void> {
 		this.write(`\r\x1b[K${msg}`, color) // Assuming this.write is your existing synchronous method

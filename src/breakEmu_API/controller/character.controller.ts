@@ -20,7 +20,7 @@ import WorldClient from "@breakEmu_World/WorldClient"
 
 class CharacterController {
 	public _logger: Logger = new Logger("CharacterController")
-  private container: Container = Container.getInstance()
+	private container: Container = Container.getInstance()
 	public database: Database = this.container.get(Database)
 
 	private NAME_REGEX: RegExp = /^[A-Z][a-z]{2,9}(?:-[A-Za-z][a-z]{2,9}|[a-z]{1,10})$/
@@ -105,6 +105,25 @@ class CharacterController {
 		}
 	}
 
+	public async countCharacterByAccountId(accountId: number): Promise<number> {
+		try {
+			const count = await this.database.prisma.character.count({
+				where: {
+					userId: accountId,
+				},
+			})
+
+			return count
+		} catch (error) {
+			await this._logger.writeAsync(
+				`Error while counting characters for account ${accountId} \n ${
+					(error as any).stack
+				}`
+			)
+			return 0
+		}
+	}
+
 	public async createCharacter(
 		message: CharacterCreationRequestMessage,
 		client: WorldClient
@@ -173,11 +192,14 @@ class CharacterController {
 					sex: message.sex as boolean,
 					experience: startLevel.characterExp,
 					look: ContextEntityLook.convertToString(look),
-					cellId: this.container.get(ConfigurationManager).startCellId.toString(),
+					cellId: this.container
+						.get(ConfigurationManager)
+						.startCellId.toString(),
 					mapId: this.container.get(ConfigurationManager).startMapId.toString(),
 					direction: 1,
 					kamas: this.container.get(ConfigurationManager).startKamas,
-					statsPoints: this.container.get(ConfigurationManager).startStatsPoints,
+					statsPoints: this.container.get(ConfigurationManager)
+						.startStatsPoints,
 					stats: JSON.stringify(stats),
 					jobs: JSON.stringify(jobs),
 					shortcuts: JSON.stringify([]),
@@ -202,7 +224,7 @@ class CharacterController {
 				stats
 			)
 
-      character.client = client
+			character.client = client
 			return character
 		} catch (error) {
 			this._logger.write(

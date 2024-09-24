@@ -1,6 +1,7 @@
 import {
 	CharacterInventoryPositionEnum,
 	ObjectItem,
+	ObjectItemNotInContainer,
 	ObjectItemQuantity,
 } from "@breakEmu_Protocol/IO"
 import EffectCollection from "../entities/effect/EffectCollection"
@@ -33,7 +34,8 @@ abstract class AbstractItem {
 		quantity: number,
 		effects: EffectCollection,
 		appearanceId: number,
-		look: string
+		look: string,
+    id?: number
 	) {
 		this.gId = gId
 		this.position = position
@@ -41,6 +43,11 @@ abstract class AbstractItem {
 		this.effects = effects
 		this.appearanceId = appearanceId
 		this.look = look
+    if (id) {
+      this.id = id
+    } else {
+      this.id = 0
+    }
 	}
 
 	get positionEnum(): CharacterInventoryPositionEnum {
@@ -51,8 +58,9 @@ abstract class AbstractItem {
 		this.position = value as number
 	}
 
-	abstract getObjectItem(): Promise<ObjectItem>
+	abstract getObjectItem(): ObjectItem
 	abstract getObjectItemQuantity(): ObjectItemQuantity
+  abstract getObjectItemNotInContainer(): ObjectItemNotInContainer
 	abstract cloneWithUID(): AbstractItem
 	abstract cloneWithoutUID(): AbstractItem
 	abstract initialize(): void

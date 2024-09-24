@@ -165,7 +165,7 @@ class UserController extends BaseController {
 					.getCharacterItemsByCharacterId(character.id)
 				const bankItems = await this.container
 					.get(bankItemController)
-					.getBankItems(account.id)
+					.getBankItems(character.id)
 
 				character.inventory = new Inventory(character, items)
 				character.bank = new Bank(character, bankItems, c.bankKamas)
@@ -176,7 +176,8 @@ class UserController extends BaseController {
 			return account
 		} catch (error) {
 			this._logger.error(
-				`Error while getting account ${nickname} -> ${(error as any).stack}`
+				`Error while getting account ${nickname}`,
+				error as any
 			)
 			return
 		}

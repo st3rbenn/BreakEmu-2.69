@@ -23,27 +23,26 @@ if len(sys.argv) <= 1:
     print("Veuillez fournir le chemin du fichier JSON comme argument.")
     sys.exit(1)
 
-jsonFileArgs = sys.argv[1]
+json_file_args = sys.argv[1]
+keys_to_remove = ["$index", "$typeId"]
+print(f"Clés à supprimer : {keys_to_remove}")
+io_file = f"../src/breakEmu_API/data/{json_file_args}.json"
 
-filename = jsonFileArgs.split("/")[4].split(".")[0]
-
-known_keys_to_remove = ["$index", "$typeId"]
-keys_to_remove = known_keys_to_remove
 
 
 try:
-    with open(jsonFileArgs, "r") as file:
+    with open(io_file, "r") as file:
         data = json.load(file)
         updated_data = remove_keys_from_dict(data, keys_to_remove)
         newData = json.dumps(updated_data, indent=4)
 
-    with open("new" + filename + ".json", "w") as file:
+    with open(io_file, "w") as file:
         file.write(newData)
     print(
-        f"Fichier '{jsonFileArgs}' traité avec succès. Nouveau fichier créé : 'new{filename}.json'"
+        f"Fichier '{io_file}' traité avec succès. Nouveau fichier créé : '{json_file_args}.json'"
     )
 
 except FileNotFoundError:
-    print(f"Erreur : Le fichier '{jsonFileArgs}' n'a pas été trouvé.")
+    print(f"Erreur : Le fichier '{io_file}' n'a pas été trouvé.")
 except json.JSONDecodeError:
-    print(f"Erreur : Le contenu du fichier '{jsonFileArgs}' n'est pas un JSON valide.")
+    print(f"Erreur : Le contenu du fichier '{io_file}' n'est pas un JSON valide.")

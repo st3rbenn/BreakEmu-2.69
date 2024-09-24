@@ -14,116 +14,130 @@ class CharacterItemController {
 	public _database: Database = this.container.get(Database)
 
 	async createCharacterItem(item: AbstractItem, characterId: number) {
-		const characterItemFromDB = await this._database.prisma.characterItem.create(
-			{
-				data: {
-					characterId: characterId,
-					appearanceId: item.appearanceId,
-					gid: item.gId,
-					position: item.position,
-					quantity: item.quantity,
-					look: item.look,
-					effects: item.effects.saveAsJson(),
-				},
-			}
-		)
-
-		if (characterItemFromDB) {
-			let effects: EffectCollection = new EffectCollection([])
-			const effs = JSON.parse(
-				characterItemFromDB.effects?.toString() as string
-			) as Effect[]
-
-			for (const eff of effs) {
-				effects.effects.set(
-					eff.effectId,
-					new EffectInteger(
-						eff.effectId,
-						eff.order,
-						eff.targetId,
-						eff.targetMask,
-						eff.duration,
-						eff.delay,
-						eff.random,
-						eff.group,
-						eff.modificator,
-						eff.trigger,
-						eff.rawTriggers,
-						eff.rawZone,
-						eff.dispellable,
-						eff.value
-					)
-				)
-			}
-			const characterItem = new CharacterItem(
-				characterId,
-				characterItemFromDB.gid,
-				characterItemFromDB.quantity,
-				characterItemFromDB.position,
-				characterItemFromDB.look || "",
-				effects,
-				characterItemFromDB.appearanceId
+		try {
+			const characterItemFromDB = await this._database.prisma.characterItem.create(
+				{
+					data: {
+						characterId: characterId,
+						appearanceId: item.appearanceId,
+						gid: item.gId,
+						position: item.position,
+						quantity: item.quantity,
+						look: item.look,
+						effects: item.effects.saveAsJson(),
+					},
+				}
 			)
 
-			characterItem.id = characterItemFromDB.id
+			if (characterItemFromDB) {
+				let effects: EffectCollection = new EffectCollection([])
+				const effs = JSON.parse(
+					characterItemFromDB.effects?.toString() as string
+				) as Effect[]
 
-			return characterItem
+				for (const eff of effs) {
+					effects.effects.set(
+						eff.effectId,
+						new EffectInteger(
+							eff.effectId,
+							eff.order,
+							eff.targetId,
+							eff.targetMask,
+							eff.duration,
+							eff.delay,
+							eff.random,
+							eff.group,
+							eff.modificator,
+							eff.trigger,
+							eff.rawTriggers,
+							eff.rawZone,
+							eff.dispellable,
+							eff.value
+						)
+					)
+				}
+				const characterItem = new CharacterItem(
+					characterId,
+					characterItemFromDB.gid,
+					characterItemFromDB.quantity,
+					characterItemFromDB.position,
+					characterItemFromDB.look || "",
+					effects,
+					characterItemFromDB.appearanceId,
+					characterItemFromDB.id
+				)
+
+				return characterItem
+			}
+
+			return null
+		} catch (error) {
+			this._logger.error(
+				`Error creating item ${item.gId} for character ${characterId}`,
+				error as any
+			)
 		}
-
-		return null
 	}
 
 	async getCharacterItemsByCharacterId(characterId: number) {
-		const characterItems = await this._database.prisma.characterItem.findMany({
-			where: {
-				characterId,
-			},
-		})
-
-		let characterItemsArray: CharacterItem[] = []
-
-		for (const item of characterItems) {
-			let effects: EffectCollection = new EffectCollection([])
-			const effs = JSON.parse(item.effects?.toString() as string) as Effect[]
-
-			for (const eff of effs) {
-				effects.effects.set(
-					eff.effectId,
-					new EffectInteger(
-						eff.effectId,
-						eff.order,
-						eff.targetId,
-						eff.targetMask,
-						eff.duration,
-						eff.delay,
-						eff.random,
-						eff.group,
-						eff.modificator,
-						eff.trigger,
-						eff.rawTriggers,
-						eff.rawZone,
-						eff.dispellable,
-						eff.value
-					)
-				)
-			}
-
-			const characterItem = new CharacterItem(
-				characterId,
-				item.gid,
-				item.quantity,
-				item.position,
-				item.look || "",
-				effects,
-				item.appearanceId
+		try {
+			const characterItems = await this._database.prisma.characterItem.findMany(
+				{
+					where: {
+						characterId,
+					},
+				}
 			)
 
-			characterItem.id = item.id
+			let characterItemsArray: CharacterItem[] = []
 
-			characterItemsArray.push(characterItem)
+			for (const item of characterItems) {
+				let effects: EffectCollection = new EffectCollection([])
+				const effs = JSON.parse(item.effects?.toString() as string) as Effect[]
+
+				for (const eff of effs) {
+					effects.effects.set(
+						eff.effectId,
+						new EffectInteger(
+							eff.effectId,
+							eff.order,
+							eff.targetId,
+							eff.targetMask,
+							eff.duration,
+							eff.delay,
+							eff.random,
+							eff.group,
+							eff.modificator,
+							eff.trigger,
+							eff.rawTriggers,
+							eff.rawZone,
+							eff.dispellable,
+							eff.value
+						)
+					)
+				}
+
+				const characterItem = new CharacterItem(
+					characterId,
+					item.gid,
+					item.quantity,
+					item.position,
+					item.look || "",
+					effects,
+					item.appearanceId,
+					item.id
+				)
+
+				characterItemsArray.push(characterItem)
+			}
+
+			return characterItemsArray
+		} catch (error) {
+			this._logger.error(
+				`Error getting items for character ${characterId}`,
+				error as any
+			)
 		}
-
-		return characterItemsArray
 	}
 
 	async updateItem(item: CharacterItem) {
@@ -132,7 +146,7 @@ class CharacterItemController {
 			const existingItem = await this._database.prisma.characterItem.findUnique(
 				{
 					where: {
-            id: item.id,
+						id: item.id,
 						AND: {
 							gid: item.gId,
 							characterId: item.characterId,
@@ -142,9 +156,11 @@ class CharacterItemController {
 			)
 
 			if (!existingItem) {
-				throw new Error(`Item with uId ${item.id} not found`)
-			} else {
-				console.log(`Item found: ${existingItem.id} - ${existingItem.gid}`)
+				this._logger.error(
+					`Item ${item.id} ${item.record.name} not found in database`,
+					new Error("Item not found in database for update")
+				)
+        return
 			}
 
 			await this._database.prisma.characterItem.update({
@@ -162,7 +178,8 @@ class CharacterItemController {
 			})
 		} catch (error) {
 			this._logger.error(
-				`Error updating item ${item.id} ${item.record.name} \n ${error}`
+				`Error updating item ${item.id} ${item.record.name}`,
+				error as any
 			)
 		}
 	}
@@ -191,7 +208,10 @@ class CharacterItemController {
 				})
 			}
 		} catch (error) {
-			this._logger.error(`Error deleting item ${item.id} ${item.record.name}`)
+			this._logger.error(
+				`Error deleting item ${item.id} ${item.record.name}`,
+				error as any
+			)
 		}
 	}
 }

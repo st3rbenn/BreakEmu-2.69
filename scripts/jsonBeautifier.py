@@ -1,4 +1,5 @@
 import json
+import sys
 
 
 def embeautifier_json(fichier_entree, fichier_sortie):
@@ -16,10 +17,13 @@ def embeautifier_json(fichier_entree, fichier_sortie):
     except Exception as e:
         print(f"Une erreur est survenue : {e}")
 
+if len(sys.argv) <= 1:
+    print("Veuillez fournir le chemin du fichier JSON comme argument.")
+    sys.exit(1)
 
-json_file_name = "mapScrollActions"
+json_file_name = sys.argv[1]
 # Remplacez ces chemins par les chemins de votre fichier
-chemin_fichier_entree = f"src/breakEmu_API/data/{json_file_name}.json"
-chemin_fichier_sortie = f"src/breakEmu_API/data/formatted_{json_file_name}.json"
+chemin_fichier_entree = f"../src/breakEmu_API/data/{json_file_name}.json"
+chemin_fichier_sortie = f"../src/breakEmu_API/data/{json_file_name}.json"
 
 embeautifier_json(chemin_fichier_entree, chemin_fichier_sortie)

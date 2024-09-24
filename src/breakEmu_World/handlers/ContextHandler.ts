@@ -27,6 +27,7 @@ import {
 import AchievementHandler from "./achievement/AchievementHandler"
 import Container from "@breakEmu_Core/container/Container"
 import CharacterItemController from "@breakEmu_API/controller/characterItem.controller"
+import BankExchange from "@breakEmu_World/manager/exchange/BankExchange"
 
 enum AdminQuietCommande {
 	moveto = "moveto",
@@ -34,8 +35,7 @@ enum AdminQuietCommande {
 
 class ContextHandler {
 	private static logger: Logger = new Logger("ContextHandler")
-  private static container: Container = Container.getInstance()
-
+	private static container: Container = Container.getInstance()
 
 	public static async handleGameContextCreateMessage(client: WorldClient) {
 		const character = client.selectedCharacter
@@ -48,11 +48,11 @@ class ContextHandler {
 			} else {
 				await Promise.all([
 					character.createContext(GameContextEnum.ROLE_PLAY),
-          AchievementHandler.handleAchievementListMessage(character),
-          character.refreshStats()
+					AchievementHandler.handleAchievementListMessage(character),
+					character.refreshStats(),
 				])
 				await character.teleport(character.mapId, character.cellId)
-        character.inGame = true
+				character.inGame = true
 			}
 		} catch (error) {
 			this.logger.write(
@@ -199,15 +199,20 @@ class ContextHandler {
 		const objectUID = message.objectUID
 		const quantity = message.quantity
 
-		if (!client.selectedCharacter.isCraftDialog) {
-			return
-		}
+		if (client.selectedCharacter.isCraftDialog) {
+			const craftExchange = client.selectedCharacter.dialog as CraftExchange
 
-		const craftExchange = client.selectedCharacter.dialog as CraftExchange
+			console.log(`SENDING MOVE ITEM: ${objectUID} quantity: ${quantity} `)
 
-    console.log(`SENDING MOVE ITEM: ${objectUID} quantity: ${quantity} `)
+			await craftExchange.moveItem(objectUID as number, quantity as number)
+		} else if (client.selectedCharacter.isBankDialog) {
+      console.log('BANK EXCHANGE')
+      const bankExchange = client.selectedCharacter.dialog as BankExchange
 
-		await craftExchange.moveItem(objectUID as number, quantity as number)
+      console.log(`SENDING MOVE ITEM: ${objectUID} quantity: ${quantity} into bank`)
+
+      await bankExchange.moveItem(objectUID as number, quantity as number)
+    }
 	}
 
 	public static async handleExchangeCraftCountRequestMessage(
@@ -272,7 +277,9 @@ class ContextHandler {
 		returnObj.commande = splittedCommand[0]
 		returnObj.value = splittedCommand.slice(1)
 
-    console.log(`Parsed command: ${returnObj.commande} value: ${returnObj.value}`)
+		console.log(
+			`Parsed command: ${returnObj.commande} value: ${returnObj.value}`
+		)
 		return returnObj
 	}
 }

@@ -1,163 +1,238 @@
 import BankItem from "@breakEmu_API/model/BankItem.model"
+import Container from "@breakEmu_Core/container/Container"
 import Logger from "@breakEmu_Core/Logger"
-import AbstractItem from "@breakEmu_World/manager/items/AbstractItem"
+import Effect from "@breakEmu_World/manager/entities/effect/Effect"
+import EffectCollection from "@breakEmu_World/manager/entities/effect/EffectCollection"
+import EffectInteger from "@breakEmu_World/manager/entities/effect/EffectInteger"
 import Database from "../Database"
 import Character from "../model/character.model"
-import Container from "@breakEmu_Core/container/Container"
 
 class bankItemController {
-	private static logger: Logger = new Logger("bankItemController")
-  private container: Container = Container.getInstance()
-	public _database: Database = this.container.get(Database)
+	private logger: Logger = new Logger("bankItemController")
+	private container: Container = Container.getInstance()
+	public database: Database = this.container.get(Database)
 
-	constructor() {}
+	async createBankItem(item: BankItem, character: Character) {
+		try {
+			const findSame = await this.getBankItemByGid(character.id, item.gId)
 
-	async createBankItem(item: AbstractItem, character: Character) {
-		const bankItem = await this._database.prisma.bankItem.create({
-			data: {
-				accountId: character.accountId,
-				itemId: item.uId,
-				gId: item.gId,
-				appearanceId: item.appearanceId,
-				position: item.position,
-				quantity: item.quantity,
-				look: item.look,
-				effects: item.effects.saveAsJson(),
-			},
-		})
+			if (findSame) {
+				this.logger.error(
+					`Item ${item.gId} already exists in bank`,
+					new Error(`Item ${item.gId} already exists in bank`)
+				)
+				return
+			}
 
-		return bankItem
-	}
+			const bankItem = await this.database.prisma.bankItem.create({
+				data: {
+					characterId: character.id,
+					itemId: item.id,
+					gId: item.gId,
+					appearanceId: item.appearanceId,
+					position: item.position,
+					quantity: item.quantity,
+					look: item.look,
+					effects: item.effects.saveAsJson(),
+				},
+			})
 
-	async getBankItemByGid(accountId: number, gid: number) {
-		const bankItem = await this._database.prisma.bankItem.findFirst({
-			where: {
-				accountId,
-				gId: gid,
-			},
-		})
-		return bankItem
-	}
-
-	async getBankItemByItemId(accountId: number, itemId: string) {
-		const bankItem = await this._database.prisma.bankItem.findFirst({
-			where: {
-				accountId,
-				itemId,
-			},
-		})
-		return bankItem
-	}
-
-	async getBankItems(accountId: number) {
-		const bankItems: BankItem[] = []
-		const allBankItems = await this._database.prisma.bankItem.findMany({
-			where: {
-				accountId,
-			},
-		})
-
-		for (const item of allBankItems) {
-      const bankItem = new BankItem(
-        item.itemId,
-        item.gId,
-        item.position,
-        item.quantity,
-        item.effects,
-        item.appearanceId,
-        item.look || "",
-        item.accountId
-      )
-
-      bankItems.push(bankItem)
+			return bankItem
+		} catch (error) {
+			this.logger.error("Error while creating bank item", error as any)
 		}
+	}
 
-		return bankItems
+	async getBankItemByGid(characterId: number, gid: number) {
+		try {
+			const bankItem = await this.database.prisma.bankItem.findFirst({
+				where: {
+					characterId,
+					gId: gid,
+				},
+			})
+			return bankItem
+		} catch (error) {
+			this.logger.error("Error while getting bank item by gid", error as any)
+		}
+	}
+
+	async getBankItemByItemId(characterId: number, itemId: number) {
+		try {
+			const bankItem = await this.database.prisma.bankItem.findFirst({
+				where: {
+					characterId,
+					itemId,
+				},
+			})
+			return bankItem
+		} catch (error) {
+			this.logger.error(
+				"Error while getting bank item by item id",
+				error as any
+			)
+		}
+	}
+
+	async getBankItems(characterId: number) {
+		const bankItems: BankItem[] = []
+		try {
+			const allBankItems = await this.database.prisma.bankItem.findMany({
+				where: {
+					characterId,
+				},
+			})
+
+			for (const item of allBankItems) {
+				let effects: EffectCollection = new EffectCollection([])
+				const effs = JSON.parse(item.effects?.toString() as string) as Effect[]
+
+				for (const eff of effs) {
+					effects.effects.set(
+						eff.effectId,
+						new EffectInteger(
+							eff.effectId,
+							eff.order,
+							eff.targetId,
+							eff.targetMask,
+							eff.duration,
+							eff.delay,
+							eff.random,
+							eff.group,
+							eff.modificator,
+							eff.trigger,
+							eff.rawTriggers,
+							eff.rawZone,
+							eff.dispellable,
+							eff.value
+						)
+					)
+				}
+
+				const bankItem = new BankItem(
+					item.itemId,
+					item.gId,
+					item.position,
+					item.quantity,
+					effects,
+					item.appearanceId,
+					item.look || "",
+					item.characterId
+				)
+
+				bankItems.push(bankItem)
+			}
+
+			return bankItems
+		} catch (error) {
+			this.logger.error("Error while getting bank items", error as any)
+		}
 	}
 
 	async removeBankItem(
-		accountId: number,
-		itemId: string,
+		characterId: number,
+		itemId: number,
 		quantity: number = 0
-	) {
-		const bankItem = await this.getBankItemByItemId(accountId, itemId)
-		if (!bankItem) {
-			return false
-		}
+	): Promise<boolean> {
+		try {
+			const bankItem = await this.getBankItemByItemId(characterId, itemId)
+			if (!bankItem) {
+				return false
+			}
 
-		if (quantity == 0) {
-			//delete item
-			await this._database.prisma.bankItem.delete({
+			if (quantity == 0) {
+				//delete item
+				await this.database.prisma.bankItem.delete({
+					where: {
+						characterId_itemId: {
+							characterId,
+							itemId,
+						},
+					},
+				})
+				return true
+			}
+
+			if (quantity < 1) {
+				return false
+			}
+
+			if (quantity > bankItem.quantity) {
+				return false
+			}
+
+			await this.database.prisma.bankItem.update({
 				where: {
-					accountId_itemId: {
-						accountId,
+					characterId_itemId: {
+						characterId,
 						itemId,
 					},
 				},
+				data: {
+					quantity: bankItem.quantity - quantity,
+				},
 			})
+
 			return true
-		}
-
-		if (quantity < 1) {
+		} catch (error) {
+			this.logger.error("Error while removing bank item", error as any)
 			return false
 		}
-
-		if (quantity > bankItem.quantity) {
-			return false
-		}
-
-		await this._database.prisma.bankItem.update({
-			where: {
-				accountId_itemId: {
-					accountId,
-					itemId,
-				},
-			},
-			data: {
-				quantity: bankItem.quantity - quantity,
-			},
-		})
-
-		return true
 	}
 
-	async addBankItem(accountId: number, itemId: string, quantity: number = 1) {
-		const bankItem = await this.getBankItemByItemId(accountId, itemId)
-		if (!bankItem) {
-			return false
-		}
+	async addBankItem(
+		characterId: number,
+		itemId: number,
+		quantity: number = 1
+	): Promise<boolean> {
+		try {
+			const bankItem = await this.getBankItemByItemId(characterId, itemId)
+			if (!bankItem) {
+				return false
+			}
 
-		if (quantity < 1) {
-			return false
-		}
+			if (quantity < 1) {
+				return false
+			}
 
-		await this._database.prisma.bankItem.update({
-			where: {
-				accountId_itemId: {
-					accountId,
-					itemId,
+			await this.database.prisma.bankItem.update({
+				where: {
+					characterId_itemId: {
+						characterId,
+						itemId,
+					},
 				},
-			},
-			data: {
-				quantity: bankItem.quantity + quantity,
-			},
-		})
+				data: {
+					quantity: bankItem.quantity + quantity,
+				},
+			})
 
-		return true
+			return true
+		} catch (error) {
+			this.logger.error("Error while adding bank item", error as any)
+			return false
+		}
 	}
 
-	async updateBankItem(item: AbstractItem, character: Character) {
-		await this._database.prisma.bankItem.update({
-			where: {
-				accountId_itemId: { accountId: character.accountId, itemId: item.uId },
-			},
-			data: {
-				position: item.position,
-				quantity: item.quantity,
-				look: item.look,
-				effects: item.effects.saveAsJson(),
-			},
-		})
+	async updateBankItem(item: BankItem, characterId: number) {
+		try {
+			await this.database.prisma.bankItem.update({
+				where: {
+					characterId_itemId: { characterId: characterId, itemId: item.id },
+				},
+				data: {
+					position: item.position,
+					quantity: item.quantity,
+					look: item.look,
+					effects: item.effects.saveAsJson(),
+				},
+			})
+		} catch (error) {
+			this.logger.error(
+				`Error updating bank item ${item.id} ${item.gId}`,
+				error as any
+			)
+		}
 	}
 }
 

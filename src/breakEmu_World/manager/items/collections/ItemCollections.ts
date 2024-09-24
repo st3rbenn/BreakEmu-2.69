@@ -64,7 +64,7 @@ abstract class ItemCollection<T extends AbstractItem> {
 				let sameItem: T | undefined = await this.getSameItem(
 					item.gId,
 					item.effects,
-          item.position
+					item.position
 				)
 
 				if (sameItem) {
@@ -96,7 +96,11 @@ abstract class ItemCollection<T extends AbstractItem> {
 			const unstackedItems: T[] = []
 
 			for (const item of items) {
-				const sameItem = await this.getSameItem(item.gId, item.effects, item.position)
+				const sameItem = await this.getSameItem(
+					item.gId,
+					item.effects,
+					item.position
+				)
 
 				if (sameItem) {
 					if (sameItem.quantity > item.quantity) {
@@ -135,7 +139,7 @@ abstract class ItemCollection<T extends AbstractItem> {
 			let sameItem: T | undefined = await this.getSameItem(
 				item.gId,
 				item.effects,
-        item.position
+				item.position
 			)
 
 			if (sameItem != undefined) {
@@ -146,6 +150,7 @@ abstract class ItemCollection<T extends AbstractItem> {
 				this.onItemQuantityChanged(sameItem)
 				this.onItemStacked(sameItem)
 			} else {
+				item.quantity = quantity
 				const result = await this.container
 					.get(CharacterItemController)
 					.createCharacterItem(item, characterId)

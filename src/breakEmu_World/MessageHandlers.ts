@@ -2,6 +2,7 @@ import Character from "@breakEmu_API/model/character.model"
 import ansiColorCodes from "@breakEmu_Core/Colors"
 import Logger from "@breakEmu_Core/Logger"
 import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
+import Container from "@breakEmu_Core/container/Container"
 import {
 	AchievementAlmostFinishedDetailedListRequestMessage,
 	AchievementDetailedListRequestMessage,
@@ -23,6 +24,7 @@ import {
 	CharacterSelectionMessage,
 	CharactersListRequestMessage,
 	ChatClientMultiMessage,
+	ClientKeyMessage,
 	DofusMessage,
 	ExchangeCraftCountRequestMessage,
 	ExchangeObjectMoveMessage,
@@ -32,9 +34,7 @@ import {
 	FinishMoveSetRequestMessage,
 	FriendsGetListMessage,
 	FriendsListMessage,
-	GameContextCreateMessage,
 	GameContextCreateRequestMessage,
-	GameContextEnum,
 	GameMapMovementCancelMessage,
 	GameMapMovementConfirmMessage,
 	GameMapMovementRequestMessage,
@@ -46,6 +46,7 @@ import {
 	OrnamentSelectRequestMessage,
 	PlayerStatusUpdateRequestMessage,
 	ReloginTokenRequestMessage,
+	ReloginTokenStatusMessage,
 	ServerSelectionMessage,
 	ShortcutBarAddRequestMessage,
 	ShortcutBarRemoveRequestMessage,
@@ -57,7 +58,6 @@ import {
 	messages,
 } from "@breakEmu_Protocol/IO"
 import WorldClient from "./WorldClient"
-import WorldServer from "./WorldServer"
 import ContextHandler from "./handlers/ContextHandler"
 import AchievementHandler from "./handlers/achievement/AchievementHandler"
 import AuthentificationHandler from "./handlers/authentification/AuthentificationHandler"
@@ -74,7 +74,6 @@ import MapHandler from "./handlers/map/MapHandler"
 import InteractiveMapHandler from "./handlers/map/interactive/InteractiveMapHandler"
 import TeleportHandler from "./handlers/map/teleport/TeleportHandler"
 import ServerListHandler from "./handlers/server/ServerListHandler"
-import Container from "@breakEmu_Core/container/Container"
 
 class MessageHandlers {
 	private logger = new Logger("MessageHandlers")
@@ -96,9 +95,12 @@ class MessageHandlers {
 			[CharacterNameSuggestionRequestMessage.id]: RandomCharacterNameHandler.handleCharacterNameSuggestionRequestMessage.bind(
 				RandomCharacterNameHandler
 			),
-			[ReloginTokenRequestMessage.id]: ServerListHandler.handleServerListRequestMessage.bind(
-				ServerListHandler
-			),
+
+			[ReloginTokenRequestMessage.id]: async (
+				client: WorldClient,
+				message: DofusMessage
+			) => await client.Send(new ReloginTokenStatusMessage(false, "")),
+			[ClientKeyMessage.id]: async () => {},
 			[BasicPingMessage.id]: async (
 				client: WorldClient,
 				message: DofusMessage
@@ -124,8 +126,6 @@ class MessageHandlers {
 			[FinishMoveListRequestMessage.id]: FinishmoveHandler.handleFinishMoveListRequestMessage.bind(
 				FinishmoveHandler
 			),
-
-			// Utiliser une assertion de type pour 'message' dans les fonctions anonymes
 			[CharactersListRequestMessage.id]: async (
 				client: WorldClient,
 				message: DofusMessage

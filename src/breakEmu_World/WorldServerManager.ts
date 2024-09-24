@@ -18,15 +18,13 @@ import Container from "@breakEmu_Core/container/Container"
 class WorldServerManager {
 	public logger: Logger = new Logger("WorldServerManager")
 
-  private container: Container = Container.getInstance()
+	private container: Container = Container.getInstance()
 
-	public constructor() {
-  }
+	public constructor() {}
 
 	public allowedIps: string[] = ["127.0.0.1"]
 
 	public _realmList: WorldServer[] = []
-
 
 	public deserialize(data: Buffer): DofusMessage {
 		const reader = new BinaryBigEndianReader({
@@ -54,30 +52,27 @@ class WorldServerManager {
 	public async gameServerInformationArray(
 		client: AuthClient
 	): Promise<GameServerInformations[]> {
-		const gsif = this.container.get(WorldController)
+		const gsif = this.container
+			.get(WorldController)
 			.worldList.filter((server) => client.canAccessWorld(server))
-			.map(async (server) => await this.gameServerInformation(server, client))
+			.map(
+				async (server) =>
+					await this.gameServerInformation(server, client.account)
+			)
 
 		return Promise.all(gsif)
 	}
 
 	public async gameServerInformation(
 		server: WorldServer,
-		client: AuthClient | Account,
+		account: Account,
 		status?: number
 	): Promise<GameServerInformations> {
-		let charCount: Character[] | undefined = undefined
-		if (client instanceof AuthClient) {
-			charCount = await this.container.get(CharacterController).getCharactersByAccountId(
-				client?.account?.id || 0
-			)
-		}
+		let charCount: number = 0
 
-		if (client instanceof Account) {
-			client.characters.forEach((character) => {
-				charCount?.push(character)
-			})
-		}
+		charCount = await this.container
+			.get(CharacterController)
+			.countCharacterByAccountId(account.id)
 
 		const gameServerMessage = new GameServerInformations(
 			server.worldServerData?.IsMonoAccount,
@@ -86,7 +81,7 @@ class WorldServerManager {
 			0,
 			status || server.SERVER_STATE,
 			1,
-			charCount?.length,
+			charCount,
 			5,
 			new Date().getTime()
 		)

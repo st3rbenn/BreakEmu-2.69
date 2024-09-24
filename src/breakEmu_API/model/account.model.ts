@@ -22,7 +22,7 @@ class Account {
 	is_banned: boolean
   tagNumber: number
 
-  _characters: Map<number, Character> = new Map();
+  characters: Map<number, Character> = new Map();
 
 	constructor(
 		id: number,
@@ -73,14 +73,6 @@ class Account {
 	public setPseudo(pseudo: string): void {
 		this.pseudo = pseudo
 	}
-
-  public get characters(): Map<number, Character> {
-    return this._characters
-  }
-
-  public set characters(characters: Map<number, Character>) {
-    this._characters = characters
-  }
 
   public is_admin(): boolean {
     return this.role === AccountRoleEnum.MODERATOR

@@ -75,6 +75,8 @@ model character {
   guild                         guild?          @relation(fields: [guildId], references: [id])
   guildId                       Int?
   characterItem                 characterItem[]
+
+  bankItem bankItem[]
 }
 
 model guild {
@@ -241,19 +243,22 @@ model item {
   look           String? @db.Text
 
   characterItem characterItem[]
+  bankItem      bankItem[]
 }
 
 model bankItem {
-  accountId    Int
-  itemId       String
+  characterId  Int
+  character    character @relation(fields: [characterId], references: [id])
+  itemId       Int
+  item         item      @relation(fields: [gId], references: [id])
   gId          Int
   position     Int
   quantity     Int
   effects      Json
   appearanceId Int
-  look         String? @db.Text
+  look         String?   @db.Text
 
-  @@id([accountId, itemId])
+  @@id([characterId, itemId])
 }
 
 model weapon {

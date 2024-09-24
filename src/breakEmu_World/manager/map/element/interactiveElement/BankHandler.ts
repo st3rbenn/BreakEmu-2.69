@@ -4,14 +4,13 @@ import BankExchange from "../../../exchange/BankExchange"
 import IInteractiveElementHandler from "./IInteractiveElementHandler"
 
 class BankHandler implements IInteractiveElementHandler {
-	private static logger: Logger = new Logger("BankHandler")
-
+	private logger: Logger = new Logger("BankHandler")
 
 	async handle(character: Character): Promise<void> {
 		try {
-			await character.setDialog(new BankExchange(character, character.bank.items))
+			await character.setDialog(new BankExchange(character, character.bank))
 		} catch (error) {
-			BankHandler.logger.error(error as string)
+			this.logger.error("Error while handling bank interaction: ", error as any)
 		}
 	}
 }

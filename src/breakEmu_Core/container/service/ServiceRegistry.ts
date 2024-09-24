@@ -37,11 +37,9 @@ export function registerServices(container: Container) {
 	)
 	container.register(TaskManager, new TaskManager())
 
-
-
-  container.registerFactory(AchievementManager, () => new AchievementManager())
-  container.registerFactory(JobManager, () => new JobManager())
-  container.registerFactory(MessageHandlers, () => new MessageHandlers())
+	container.registerFactory(AchievementManager, () => new AchievementManager())
+	container.registerFactory(JobManager, () => new JobManager())
+	container.registerFactory(MessageHandlers, () => new MessageHandlers())
 	container.registerFactory(CommandHandler, () => new CommandHandler())
 	container.registerFactory(JobFormulas, () => new JobFormulas())
 	container.registerFactory(

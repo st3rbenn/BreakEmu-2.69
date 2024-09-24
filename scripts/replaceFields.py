@@ -2,8 +2,6 @@ import json
 import sys
 
 
-keys_to_change = ["resultNameId"]
-
 
 def load_json_file(file_path):
     try:
@@ -22,21 +20,29 @@ def replace_field_with_i18n(data, i18n_data):
         for key in keys_to_change:
             if key in d and str(d[key]) in i18n_data:
                 d[key] = i18n_data[str(d[key])]
+                print(f"Remplacement effectué pour la clé '{key}' avec la valeur '{d[key]}'.")
 
 
 if len(sys.argv) <= 1:
     print("Veuillez fournir le chemin du fichier JSON des sorts comme argument.")
     sys.exit(1)
 
-data_json_path = sys.argv[1]
-i18n_data = load_json_file(sys.argv[2])
-data = load_json_file(data_json_path)
+keys_to_change = sys.argv[1].split(',')
+print(f"Clés à remplacer : {keys_to_change}")
+jsonFileArgs = sys.argv[2]
+i18n_data = f"../src/breakEmu_API/data/i18n_fr.json"
+i18n_data = load_json_file(i18n_data)
+
+filename = f"../src/breakEmu_API/data/{jsonFileArgs}.json"
+output_file = f"../src/breakEmu_API/data/{jsonFileArgs}.json"
+
+
+data = load_json_file(filename)
 
 replace_field_with_i18n(data, i18n_data)
 
-output_file_path = "updated_" + data_json_path.split("/")[-1]
-with open(output_file_path, "w", encoding="utf-8") as outfile:
+with open(output_file, "w", encoding="utf-8") as outfile:
     json.dump(data, outfile, indent=4)
 
 
-print(f"Fichier traité avec succès. Nouveau fichier créé : '{output_file_path}'")
+print(f"Fichier traité avec succès. Nouveau fichier créé : '{output_file}'")

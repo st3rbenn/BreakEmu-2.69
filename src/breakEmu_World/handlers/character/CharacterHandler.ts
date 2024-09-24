@@ -1,9 +1,8 @@
-import CharacterCreationResultEnum from "@breakEmu_World/enum/CharacterCreationResultEnum"
 import CharacterController from "@breakEmu_API/controller/character.controller"
-import Account from "@breakEmu_API/model/account.model"
 import Character from "@breakEmu_API/model/character.model"
 import ansiColorCodes from "@breakEmu_Core/Colors"
 import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
+import Container from "@breakEmu_Core/container/Container"
 import Logger from "@breakEmu_Core/Logger"
 import {
 	CharacterBaseInformations,
@@ -25,12 +24,12 @@ import {
 	PopupWarningClosedMessage,
 	SequenceNumberRequestMessage,
 } from "@breakEmu_Protocol/IO"
+import CharacterCreationResultEnum from "@breakEmu_World/enum/CharacterCreationResultEnum"
 import WorldClient from "../../WorldClient"
-import Container from "@breakEmu_Core/container/Container"
 
 class CharacterHandler {
 	private static logger: Logger = new Logger("CharacterHandler")
-  private static container: Container = Container.getInstance()
+	private static container: Container = Container.getInstance()
 
 	public static async sendCharacterLevelUpMessage(
 		client: WorldClient,
@@ -69,8 +68,8 @@ class CharacterHandler {
 			await client.Send(new CharacterCapabilitiesMessage(4095))
 			await client.Send(new SequenceNumberRequestMessage())
 
-      client.selectedCharacter.testIfCharacterDataIsValid()
-      
+			client.selectedCharacter.testIfCharacterDataIsValid()
+
 			await client.selectedCharacter.refreshAll()
 		} catch (error) {
 			this.logger.write(
@@ -82,10 +81,10 @@ class CharacterHandler {
 
 	public static async handleCharactersListMessage(client: WorldClient) {
 		try {
-      this.logger.write(
-        `try retrieve characters for account: ${client.account?.username}`,
-        ansiColorCodes.bgYellow
-      )
+			this.logger.write(
+				`try retrieve characters for account: ${client.account?.username}`,
+				ansiColorCodes.bgYellow
+			)
 			let characters = client.account.characters
 
 			let characterToBaseInfo: CharacterBaseInformations[] = []
@@ -197,10 +196,9 @@ class CharacterHandler {
 			return
 		}
 
-		const isDeleted = await this.container.get(CharacterController).deleteCharacter(
-			Number(msg.characterId),
-			Number(client.account?.id)
-		)
+		const isDeleted = await this.container
+			.get(CharacterController)
+			.deleteCharacter(Number(msg.characterId), Number(client.account?.id))
 		if (isDeleted) {
 			await this.logger.writeAsync(
 				`Character ${msg.characterId} deleted`,
@@ -217,10 +215,9 @@ class CharacterHandler {
 		client: WorldClient
 	) {
 		try {
-			const character = await this.container.get(CharacterController).createCharacter(
-				message,
-				client
-			)
+			const character = await this.container
+				.get(CharacterController)
+				.createCharacter(message, client)
 
 			await client.Send(new CharacterCreationResultMessage(0, 0))
 			this.logger.write(
@@ -230,9 +227,11 @@ class CharacterHandler {
 
 			// Utiliser Promise.all pour attendre que tous les items soient ajoutés
 			await Promise.all(
-				this.container.get(ConfigurationManager).itemStarter.map(async (itemGid) => {
-					await character.inventory.addNewItem(itemGid)
-				})
+				this.container
+					.get(ConfigurationManager)
+					.itemStarter.map(async (itemGid) => {
+						await character.inventory.addNewItem(itemGid)
+					})
 			)
 
 			await this.container.get(CharacterController).updateCharacter(character)
