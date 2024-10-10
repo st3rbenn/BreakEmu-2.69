@@ -1,3 +1,4 @@
+import { NpcGenericActionRequestMessage } from "./../../breakEmu_Protocol/IO/network/protocol"
 import Recipe from "@breakEmu_API/model/recipe.model"
 import Logger from "@breakEmu_Core/Logger"
 import {
@@ -37,7 +38,7 @@ class ContextHandler {
 	private static logger: Logger = new Logger("ContextHandler")
 	private static container: Container = Container.getInstance()
 
-	public static async handleGameContextCreateMessage(client: WorldClient) {
+	static async handleGameContextCreateMessage(client: WorldClient) {
 		const character = client.selectedCharacter
 		const inFight = false
 
@@ -63,7 +64,7 @@ class ContextHandler {
 		}
 	}
 
-	public static async handleTitlesAndOrnamentsListRequestMessage(
+	static async handleTitlesAndOrnamentsListRequestMessage(
 		client: WorldClient,
 		message: TitlesAndOrnamentsListRequestMessage
 	) {
@@ -86,7 +87,7 @@ class ContextHandler {
 		}
 	}
 
-	public static async handleNewEmote(client: WorldClient, emoteId: number) {
+	static async handleNewEmote(client: WorldClient, emoteId: number) {
 		try {
 			await client.selectedCharacter.client?.Send(new EmoteAddMessage(emoteId))
 			await client.selectedCharacter.refreshEmotes()
@@ -98,7 +99,7 @@ class ContextHandler {
 		}
 	}
 
-	public static async handleNewTitle(client: WorldClient, titleId: number) {
+	static async handleNewTitle(client: WorldClient, titleId: number) {
 		try {
 			await client.selectedCharacter.client?.Send(
 				new TitleGainedMessage(titleId)
@@ -111,10 +112,7 @@ class ContextHandler {
 		}
 	}
 
-	public static async handleNewOrnament(
-		client: WorldClient,
-		ornamentId: number
-	) {
+	static async handleNewOrnament(client: WorldClient, ornamentId: number) {
 		try {
 			await client.selectedCharacter.client?.Send(
 				new OrnamentGainedMessage(ornamentId)
@@ -127,7 +125,7 @@ class ContextHandler {
 		}
 	}
 
-	public static async handleOrnamentSelectRequestMessage(
+	static async handleOrnamentSelectRequestMessage(
 		client: WorldClient,
 		message: OrnamentSelectRequestMessage
 	) {
@@ -152,7 +150,7 @@ class ContextHandler {
 		}
 	}
 
-	public static async handleTitleSelectRequestMessage(
+	static async handleTitleSelectRequestMessage(
 		client: WorldClient,
 		message: TitleSelectRequestMessage
 	) {
@@ -173,7 +171,7 @@ class ContextHandler {
 		}
 	}
 
-	public static async handleExchangeSetCraftRecipeMessage(
+	static async handleExchangeSetCraftRecipeMessage(
 		client: WorldClient,
 		message: ExchangeSetCraftRecipeMessage
 	) {
@@ -192,7 +190,7 @@ class ContextHandler {
 		await craftExchange.setRecipe(objectGID as number)
 	}
 
-	public static async handleExchangeObjectMoveMessage(
+	static async handleExchangeObjectMoveMessage(
 		client: WorldClient,
 		message: ExchangeObjectMoveMessage
 	) {
@@ -206,16 +204,18 @@ class ContextHandler {
 
 			await craftExchange.moveItem(objectUID as number, quantity as number)
 		} else if (client.selectedCharacter.isBankDialog) {
-      console.log('BANK EXCHANGE')
-      const bankExchange = client.selectedCharacter.dialog as BankExchange
+			console.log("BANK EXCHANGE")
+			const bankExchange = client.selectedCharacter.dialog as BankExchange
 
-      console.log(`SENDING MOVE ITEM: ${objectUID} quantity: ${quantity} into bank`)
+			console.log(
+				`SENDING MOVE ITEM: ${objectUID} quantity: ${quantity} into bank`
+			)
 
-      await bankExchange.moveItem(objectUID as number, quantity as number)
-    }
+			await bankExchange.moveItem(objectUID as number, quantity as number)
+		}
 	}
 
-	public static async handleExchangeCraftCountRequestMessage(
+	static async handleExchangeCraftCountRequestMessage(
 		client: WorldClient,
 		message: ExchangeCraftCountRequestMessage
 	): Promise<void> {
@@ -228,7 +228,7 @@ class ContextHandler {
 		)
 	}
 
-	public static async handleExchangeReadyMessage(
+	static async handleExchangeReadyMessage(
 		client: WorldClient,
 		message: ExchangeReadyMessage
 	) {
@@ -238,7 +238,7 @@ class ContextHandler {
 		}
 	}
 
-	public static async handleAdminQuietCommandMessage(
+	static async handleAdminQuietCommandMessage(
 		client: WorldClient,
 		message: AdminQuietCommandMessage
 	) {

@@ -133,7 +133,7 @@ class CharacterItem extends AbstractItem {
     }
   }
 
-  public toBankItem(): BankItem {
+  public toBankItem(accountId: number): BankItem {
     return new BankItem(
       this.id,
       this.gId,
@@ -142,6 +142,7 @@ class CharacterItem extends AbstractItem {
       this.effects,
       this.appearanceId,
       this.look,
+      accountId,
       this.characterId
     )
   }

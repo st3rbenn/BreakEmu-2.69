@@ -1,7 +1,7 @@
 import JobManager from "@breakEmu_World/manager/job/JobManager"
 import Account from "@breakEmu_API/model/account.model"
 import Experience from "@breakEmu_API/model/experience.model"
-import Finishmoves from "@breakEmu_API/model/finishmoves.model"
+import Finishmoves from "@breakEmu_API/model/finishMoves.model"
 import Job from "@breakEmu_API/model/job.model"
 import GameMap from "@breakEmu_API/model/map.model"
 import Spell from "@breakEmu_API/model/spell.model"
@@ -17,15 +17,20 @@ import Database from "../Database"
 import Character from "../model/character.model"
 import Container from "@breakEmu_Core/container/Container"
 import WorldClient from "@breakEmu_World/WorldClient"
+import BaseController from "./base.controller"
 
 class CharacterController {
 	public _logger: Logger = new Logger("CharacterController")
-	private container: Container = Container.getInstance()
+	public container: Container = Container.getInstance()
 	public database: Database = this.container.get(Database)
 
 	private NAME_REGEX: RegExp = /^[A-Z][a-z]{2,9}(?:-[A-Za-z][a-z]{2,9}|[a-z]{1,10})$/
 
 	MaxCharacterSlots: number = 5
+
+	public initialize(): void {
+		throw new Error("Method not implemented.")
+	}
 
 	public async getCharactersByAccountId(
 		accountId: number

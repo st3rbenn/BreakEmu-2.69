@@ -1,7 +1,8 @@
 // serviceRegistry.ts
 import Database from "@breakEmu_API/Database"
-import bankItemController from "@breakEmu_API/controller/bankItem.controller"
+import BankItemController from "@breakEmu_API/controller/bankItem.controller"
 import CharacterController from "@breakEmu_API/controller/character.controller"
+import NpcController from "@breakEmu_API/controller/npc.controller"
 import CharacterItemController from "@breakEmu_API/controller/characterItem.controller"
 import WorldController from "@breakEmu_API/controller/world.controller"
 import AuthTransition from "@breakEmu_Auth/AuthTransition"
@@ -15,9 +16,9 @@ import CommandHandler from "@breakEmu_World/handlers/chat/command/CommandHandler
 import AchievementManager from "@breakEmu_World/manager/achievement/AchievementManager"
 import JobFormulas from "@breakEmu_World/manager/formulas/JobFormulas"
 import JobManager from "@breakEmu_World/manager/job/JobManager"
+// import AuctionHouseItemController from "@breakEmu_API/controller/auctionHouseItem.controller"
 
 export function registerServices(container: Container) {
-	// Services sans paramètres de constructeur
 	container.register(
 		AuthTransition,
 		new AuthTransition(process.env.REDIS_URI as string)
@@ -29,7 +30,6 @@ export function registerServices(container: Container) {
 		WorldController,
 		new WorldController(container.get(WorldServerManager))
 	)
-	container.register(CharacterController, new CharacterController())
 
 	container.register(
 		WorldTransition,
@@ -46,7 +46,16 @@ export function registerServices(container: Container) {
 		CharacterItemController,
 		() => new CharacterItemController()
 	)
-	container.registerFactory(bankItemController, () => new bankItemController())
+	container.registerFactory(BankItemController, () => new BankItemController())
+	container.registerFactory(
+		CharacterController,
+		() => new CharacterController()
+	)
+	container.registerFactory(NpcController, () => new NpcController())
+	// container.registerFactory(
+	// 	AuctionHouseItemController,
+	// 	() => new AuctionHouseItemController()
+	// )
 
 	// Si vous avez besoin d'une logique plus complexe pour certains services,
 	// vous pouvez utiliser des factories :

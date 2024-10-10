@@ -113,17 +113,21 @@ class ContextEntityLook {
 	}
 
 	static parseFromString(look: string): ContextEntityLook {
-		const lookData = look.split("{")[1].split("}")[0].split("|")
+		const lookData = look.length > 1 ? look.split("{")[1].split("}")[0].split("|") : []
 		const bonesId = parseInt(lookData[0])
-		const skins = lookData[1].split(",").map(Number)
 		const indexedColors: number[] = []
 		const scales: number[] = []
 		const subEntities: ContextSubEntity[] = []
+		let skins: number[] = []
+
+		if (lookData[1]) {
+			skins = lookData[1].split(",").map(Number)
+		}
 
 		if (lookData[2]) {
 			lookData[2].split(",").forEach((color) => {
 				if (color) {
-          indexedColors.push(parseInt(color.split("=")[1]))
+					indexedColors.push(parseInt(color.split("=")[1]))
 				}
 			})
 		}

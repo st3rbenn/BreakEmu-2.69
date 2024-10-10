@@ -894,6 +894,25 @@ export enum GenericActionEnum {
 	Unhandled,
 }
 
+export enum NpcActionEnum {
+  ADD_REMOVE_PET = 4,
+  TALK = 3,
+  VIEW_ENCLOSURES = 10,
+  EXCHANGE_MOUNT_OR_MONTILIER = 16,
+  BUY6 = 6,
+  EXCHANGE_VOLKORNE = 15,
+  BUY_SELL = 1,
+  REVIVE_PET = 7,
+  SELL12 = 12,
+  VIEW_HOUSES = 9,
+  EXCHANGE_MULDO = 14,
+  EXCHANGE_DRAGODINDE = 8,
+  BUY11 = 11,
+  REVIEW = 3,
+  SELL5 = 5,
+  EXCHANGE = 2
+}
+
 export enum BuildTypeEnum {
 	RELEASE = 0,
 	BETA = 1,
@@ -5837,7 +5856,7 @@ export interface RawGameRolePlayNpcInformations
 }
 
 export class GameRolePlayNpcInformations extends GameRolePlayActorInformations {
-	public static id: number = 8307
+	public static id: number = 550
 
 	public npcId: number | undefined = 0
 	public sex: boolean | undefined = false
@@ -22395,7 +22414,7 @@ export interface RawSellerBuyerDescriptor {
 }
 
 export class SellerBuyerDescriptor extends DofusType {
-	public static id: number = 7048
+	public static id: number = 3010
 
 	public quantities: number[] | undefined
 	public types: number[] | undefined
@@ -24005,7 +24024,7 @@ export interface RawBidExchangerObjectInfo {
 }
 
 export class BidExchangerObjectInfo extends DofusType {
-	public static id: number = 9234
+	public static id: number = 54
 
 	public objectUID: number | undefined = 0
 	public objectGID: number | undefined = 0
@@ -40222,7 +40241,7 @@ export interface RawExchangeStartedBidBuyerMessage {
 }
 
 export class ExchangeStartedBidBuyerMessage extends DofusMessage {
-	public static id: number = 6940
+	public static id: number = 69
 
 	public buyerDescriptor: SellerBuyerDescriptor | undefined
 
@@ -40842,7 +40861,7 @@ export interface RawExchangeBidHouseBuyResultMessage {
 }
 
 export class ExchangeBidHouseBuyResultMessage extends DofusMessage {
-	public static id: number = 9696
+	public static id: number = 8142
 
 	public uid: number | undefined = 0
 	public bought: boolean | undefined = false
@@ -41255,7 +41274,7 @@ export interface RawExchangeBidHouseGenericItemRemovedMessage {
 }
 
 export class ExchangeBidHouseGenericItemRemovedMessage extends DofusMessage {
-	public static id: number = 636
+	public static id: number = 7183
 
 	public objGenericId: number | undefined = 0
 
@@ -42633,7 +42652,7 @@ export interface RawExchangeTypesExchangerDescriptionForUserMessage {
 }
 
 export class ExchangeTypesExchangerDescriptionForUserMessage extends DofusMessage {
-	public static id: number = 2868
+	public static id: number = 4903
 
 	public objectType: number | undefined = 0
 	public typeDescription: number[] | undefined
@@ -58420,7 +58439,7 @@ export interface RawExchangeBidHouseInListRemovedMessage {
 }
 
 export class ExchangeBidHouseInListRemovedMessage extends DofusMessage {
-	public static id: number = 1444
+	public static id: number = 2116
 
 	public itemUID: number | undefined = 0
 	public objectGID: number | undefined = 0
@@ -58987,21 +59006,25 @@ export interface RawExchangeTypesItemsExchangerDescriptionForUserMessage {
 }
 
 export class ExchangeTypesItemsExchangerDescriptionForUserMessage extends DofusMessage {
-	public static id: number = 7377
+	public static id: number = 6222
 
 	public objectType: number | undefined = 0
 	public itemTypeDescriptions: BidExchangerObjectInfo[] | undefined
+  public objectGID: number | undefined = 0
 
 	public constructor(
 		objectType?: number | undefined,
+    objectGID?: number | undefined,
 		itemTypeDescriptions?: BidExchangerObjectInfo[] | undefined
 	) {
 		super()
 		this.objectType = objectType
+    this.objectGID = objectGID
 		this.itemTypeDescriptions = itemTypeDescriptions
 	}
 
 	public serialize(writer: BinaryWriter): void {
+    writer.writeVarInt(this.objectGID!)
 		writer.writeInt(this.objectType!)
 		writer.writeShort(this.itemTypeDescriptions!.length)
 		this.itemTypeDescriptions!.forEach((current) => {
@@ -59010,6 +59033,7 @@ export class ExchangeTypesItemsExchangerDescriptionForUserMessage extends DofusM
 	}
 
 	public deserialize(reader: BinaryReader): void {
+    this.objectGID = reader.readVarUInt()
 		this.objectType = reader.readInt()
 		this.itemTypeDescriptions = []
 		const countItemTypeDescriptions = reader.readShort()
@@ -59586,7 +59610,7 @@ export interface RawNpcDialogQuestionMessage {
 }
 
 export class NpcDialogQuestionMessage extends DofusMessage {
-	public static id: number = 7921
+	public static id: number = 941
 
 	public messageId: number | undefined = 0
 	public dialogParams: string[] | undefined
@@ -62186,7 +62210,7 @@ export interface RawNpcGenericActionRequestMessage {
 }
 
 export class NpcGenericActionRequestMessage extends DofusMessage {
-	public static id: number = 6002
+	public static id: number = 2709
 
 	public npcId: number | undefined = 0
 	public npcActionId: number | undefined = 0
@@ -70717,7 +70741,7 @@ export interface RawExchangeBidHouseBuyMessage {
 }
 
 export class ExchangeBidHouseBuyMessage extends DofusMessage {
-	public static id: number = 6676
+	public static id: number = 1854
 
 	public uid: number | undefined = 0
 	public qty: number | undefined = 0
@@ -70804,7 +70828,7 @@ export interface RawExchangeBidHouseSearchMessage {
 }
 
 export class ExchangeBidHouseSearchMessage extends DofusMessage {
-	public static id: number = 3308
+	public static id: number = 2056
 
 	public genId: number | undefined = 0
 	public follow: boolean | undefined = false
@@ -70888,7 +70912,7 @@ export interface RawExchangeBidHouseTypeMessage {
 }
 
 export class ExchangeBidHouseTypeMessage extends DofusMessage {
-	public static id: number = 270
+	public static id: number = 7826
 
 	public type: number | undefined = 0
 	public follow: boolean | undefined = false
@@ -73530,7 +73554,7 @@ export const types: { [key: number]: typeof DofusType } = {
 	3424: GameRolePlayTaxCollectorInformations,
 	9155: GameRolePlayNamedActorInformations,
 	4944: GameRolePlayMountInformations,
-	8307: GameRolePlayNpcInformations,
+	550: GameRolePlayNpcInformations,
 	5968: GameRolePlayNpcWithQuestInformations,
 	1204: GameRolePlayMerchantInformations,
 	5061: GameRolePlayHumanoidInformations,
@@ -73801,7 +73825,7 @@ export const types: { [key: number]: typeof DofusType } = {
 	6428: PartyMemberGeoPosition,
 	2852: ObjectItemToSellInNpcShop,
 	4082: ObjectItemToSellInBid,
-	7048: SellerBuyerDescriptor,
+	3010: SellerBuyerDescriptor,
 	8534: JobCrafterDirectoryEntryPlayerInfo,
 	3458: JobCrafterDirectoryEntryJobInfo,
 	1757: JobCrafterDirectoryListEntry,
@@ -73825,7 +73849,7 @@ export const types: { [key: number]: typeof DofusType } = {
 	8040: ObjectItemToSellInHumanVendorShop,
 	3184: ObjectItemQuantity,
 	8915: EntityMovementInformations,
-	9234: BidExchangerObjectInfo,
+	54: BidExchangerObjectInfo,
 	1189: LeagueFriendInformations,
 	6171: AtlasPointsInformations,
 	6377: GuildEmblem,
@@ -74154,7 +74178,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	6863: EntityTalkMessage,
 	4109: LockableStateUpdateAbstractMessage,
 	6717: LockableStateUpdateStorageMessage,
-	6940: ExchangeStartedBidBuyerMessage,
+	69: ExchangeStartedBidBuyerMessage,
 	5865: AllianceListMessage,
 	3830: JobCrafterDirectoryEntryMessage,
 	7458: ObtainedItemMessage,
@@ -74168,7 +74192,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	5079: CharacterNameSuggestionFailureMessage,
 	95: SelectedServerRefusedMessage,
 	2678: PrismInfoInValidMessage,
-	9696: ExchangeBidHouseBuyResultMessage,
+	8142: ExchangeBidHouseBuyResultMessage,
 	5438: ChatCommunityChannelCommunityMessage,
 	9953: IdolPartyLostMessage,
 	8494: ExchangePodsModifiedMessage,
@@ -74176,7 +74200,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	9199: TaxCollectorDialogQuestionExtendedMessage,
 	1736: AllianceTaxCollectorDialogQuestionExtendedMessage,
 	8589: TaxCollectorStateUpdateMessage,
-	636: ExchangeBidHouseGenericItemRemovedMessage,
+	7183: ExchangeBidHouseGenericItemRemovedMessage,
 	2660: QuestStepInfoMessage,
 	5407: ServerOptionalFeaturesMessage,
 	884: BreachRoomUnlockResultMessage,
@@ -74203,7 +74227,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	1620: SequenceNumberRequestMessage,
 	3818: PartyInvitationDetailsMessage,
 	1024: PartyInvitationDungeonDetailsMessage,
-	2868: ExchangeTypesExchangerDescriptionForUserMessage,
+	4903: ExchangeTypesExchangerDescriptionForUserMessage,
 	809: JobCrafterDirectorySettingsMessage,
 	4794: MoodSmileyUpdateMessage,
 	6496: EmotePlayMessage,
@@ -74539,7 +74563,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	9417: StartupActionsListMessage,
 	9648: TaxCollectorMovementRemoveMessage,
 	4867: AreaFightModificatorUpdateMessage,
-	1444: ExchangeBidHouseInListRemovedMessage,
+	2116: ExchangeBidHouseInListRemovedMessage,
 	3716: AllianceBulletinSetErrorMessage,
 	1920: ForgettableSpellDeleteMessage,
 	5410: DebtsDeleteMessage,
@@ -74553,7 +74577,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	2959: PresetUseResultWithMissingIdsMessage,
 	6085: OrnamentSelectErrorMessage,
 	7867: GameContextMoveElementMessage,
-	7377: ExchangeTypesItemsExchangerDescriptionForUserMessage,
+	6222: ExchangeTypesItemsExchangerDescriptionForUserMessage,
 	8697: FriendsListMessage,
 	6760: PrismInfoCloseMessage,
 	3077: PrismFightDefenderLeaveMessage,
@@ -74566,7 +74590,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	5183: ExchangeOkMultiCraftMessage,
 	5909: ExchangeWaitingResultMessage,
 	13: AlreadyConnectedMessage,
-	7921: NpcDialogQuestionMessage,
+	941: NpcDialogQuestionMessage,
 	790: EmotePlayErrorMessage,
 	2289: GameRolePlayDelayedActionFinishedMessage,
 	3991: ContactAddFailureMessage,
@@ -74608,7 +74632,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	4229: AllianceFactsRequestMessage,
 	5508: TeleportHavenBagRequestMessage,
 	5569: GameMapChangeOrientationRequestMessage,
-	69: ExchangeRequestOnTaxCollectorMessage,
+	6934: ExchangeRequestOnTaxCollectorMessage,
 	5687: ExchangeOnHumanVendorRequestMessage,
 	8531: ExchangeBuyMessage,
 	6025: EnterHavenBagRequestMessage,
@@ -74626,7 +74650,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	9751: LeaveDialogRequestMessage,
 	205: TeleportHavenBagAnswerMessage,
 	9331: KickHavenBagRequestMessage,
-	6002: NpcGenericActionRequestMessage,
+	2709: NpcGenericActionRequestMessage,
 	7175: GameRolePlayTaxCollectorFightRequestMessage,
 	3588: GameRolePlayPlayerFightFriendlyAnswerMessage,
 	2113: ExchangeShowVendorTaxMessage,
@@ -74855,11 +74879,11 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	5636: IdolsPresetSaveRequestMessage,
 	6757: PresetUseRequestMessage,
 	2180: ObjectSetPositionMessage,
-	6676: ExchangeBidHouseBuyMessage,
+	1854: ExchangeBidHouseBuyMessage,
 	3234: ExchangeBidHousePriceMessage,
-	3308: ExchangeBidHouseSearchMessage,
+	2056: ExchangeBidHouseSearchMessage,
 	1285: ExchangeBidHouseListMessage,
-	270: ExchangeBidHouseTypeMessage,
+	7826: ExchangeBidHouseTypeMessage,
 	7465: ExchangeObjectModifyPricedMessage,
 	7557: StopToListenRunningFightRequestMessage,
 	5035: GameFightSpectatePlayerRequestMessage,

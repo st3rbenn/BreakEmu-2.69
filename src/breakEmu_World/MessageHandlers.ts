@@ -26,6 +26,9 @@ import {
 	ChatClientMultiMessage,
 	ClientKeyMessage,
 	DofusMessage,
+	ExchangeBidHouseBuyMessage,
+	ExchangeBidHouseSearchMessage,
+	ExchangeBidHouseTypeMessage,
 	ExchangeCraftCountRequestMessage,
 	ExchangeObjectMoveMessage,
 	ExchangeReadyMessage,
@@ -42,6 +45,7 @@ import {
 	InteractiveUseRequestMessage,
 	LeaveDialogRequestMessage,
 	MapInformationsRequestMessage,
+	NpcGenericActionRequestMessage,
 	ObjectSetPositionMessage,
 	OrnamentSelectRequestMessage,
 	PlayerStatusUpdateRequestMessage,
@@ -70,10 +74,12 @@ import ShortcutHandler from "./handlers/character/shortcut/ShortcutHandler"
 import StatsHandler from "./handlers/character/stats/StatsHandler"
 import ChatCommandHandler from "./handlers/chat/ChatHandler"
 import DialogHandler from "./handlers/dialog/DialogHandler"
-import MapHandler from "./handlers/map/MapHandler"
+import MapHandler from "./handlers/map/mapHandler"
 import InteractiveMapHandler from "./handlers/map/interactive/InteractiveMapHandler"
 import TeleportHandler from "./handlers/map/teleport/TeleportHandler"
 import ServerListHandler from "./handlers/server/ServerListHandler"
+import NpcHandler from "./handlers/map/npc/NpcHandler"
+import AuctionHouseHandler from "./manager/map/element/interactiveElement/AuctionHouseHandler"
 
 class MessageHandlers {
 	private logger = new Logger("MessageHandlers")
@@ -395,6 +401,27 @@ class MessageHandlers {
 				client: WorldClient,
 				message: ExchangeReadyMessage
 			) => await ContextHandler.handleExchangeReadyMessage(client, message),
+			[NpcGenericActionRequestMessage.id]: async (
+				client: WorldClient,
+				message: NpcGenericActionRequestMessage
+			) =>
+				await NpcHandler.handleNpcGenericActionRequestMessage(client, message),
+			[ExchangeBidHouseTypeMessage.id]: async (
+				client: WorldClient,
+				message: ExchangeBidHouseTypeMessage
+			) =>
+				await AuctionHouseHandler.exchangeBidHouseTypeMessage(
+					client.selectedCharacter,
+					message
+				),
+			[ExchangeBidHouseSearchMessage.id]: async (
+        client: WorldClient,
+        message: ExchangeBidHouseSearchMessage
+      ) => await AuctionHouseHandler.exchangeBidHouseSearchMessage(client.selectedCharacter, message),
+      [ExchangeBidHouseBuyMessage.id]: async(
+        client: WorldClient,
+        message: ExchangeBidHouseBuyMessage
+      ) => await AuctionHouseHandler.exchangeBidHouseBuyMessage(client.selectedCharacter, message),
 		}
 	}
 

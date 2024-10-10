@@ -4,6 +4,7 @@ import GatherElementHandler from "./GatherElementHandler"
 import ZaapHandler from "./ZaapHandler"
 import BankHandler from "./BankHandler"
 import CraftHandler from "./CraftHandler"
+import AuctionHouseHandler from "./AuctionHouseHandler"
 
 class HandlerRegistry {
 	private static instance: HandlerRegistry
@@ -15,6 +16,8 @@ class HandlerRegistry {
 	zaapHandler = new ZaapHandler()
 	bankHandler = new BankHandler()
 	craftHandler = new CraftHandler()
+
+	auctionHouseHandler = new AuctionHouseHandler()
 
 	private constructor() {
 		this.registerHandlers()
@@ -39,6 +42,10 @@ class HandlerRegistry {
 		this.handlers[InteractiveTypeEnum.TYPE_ZAAP] = this.zaapHandler
 		this.handlers[InteractiveTypeEnum.TYPE_ZAAPI] = this.zaapHandler
 		this.handlers[InteractiveTypeEnum.TYPE_BANK] = this.bankHandler
+
+		this.handlers[
+			InteractiveTypeEnum.TYPE_RESOURCE_MARKETPLACE
+		] = this.auctionHouseHandler
 
 		//job craft handler
 		this.handlers[InteractiveTypeEnum.TYPE_CRUSHER] = this.craftHandler

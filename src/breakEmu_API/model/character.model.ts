@@ -46,7 +46,7 @@ import TeleportHandler from "@breakEmu_World/handlers/map/teleport/TeleportHandl
 import AchievementManager from "@breakEmu_World/manager/achievement/AchievementManager"
 import BreedManager from "@breakEmu_World/manager/breed/BreedManager"
 import Dialog from "@breakEmu_World/manager/dialog/Dialog"
-import ZaapDialog from "@breakEmu_World/manager/dialog/ZaapDialog"
+import ZaapDialog from "@breakEmu_World/manager/dialog/zaap/ZaapDialog"
 import CraftExchange from "@breakEmu_World/manager/dialog/job/CraftExchange"
 import Entity from "@breakEmu_World/manager/entities/Entity"
 import ContextEntityLook from "@breakEmu_World/manager/entities/look/ContextEntityLook"
@@ -69,12 +69,13 @@ import Account from "./account.model"
 import Achievement from "./achievement.model"
 import Breed from "./breed.model"
 import Experience from "./experience.model"
-import Finishmoves from "./finishmoves.model"
+import Finishmoves from "./finishMoves.model"
 import Job from "./job.model"
 import GameMap from "./map.model"
 import Skill from "./skill.model"
 import Spell from "./spell.model"
 import Container from "@breakEmu_Core/container/Container"
+import Npc from "./npc.model"
 
 class Character extends Entity {
 	private container: Container = Container.getInstance()
@@ -103,6 +104,8 @@ class Character extends Entity {
 	isZaapDialog: boolean = false
 	isBankDialog: boolean = false
 	isCraftDialog: boolean = false
+	isNpcDialog: boolean = false
+	isAuctionHouseDialog: boolean = false
 
 	status: PlayerStatusEnum = PlayerStatusEnum.PLAYER_STATUS_AVAILABLE
 
@@ -267,7 +270,7 @@ class Character extends Entity {
 		)
 		character.inventory = new Inventory(character)
 
-		character.bank = new Bank(character, [])
+		character.bank = new Bank(character, [], 0)
 
 		await BreedManager.getInstance().learnBreedSpells(character)
 
@@ -448,7 +451,7 @@ class Character extends Entity {
 
 	public removeDialog() {
 		this.dialog = null
-    this.isCraftDialog = false
+		this.isCraftDialog = false
 	}
 
 	public async leaveDialog() {
@@ -764,7 +767,9 @@ class Character extends Entity {
 				this.isMoving = true
 				this.movementKeys = keys
 				try {
-					await this.map.instance().send(new GameMapMovementMessage(keys, 0, this.id))
+					await this.map
+						.instance()
+						.send(new GameMapMovementMessage(keys, 0, this.id))
 				} catch (error) {
 					console.log(error)
 				}
@@ -1042,6 +1047,18 @@ class Character extends Entity {
 		try {
 			await this.client?.Send(
 				new TextInformationMessage(msgType, msgId, parameters)
+			)
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	public async notifyNewSale(gid: number, quantity: number, price: number) {
+		try {
+			await this.textInformation(
+				TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
+				65,
+				[gid.toString(), quantity.toString(), price.toString()]
 			)
 		} catch (error) {
 			console.log(error)

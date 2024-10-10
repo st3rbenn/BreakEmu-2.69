@@ -27,7 +27,10 @@ class MapHandler {
 				client.selectedCharacter.map = selectedMap
 
 				if (client.selectedCharacter.map === null) {
-					this.logger.error(`Map ${message.mapId} not found`)
+					this.logger.error(
+						`Map ${message.mapId} not found`,
+						new Error(`Map ${message.mapId} not found`)
+					)
 					return
 				}
 
@@ -35,7 +38,10 @@ class MapHandler {
 				await client.selectedCharacter?.noMove()
 			}
 		} catch (error) {
-			this.logger.error(error as any)
+			this.logger.error(
+				"Error while handle map informations request message",
+				error as any
+			)
 		}
 	}
 
@@ -53,7 +59,10 @@ class MapHandler {
 				await client.selectedCharacter?.noMove()
 			}
 		} catch (error) {
-			this.logger.error(error as any)
+			this.logger.error(
+				"Error while handle game map movement request message",
+				error as any
+			)
 		}
 	}
 
@@ -66,7 +75,10 @@ class MapHandler {
 				await client?.Send(new BasicNoOperationMessage())
 			}
 		} catch (error) {
-			this.logger.error(error as any)
+			this.logger.error(
+				"Error while handle map movement confirm message",
+				error as any
+			)
 		}
 	}
 
@@ -77,7 +89,10 @@ class MapHandler {
 		try {
 			await client.selectedCharacter?.cancelMove(message.cellId as number)
 		} catch (error) {
-			this.logger.error(error as any)
+			this.logger.error(
+				"Error while handle map movement cancel message",
+				error as any
+			)
 		}
 	}
 
@@ -141,7 +156,7 @@ class MapHandler {
 				}
 			}
 		} catch (error) {
-			this.logger.error(error as any)
+			this.logger.error("Error while handle change map message", error as any)
 		}
 	}
 }

@@ -2,9 +2,13 @@ import Character from "@breakEmu_API/model/character.model"
 import Logger from "@breakEmu_Core/Logger"
 import AccountRoleEnum from "../../../../enum/AccountRoleEnum"
 import { TCommandHandler } from "../CommandHandler"
+import Container from "@breakEmu_Core/container/Container"
+import Database from "@breakEmu_API/Database"
+import Npc from "@breakEmu_API/model/npc.model"
+import NpcTemplate from "@breakEmu_API/model/npcTemplate.model"
 
 class ModeratorCommandHandler {
-	static logger: Logger = new Logger("ModeratorCommandHandler")
+	private static logger: Logger = new Logger("ModeratorCommandHandler")
 
 	static commandHandler: TCommandHandler = {
 		tp: {
@@ -16,7 +20,7 @@ class ModeratorCommandHandler {
 			command: "tp !mapId ?cellId",
 			neededRole: [AccountRoleEnum.MODERATOR],
 			show: true,
-			nbRequiredArgs: 0,
+			nbRequiredArgs: 1,
 		},
 		god: {
 			execute: async (args, message, character) => {
@@ -54,7 +58,7 @@ class ModeratorCommandHandler {
 	static async tpCommand(args: string[], character: Character) {
 		if (args.length == 1) {
 			if (RegExp(/\D/).test(args[0])) {
-				await character.replyError("invalid command - !tp mapId")
+				await character.replyError("invalid format - !tp mapId (number)")
 				return
 			}
 
@@ -68,7 +72,9 @@ class ModeratorCommandHandler {
 			await character.teleport(mapId)
 		} else if (args.length == 2) {
 			if (RegExp(/\D/).test(args[0]) && RegExp(/\D/).test(args[0])) {
-				await character.replyError("invalid command - !tp mapId cellId")
+				await character.replyError(
+					"invalid format - !tp mapId cellId (number) (number)"
+				)
 				return
 			}
 
@@ -76,7 +82,9 @@ class ModeratorCommandHandler {
 			const cellId = parseInt(args[1])
 
 			if (mapId === character.mapId && cellId === character.cellId) {
-				await character.replyError("You are already on this map")
+				await character.replyError(
+					"Why you try to teleport to the same cell ? are you ok ? 🤣"
+				)
 				return
 			}
 

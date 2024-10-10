@@ -8,8 +8,6 @@ abstract class Dialog {
 	public character: Character
 	abstract open(): Promise<void>
 	abstract close(): Promise<void>
-
-  
 }
 
 export default Dialog

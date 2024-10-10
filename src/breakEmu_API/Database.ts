@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client"
-import ansiColorCodes from "@breakEmu_Core/Colors"
-import Logger from "@breakEmu_Core/Logger"
+import ansiColorCodes from "../breakEmu_Core/Colors"
+import Logger from "../breakEmu_Core/Logger"
 import InteractiveElementBonus from "@breakEmu_Core/bull/tasks/BonusTask"
 import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
 import { GenericActionEnum, InteractiveTypeEnum } from "@breakEmu_Protocol/IO"
@@ -18,7 +18,7 @@ import AchievementObjective from "./model/achievementObjective.model"
 import AchievementReward from "./model/achievementReward.model"
 import Breed from "./model/breed.model"
 import Experience from "./model/experience.model"
-import Finishmoves from "./model/finishmoves.model"
+import Finishmoves from "./model/finishMoves.model"
 import Head from "./model/head.model"
 import Item from "./model/item.model"
 import ItemSet from "./model/itemSet.model"
@@ -31,6 +31,12 @@ import World from "./model/world.model"
 import SubArea from "./model/SubArea.model"
 import Recipe from "./model/recipe.model"
 import Container from "@breakEmu_Core/container/Container"
+import NpcReply from "./model/npcReply.model"
+import NpcAction from "./model/npcAction.model"
+import Npc from "./model/npc.model"
+import NpcTemplate from "./model/npcTemplate.model"
+import AuctionHouse from "./model/auctionHouse.model"
+import AuctionHouseItem from "./model/auctionHouseItem.model"
 
 interface test {
 	id: number
@@ -129,9 +135,9 @@ class Database {
 
 	constructor() {
 		this.prisma = new PrismaClient({
-			log: this.container.get(ConfigurationManager).showDatabaseLogs
-				? ["query", "info", "warn", "error"]
-				: [],
+			// log: this.container.get(ConfigurationManager).showDatabaseLogs
+			// 	? ["query", "info", "warn", "error"]
+			// 	: [],
 		})
 
 		//@ts-ignore
@@ -174,6 +180,9 @@ class Database {
 			await this.loadItemSets()
 			await this.loadItems()
 			await this.loadRecipes()
+			await this.loadNpcActions()
+			await this.loadNpcReplies()
+			await this.loadNpcTemplates()
 			await Promise.all([
 				this.loadWorlds(),
 				this.loadHeads(),
@@ -183,6 +192,7 @@ class Database {
 				this.loadFinishMoves(),
 				this.loadAchievementObjectives(),
 				this.loadSubAreas(),
+				this.loadAuctionHouse(),
 				this.loadMapScrollActions(),
 				this.loadInteractiveElements(),
 			])
@@ -861,6 +871,10 @@ class Database {
 						(el) => el.mapId === gameMap.id
 					)
 
+					const foundAllNpcs = Array.from(Npc.npcs.values()).filter(
+						(npc) => npc.mapId === gameMap.id
+					)
+
 					// Utilise Promise.all pour ajouter tous les éléments interactifs en parallèle
 					await Promise.all(
 						foundedInteractives.map((el) => {
@@ -886,6 +900,12 @@ class Database {
 						})
 					)
 
+					await Promise.all(
+						foundAllNpcs.map((npc) => {
+							gameMap.instance().addEntity(npc)
+						})
+					)
+
 					GameMap.maps.set(gameMap.id, gameMap)
 				})
 
@@ -903,6 +923,7 @@ class Database {
 		}
 
 		await this.logger.writeAsync(`Loaded ${GameMap.maps.size} maps`)
+		await this.loadNpcs()
 	}
 
 	async loadAchievementObjectives(): Promise<void> {
@@ -973,6 +994,184 @@ class Database {
 		} catch (error) {
 			await this.logger.writeAsync(
 				`Error loading recipes: ${(error as any).stack}`,
+				ansiColorCodes.red
+			)
+		}
+	}
+
+	async loadNpcReplies(): Promise<void> {
+		try {
+			const replies = await this.prisma.npcreply.findMany()
+
+			for (const reply of replies) {
+				const npcReply = new NpcReply(
+					reply.id,
+					reply.npcId,
+					reply.replyId,
+					reply.messageId,
+					reply.action,
+					reply.param1,
+					reply.param2,
+					reply.param3,
+					reply.criteria
+				)
+
+				NpcReply.npcReplies.set(reply.id, npcReply)
+			}
+
+			await this.logger.writeAsync(
+				`Loaded ${NpcReply.npcReplies.size} npc replies`
+			)
+		} catch (error) {
+			await this.logger.writeAsync(
+				`Error loading npc replies: ${(error as any).stack}`,
+				ansiColorCodes.red
+			)
+		}
+	}
+
+	async loadNpcActions(): Promise<void> {
+		try {
+			const actions = await this.prisma.npcaction.findMany()
+
+			for (const action of actions) {
+				const npcAction = new NpcAction(
+					action.id,
+					action.npcId,
+					action.action,
+					action.param1,
+					action.param2,
+					action.param3,
+					action.criteria
+				)
+				NpcAction.npcActions.set(action.id, npcAction)
+			}
+
+			await this.logger.writeAsync(
+				`Loaded ${NpcAction.npcActions.size} npc actions`
+			)
+		} catch (error) {
+			await this.logger.writeAsync(
+				`Error loading npc actions: ${(error as any).stack}`,
+				ansiColorCodes.red
+			)
+		}
+	}
+
+	async loadNpcTemplates(): Promise<void> {
+		try {
+			const npcs = await this.prisma.npctemplate.findMany()
+
+			for (const npc of npcs) {
+				const npcRecord = new NpcTemplate(
+					npc.id,
+					npc.name,
+					npc.gender,
+					npc.look,
+					npc.action.split(",").map(Number),
+					[],
+					[]
+				)
+
+				NpcTemplate.npcs.set(npc.id, npcRecord)
+			}
+
+			await this.logger.writeAsync(
+				`Loaded ${NpcTemplate.npcs.size} npc templates`
+			)
+		} catch (error) {
+			await this.logger.writeAsync(
+				`Error loading npc templates: ${(error as any).stack}`,
+				ansiColorCodes.red
+			)
+		}
+	}
+
+	async loadNpcs(): Promise<void> {
+		try {
+			const npcs = await this.prisma.npc.findMany({
+				include: {
+					npcspawn: true,
+				},
+			})
+
+			for (const npc of npcs) {
+				const npcRecord = new Npc(
+					npc.id,
+					npc.npcTemplateId,
+					npc.name,
+					npc.look,
+					npc.gender,
+					npc.npcspawn[0].mapId,
+					npc.npcspawn[0].cellId,
+					npc.npcspawn[0].direction
+				)
+
+				this.logger.write(
+					`Npc ${npc.id} has ${npcRecord.replies.size} replies and ${npcRecord.actions.size} actions`
+				)
+
+				npcRecord.map.instance().addEntity(npcRecord)
+
+				Npc.npcs.set(npc.id, npcRecord)
+			}
+
+			await this.logger.writeAsync(`Loaded ${Npc.npcs.size} npcs`)
+		} catch (error) {
+			await this.logger.writeAsync(
+				`Error loading npcs: ${(error as any).stack}`,
+				ansiColorCodes.red
+			)
+		}
+	}
+
+	async loadAuctionHouse(): Promise<void> {
+		try {
+			const auctionHouses = await this.prisma.auctionHouse.findMany({
+				include: {
+					auctionHouseItem: true,
+				},
+			})
+
+			const auctionHousesItems = await this.prisma.auctionHouseItem.findMany()
+
+			for (const ah of auctionHouses) {
+				const auctionHouseRecord = new AuctionHouse(
+					ah.id,
+					ah.quantities.split(",").map(Number),
+					ah.itemsType.split(",").map(Number),
+					ah.maxItemPerAccount
+				)
+
+				for (const item of auctionHousesItems.filter(
+					(i) => i.auctionHouseId === ah.id
+				)) {
+					const itemRecord = new AuctionHouseItem(
+						item.uid,
+						item.gId,
+						item.price,
+						item.position,
+						item.quantity,
+						EffectCollection.loadFromJson(item.effects?.toString() as string),
+						item.apparenceId,
+						item.look as string,
+						item.auctionHouseId,
+						item.sellerId,
+            item.sold
+					)
+
+          auctionHouseRecord.items.set(item.uid, itemRecord)
+				}
+        await this.logger.writeAsync(`Loaded ${auctionHouseRecord.items.size} items for auction house ${ah.id}`)
+				AuctionHouse.auctionHouses.set(ah.id, auctionHouseRecord)
+			}
+
+			await this.logger.writeAsync(
+				`Loaded ${AuctionHouse.auctionHouses.size} auction houses`
+			)
+		} catch (error) {
+			await this.logger.writeAsync(
+				`Error loading npcs: ${(error as any).stack}`,
 				ansiColorCodes.red
 			)
 		}

@@ -10,7 +10,8 @@ import Container from "@breakEmu_Core/container/Container"
 import bankItemController from "@breakEmu_API/controller/bankItem.controller"
 
 class BankItem extends AbstractItem {
-	characterId: number
+	accountId: number
+  characterId: number
 	private container: Container = Container.getInstance()
 
 	constructor(
@@ -21,10 +22,12 @@ class BankItem extends AbstractItem {
 		effects: EffectCollection,
 		appearanceId: number,
 		look: string,
-		characterId: number
+		accountId: number,
+    characterId: number
 	) {
 		super(gId, position, quantity, effects, appearanceId, look, uId)
-		this.characterId = characterId
+		this.accountId = accountId
+    this.characterId = characterId
 	}
 
 	toCharacterItem(): CharacterItem {
@@ -60,14 +63,14 @@ class BankItem extends AbstractItem {
 	}
 
 	public async save(): Promise<void> {
-		await this.container.get(bankItemController).updateBankItem(this, this.characterId)
+		await this.container.get(bankItemController).updateBankItem(this, this.accountId)
 	}
 
 	public static async createFromCharacterItem(
 		item: CharacterItem,
-		characterId: number
+		accountId: number
 	): Promise<BankItem> {
-		const bankItem = item.toBankItem()
+		const bankItem = item.toBankItem(accountId)
 
 		await bankItem.save()
 		return bankItem

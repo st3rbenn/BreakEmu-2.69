@@ -9,7 +9,6 @@ import Container from "@breakEmu_Core/container/Container"
 
 class WorldController extends BaseController {
 	protected _logger: Logger = new Logger("worldController")
-	public database: Database = Container.getInstance().get(Database)
 	public worldList: WorldServer[] = []
 
 	constructor(client: WorldServerManager) {

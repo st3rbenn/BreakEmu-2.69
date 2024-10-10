@@ -5,7 +5,7 @@ import ObjectiveCriterion from "./ObjectiveCriterion"
 import AchievementItemCriterion from "../criterions/AchievementItemCriterion"
 import JobItemCriterion from "../criterions/JobItemCriterion"
 
-class CriterionManager {
+class AchievementCriterionManager {
 	criterion: string
 	objective: AchievementObjectiveHandler
 
@@ -54,7 +54,9 @@ class CriterionManager {
 						break
 					case JobItemCriterion.firstIdentifier:
 					case JobItemCriterion.secondIdentifier:
-						listOfCriterion.push(new JobItemCriterion(this.objective.character, operatorType))
+						listOfCriterion.push(
+							new JobItemCriterion(this.objective.character, operatorType)
+						)
 						break
 					default:
 						console.log("Unknown criterion identifier: " + id)
@@ -88,4 +90,4 @@ class CriterionManager {
 	}
 }
 
-export default CriterionManager
+export default AchievementCriterionManager

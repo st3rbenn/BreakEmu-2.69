@@ -1,23 +1,23 @@
+import bankItemController from "@breakEmu_API/controller/bankItem.controller"
+import UserController from "@breakEmu_API/controller/user.controller"
 import BankItem from "@breakEmu_API/model/BankItem.model"
 import Character from "@breakEmu_API/model/character.model"
-import ItemCollection from "./collections/ItemCollections"
 import CharacterItem from "@breakEmu_API/model/characterItem.model"
 import {
 	CharacterInventoryPositionEnum,
-	ExchangeObjectAddedMessage,
 	ObjectItem,
 	StorageInventoryContentMessage,
 	StorageObjectRemoveMessage,
 	StorageObjectUpdateMessage,
 } from "@breakEmu_Protocol/IO"
-import bankItemController from "@breakEmu_API/controller/bankItem.controller"
+import ItemCollection from "@breakEmu_World/manager/items/collections/ItemCollections"
 
 class Bank extends ItemCollection<BankItem> {
 	character: Character
 
-	kamas: number = 0
+	kamas: number
 
-	constructor(character: Character, items: BankItem[] = [], kamas: number = 0) {
+	constructor(character: Character, items: BankItem[] = [], kamas: number) {
 		super(items)
 		this.character = character
 		this.kamas = kamas
@@ -81,12 +81,18 @@ class Bank extends ItemCollection<BankItem> {
 			} else {
 				console.log("Item does not exist in bank, adding new item")
 				itemCuted.id = item.id
-				this.items.set(itemCuted.id, itemCuted.toBankItem())
+				this.items.set(
+					itemCuted.id,
+					itemCuted.toBankItem(this.character.accountId)
+				)
 
 				await this.container
 					.get(bankItemController)
-					.createBankItem(itemCuted.toBankItem(), this.character)
-				await this.onItemAdded(itemCuted.toBankItem())
+					.createBankItem(
+						itemCuted.toBankItem(this.character.accountId),
+						this.character
+					)
+				await this.onItemAdded(itemCuted.toBankItem(this.character.accountId))
 			}
 
 			if (item.quantity >= 1) {
@@ -119,6 +125,18 @@ class Bank extends ItemCollection<BankItem> {
 		return true
 	}
 
+	public async addKamas(kamas: number) {
+		try {
+			this.kamas += kamas
+
+			await this.container
+				.get(UserController)
+				.updateBankKamas(this.character.accountId, this.kamas)
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
 	public async refresh() {
 		try {
 			const objectItems: ObjectItem[] = await this.getObjectsItems()
@@ -146,7 +164,7 @@ class Bank extends ItemCollection<BankItem> {
 			await this.character.client.Send(new StorageObjectRemoveMessage(item.id))
 			await this.container
 				.get(bankItemController)
-				.removeBankItem(this.character.id, item.id)
+				.removeBankItem(this.character.accountId, item.id)
 			await this.refresh()
 		} catch (error) {
 			console.log(error)

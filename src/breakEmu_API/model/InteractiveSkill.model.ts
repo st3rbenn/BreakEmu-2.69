@@ -37,10 +37,10 @@ class InteractiveSkill {
 		this.actionIdentifier = parseInt(actionIdentifier)
 		this.skillId = parseInt(skillId)
 		this.type = parseInt(type)
-		this.param1 = param1 !== "" ? param1 : undefined
-		this.param2 = param2 !== "" ? param2 : undefined
-		this.param3 = param3 !== "" ? param3 : undefined
-		this.criteria = criteria !== "" ? criteria : undefined
+		this.param1 = param1 !== "" ? param1 : ""
+		this.param2 = param2 !== "" ? param2 : ""
+		this.param3 = param3 !== "" ? param3 : ""
+		this.criteria = criteria !== "" ? criteria : ""
 	}
 
 	public static getInteractiveSkills(): Map<number, InteractiveSkill> {

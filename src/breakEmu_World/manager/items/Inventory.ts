@@ -40,7 +40,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 		super(items)
 		this.character = character
 
-		this.logger = new Logger(`Inventory-${this.character?.name}`)
+		this.logger = new Logger(`Inventory-${this.character.name}`)
 	}
 
 	public _isChangingStuff: boolean = false
@@ -114,7 +114,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 			await this.refreshWeight()
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -124,7 +124,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 				new KamasUpdateMessage(this.character.kamas)
 			)
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -137,7 +137,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 				)
 			)
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -151,7 +151,21 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 			await this.refreshKamas()
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
+		}
+	}
+
+	public async removeKamas(kamas: number) {
+		try {
+			if (this.character.kamas - kamas < 0) {
+				this.character.kamas = 0
+			} else {
+				this.character.kamas -= kamas
+			}
+
+			await this.refreshKamas()
+		} catch (error) {
+			this.logger.error(error as any)
 		}
 	}
 
@@ -190,7 +204,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 				return null
 			}
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -266,7 +280,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 			this._isChangingStuff = false
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -299,7 +313,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 			await this.updateItem(item)
 			await this.onItemMoved(item, lastPosition)
 		} catch (error) {
-			console.log(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -307,20 +321,20 @@ class Inventory extends ItemCollection<CharacterItem> {
 		item: CharacterItem,
 		newQuantity: number,
 		newPos: CharacterInventoryPositionEnum,
-    addItem: boolean = true
+		addItem: boolean = true
 	): Promise<CharacterItem> {
 		const newItem = item.clone()
 		item.quantity -= newQuantity
 		newItem.quantity = newQuantity
 		newItem.position = newPos
 
-		if(addItem) {
-      await this.addItem(newItem, newQuantity, this.character.id)
-    }
+		if (addItem) {
+			await this.addItem(newItem, newQuantity, this.character.id)
+		}
 
-    if(item.quantity <= 0) {
-      await this.removeItem(item, item.quantity)
-    }
+		if (item.quantity <= 0) {
+			await this.removeItem(item, item.quantity)
+		}
 
 		return newItem
 	}
@@ -390,7 +404,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 				new ObjectQuantityMessage(item.id, item.quantity)
 			)
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -404,7 +418,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 				new ObjectsQuantityMessage(objUidAndQty)
 			)
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -452,7 +466,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 				}
 			}
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -496,7 +510,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 				await this.onSetUpdated(itemSet, count)
 			}
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -531,7 +545,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 		try {
 			await this.character.client?.Send(new ObjectErrorMessage(error))
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -554,7 +568,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 			await this.container.get(CharacterItemController).updateItem(item)
 			await this.refresh()
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -567,7 +581,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 				new SetUpdateMessage(itemSet.id, allItemsSetId, objectEffects)
 			)
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -580,7 +594,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 				new ObjectMovementMessage(item.id, newPosition)
 			)
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -590,7 +604,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 			await this.character.client?.Send(new ObjectAddedMessage(it, 0))
 			await this.refreshWeight()
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -602,7 +616,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 			await this.refreshWeight()
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -612,7 +626,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 			await this.updateItemQuantity(item)
 			await this.refreshWeight()
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -630,7 +644,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 			await this.refreshWeight()
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -641,7 +655,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 			await this.refreshWeight()
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -663,7 +677,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 			await this.refreshWeight()
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -673,7 +687,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 			await this.updateItemQuantity(item)
 			await this.refreshWeight()
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -691,19 +705,22 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 			await this.refreshWeight()
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
-	public async onItemQuantityChanged(item: CharacterItem, save: boolean = true): Promise<void> {
+	public async onItemQuantityChanged(
+		item: CharacterItem,
+		save: boolean = true
+	): Promise<void> {
 		try {
-			if(save) {
-        await item.save()
-      }
+			if (save) {
+				await item.save()
+			}
 			await this.updateItemQuantity(item)
 			await this.refreshWeight()
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 
@@ -714,7 +731,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 			}
 			await this.updateItemsQuantity(items)
 		} catch (error) {
-			this.logger.write(error as any)
+			this.logger.error(error as any)
 		}
 	}
 }

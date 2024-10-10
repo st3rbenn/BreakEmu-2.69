@@ -1,8 +1,9 @@
 import MapPoint from "../map/MapPoint"
-import Map from "@breakEmu_API/model/map.model"
+import GameMap from "@breakEmu_API/model/map.model"
 import {
 	DirectionsEnum,
 	DofusMessage,
+	GameContextActorInformations,
 	GameRolePlayActorInformations,
 	GameRolePlayShowActorMessage,
 	messages,
@@ -16,14 +17,22 @@ abstract class Entity {
 	abstract name: string
 	abstract cellId: number
 	abstract point: MapPoint
-	map: Map
+	map: GameMap
 	abstract direction: DirectionsEnum
 
-	constructor(map: Map) {
-		this.map = map
+	constructor(map: GameMap | number) {
+		if (map instanceof GameMap) {
+			this.map = map
+		} else {
+			const gm = GameMap.getMapById(map)
+			if (gm === undefined) {
+				throw new Error(`Map ${map} not found`)
+			}
+			this.map = gm
+		}
 	}
 
-	abstract getActorInformations(): GameRolePlayActorInformations
+	abstract getActorInformations(): GameContextActorInformations
 
 	public async sendMap(message: DofusMessage) {
 		if (this.map !== null && this.map.instance !== null) {
@@ -34,7 +43,7 @@ abstract class Entity {
 				)
 				await this.map.instance().send(message)
 			} catch (e) {
-				this.logger.error(`${(e as any).message} - ${(e as any).stack}`)
+				this.logger.error(`${(e as any).message}}`, e as any)
 			}
 		}
 	}
@@ -45,7 +54,7 @@ abstract class Entity {
 				.instance()
 				.send(new GameRolePlayShowActorMessage(this.getActorInformations()))
 		} catch (e) {
-			this.logger.error(`${(e as any).message} - ${(e as any).stack}`)
+			this.logger.error(`${(e as any).message}`, e as any)
 		}
 	}
 }

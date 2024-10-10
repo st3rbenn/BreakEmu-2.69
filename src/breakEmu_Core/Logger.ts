@@ -34,8 +34,10 @@ class Logger {
 		return `${color ? color : ansiColorCodes.bright}${msg}\x1b[0m`
 	}
 
-	public error(msg: string, error: Error): void {
-		this.logger.error(`${msg} \n [Stack]:  ${error.stack}`)
+	public error(msg: string, error?: Error): void {
+		this.logger.error(
+			`${msg} \n [Stack]:  ${error ? error.stack : new Error(msg).stack}`
+		)
 	}
 
 	public warn(msg: string): void {

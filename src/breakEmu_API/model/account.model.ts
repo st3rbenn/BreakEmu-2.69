@@ -21,6 +21,7 @@ class Account {
 	role: number
 	is_banned: boolean
   tagNumber: number
+  bankKamas: number
 
   characters: Map<number, Character> = new Map();
 
@@ -43,7 +44,8 @@ class Account {
 		IP: string,
 		role: number,
 		is_banned: boolean,
-    tagNumber: number
+    tagNumber: number,
+    bankKamas: number
 	) {
 		this.id = id
 		this.username = username
@@ -64,6 +66,7 @@ class Account {
 		this.role = role
 		this.is_banned = is_banned
     this.tagNumber = tagNumber
+    this.bankKamas = bankKamas
 	}
 
   public getRandomTagNumber(): number {

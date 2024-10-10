@@ -16,7 +16,6 @@ class LevelObjectiveCriterion extends ObjectiveCriterion {
     public override criterionFulfilled = () => this.compare();
 
     private compare(): boolean {
-      // console.log(`Character level: ${this.characterLevel}, Criterion level: ${this.criterionLevel}, Comparator: ${this.comparator}`);
       switch (this.comparator) {
         case ComparaisonOperatorEnum.EQUALS:
             return this.characterLevel == this.criterionLevel;

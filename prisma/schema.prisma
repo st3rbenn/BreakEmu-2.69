@@ -11,27 +11,30 @@ datasource db {
 }
 
 model user {
-  id             Int         @id @default(autoincrement())
-  username       String      @unique
-  password       String
-  pseudo         String?     @unique
-  email          String
-  is_verified    Boolean     @default(false)
-  tag            String?
-  firstname      String
-  lastname       String
-  birthdate      DateTime
-  secretQuestion String?
-  login_at       DateTime?
-  logout_at      DateTime?
-  created_at     DateTime    @default(now())
-  updated_at     DateTime?   @updatedAt
-  deleted_at     DateTime?
-  ip             String
-  is_banned      Boolean     @default(false)
-  role           Int         @default(1)
-  tagNumber      Int?        @unique
-  characters     character[]
+  id               Int                @id @default(autoincrement())
+  username         String             @unique
+  password         String
+  pseudo           String?            @unique
+  email            String
+  is_verified      Boolean            @default(false)
+  tag              String?
+  firstname        String
+  lastname         String
+  birthdate        DateTime
+  secretQuestion   String?
+  login_at         DateTime?
+  logout_at        DateTime?
+  created_at       DateTime           @default(now())
+  updated_at       DateTime?          @updatedAt
+  deleted_at       DateTime?
+  ip               String
+  is_banned        Boolean            @default(false)
+  role             Int                @default(1)
+  tagNumber        Int?               @unique
+  bankKamas        Int                @default(0)
+  characters       character[]
+  auctionHouseItem auctionHouseItem[]
+  bankItem         bankItem[]
 }
 
 model character {
@@ -53,7 +56,6 @@ model character {
   statsPoints                   Int             @default(0)
   spawnMapId                    Int             @default(0)
   spawnCellId                   Int             @default(0)
-  bankKamas                     Int             @default(0)
   shortcuts                     Json?
   spells                        Json?
   finishMoves                   Json?
@@ -75,8 +77,6 @@ model character {
   guild                         guild?          @relation(fields: [guildId], references: [id])
   guildId                       Int?
   characterItem                 characterItem[]
-
-  bankItem bankItem[]
 }
 
 model guild {
@@ -90,20 +90,21 @@ model guild {
 }
 
 model world {
-  id                  Int       @id @default(autoincrement())
+  id                  Int        @id @default(autoincrement())
   name                String
   port                Int
   address             String
-  requireSubscription Boolean   @default(false)
+  requireSubscription Boolean    @default(false)
   completion          Int
-  serverSelectable    Boolean   @default(false)
+  serverSelectable    Boolean    @default(false)
   charCapacity        Int
   charsCount          Int
   requiredRole        Int
   status              Int
-  created_at          DateTime  @default(now())
-  updated_at          DateTime  @updatedAt
+  created_at          DateTime   @default(now())
+  updated_at          DateTime   @updatedAt
   deleted_at          DateTime?
+  bankItem            bankItem[]
 }
 
 model breed {
@@ -242,23 +243,26 @@ model item {
   isSaleable     Boolean
   look           String? @db.Text
 
-  characterItem characterItem[]
-  bankItem      bankItem[]
+  characterItem    characterItem[]
+  bankItem         bankItem[]
+  auctionHouseItem auctionHouseItem[]
 }
 
 model bankItem {
-  characterId  Int
-  character    character @relation(fields: [characterId], references: [id])
+  accountId    Int
+  account      user    @relation(fields: [accountId], references: [id])
+  serverId     Int
+  server       world   @relation(fields: [serverId], references: [id])
   itemId       Int
-  item         item      @relation(fields: [gId], references: [id])
+  item         item    @relation(fields: [gId], references: [id])
   gId          Int
   position     Int
   quantity     Int
   effects      Json
   appearanceId Int
-  look         String?   @db.Text
+  look         String? @db.Text
 
-  @@id([characterId, itemId])
+  @@id([accountId, serverId, itemId])
 }
 
 model weapon {
@@ -420,4 +424,85 @@ model recipe {
   quantities  Json
   jobId       Int
   skillId     Int
+}
+
+model npctemplate {
+  id             Int    @id
+  name           String
+  look           String
+  gender         Int
+  action         String
+  dialogMessages Json
+  dialogReplies  Json
+  npc            npc[]
+}
+
+model npc {
+  id            Int         @id
+  npcTemplateId Int
+  npctemplate   npctemplate @relation(fields: [npcTemplateId], references: [id])
+  name          String
+  look          String
+  gender        Int
+  npcaction     npcaction[]
+  npcreply      npcreply[]
+  npcspawn      npcspawn[]
+}
+
+model npcaction {
+  id       Int    @id @default(autoincrement())
+  npcId    Int    @map("npc")
+  npc      npc    @relation(fields: [npcId], references: [id], onDelete: Cascade)
+  action   Int
+  param1   String
+  param2   String
+  param3   String
+  criteria String
+}
+
+model npcspawn {
+  id        Int @id @default(autoincrement())
+  npcId     Int @map("npc")
+  npc       npc @relation(fields: [npcId], references: [id], onDelete: Cascade)
+  mapId     Int
+  cellId    Int
+  direction Int
+}
+
+model npcreply {
+  id        Int    @id @default(autoincrement())
+  npcId     Int    @map("npc")
+  npc       npc    @relation(fields: [npcId], references: [id], onDelete: Cascade)
+  replyId   Int
+  messageId Int
+  action    Int
+  param1    String
+  param2    String
+  param3    String
+  criteria  String
+}
+
+model auctionHouse {
+  id                Int                @id
+  quantities        String
+  itemsType         String             @db.Text
+  maxItemPerAccount Int
+  auctionHouseItem  auctionHouseItem[]
+}
+
+model auctionHouseItem {
+  uid            Int          @id @default(autoincrement())
+  gId            Int
+  item           item         @relation(fields: [gId], references: [id])
+  price          Int
+  sold           Boolean      @default(false)
+  position       Int
+  quantity       Int
+  effects        Json
+  apparenceId    Int
+  look           String?      @db.Text
+  auctionHouseId Int
+  auctionHouse   auctionHouse @relation(fields: [auctionHouseId], references: [id])
+  sellerId       Int
+  seller         user         @relation(fields: [sellerId], references: [id])
 }

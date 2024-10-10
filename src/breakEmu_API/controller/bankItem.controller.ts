@@ -6,6 +6,7 @@ import EffectCollection from "@breakEmu_World/manager/entities/effect/EffectColl
 import EffectInteger from "@breakEmu_World/manager/entities/effect/EffectInteger"
 import Database from "../Database"
 import Character from "../model/character.model"
+import WorldServer from "@breakEmu_World/WorldServer"
 
 class bankItemController {
 	private logger: Logger = new Logger("bankItemController")
@@ -14,7 +15,10 @@ class bankItemController {
 
 	async createBankItem(item: BankItem, character: Character) {
 		try {
-			const findSame = await this.getBankItemByGid(character.id, item.gId)
+			const findSame = await this.getBankItemByGid(
+				character.id,
+				item.gId
+			)
 
 			if (findSame) {
 				this.logger.error(
@@ -26,7 +30,8 @@ class bankItemController {
 
 			const bankItem = await this.database.prisma.bankItem.create({
 				data: {
-					characterId: character.id,
+					accountId: character.accountId,
+					serverId: this.container.get(WorldServer).worldServerData.Id,
 					itemId: item.id,
 					gId: item.gId,
 					appearanceId: item.appearanceId,
@@ -43,11 +48,12 @@ class bankItemController {
 		}
 	}
 
-	async getBankItemByGid(characterId: number, gid: number) {
+	async getBankItemByGid(accountId: number, gid: number) {
 		try {
 			const bankItem = await this.database.prisma.bankItem.findFirst({
 				where: {
-					characterId,
+					accountId,
+					serverId: this.container.get(WorldServer).worldServerData.Id,
 					gId: gid,
 				},
 			})
@@ -57,11 +63,15 @@ class bankItemController {
 		}
 	}
 
-	async getBankItemByItemId(characterId: number, itemId: number) {
+	async getBankItemByItemId(
+		accountId: number,
+		itemId: number
+	) {
 		try {
 			const bankItem = await this.database.prisma.bankItem.findFirst({
 				where: {
-					characterId,
+					accountId,
+					serverId: this.container.get(WorldServer).worldServerData.Id,
 					itemId,
 				},
 			})
@@ -74,12 +84,13 @@ class bankItemController {
 		}
 	}
 
-	async getBankItems(characterId: number) {
+	async getBankItems(accountId: number, characterId: number) {
 		const bankItems: BankItem[] = []
 		try {
 			const allBankItems = await this.database.prisma.bankItem.findMany({
 				where: {
-					characterId,
+					serverId: this.container.get(WorldServer).worldServerData.Id,
+					accountId,
 				},
 			})
 
@@ -117,7 +128,8 @@ class bankItemController {
 					effects,
 					item.appearanceId,
 					item.look || "",
-					item.characterId
+					item.accountId,
+          characterId
 				)
 
 				bankItems.push(bankItem)
@@ -130,12 +142,15 @@ class bankItemController {
 	}
 
 	async removeBankItem(
-		characterId: number,
+		accountId: number,
 		itemId: number,
 		quantity: number = 0
 	): Promise<boolean> {
 		try {
-			const bankItem = await this.getBankItemByItemId(characterId, itemId)
+			const bankItem = await this.getBankItemByItemId(
+				accountId,
+				itemId
+			)
 			if (!bankItem) {
 				return false
 			}
@@ -144,8 +159,9 @@ class bankItemController {
 				//delete item
 				await this.database.prisma.bankItem.delete({
 					where: {
-						characterId_itemId: {
-							characterId,
+						accountId_serverId_itemId: {
+							accountId,
+							serverId: this.container.get(WorldServer).worldServerData.Id,
 							itemId,
 						},
 					},
@@ -163,8 +179,9 @@ class bankItemController {
 
 			await this.database.prisma.bankItem.update({
 				where: {
-					characterId_itemId: {
-						characterId,
+					accountId_serverId_itemId: {
+						accountId,
+						serverId: this.container.get(WorldServer).worldServerData.Id,
 						itemId,
 					},
 				},
@@ -181,12 +198,15 @@ class bankItemController {
 	}
 
 	async addBankItem(
-		characterId: number,
+		accountId: number,
 		itemId: number,
 		quantity: number = 1
 	): Promise<boolean> {
 		try {
-			const bankItem = await this.getBankItemByItemId(characterId, itemId)
+			const bankItem = await this.getBankItemByItemId(
+				accountId,
+				itemId
+			)
 			if (!bankItem) {
 				return false
 			}
@@ -197,8 +217,9 @@ class bankItemController {
 
 			await this.database.prisma.bankItem.update({
 				where: {
-					characterId_itemId: {
-						characterId,
+					accountId_serverId_itemId: {
+						accountId,
+						serverId: this.container.get(WorldServer).worldServerData.Id,
 						itemId,
 					},
 				},
@@ -214,11 +235,15 @@ class bankItemController {
 		}
 	}
 
-	async updateBankItem(item: BankItem, characterId: number) {
+	async updateBankItem(item: BankItem, accountId: number) {
 		try {
 			await this.database.prisma.bankItem.update({
 				where: {
-					characterId_itemId: { characterId: characterId, itemId: item.id },
+					accountId_serverId_itemId: {
+						accountId: accountId,
+						serverId: this.container.get(WorldServer).worldServerData.Id,
+						itemId: item.id,
+					},
 				},
 				data: {
 					position: item.position,

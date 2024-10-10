@@ -224,6 +224,28 @@ abstract class ItemCollection<T extends AbstractItem> {
 	public async getItem(id: number): Promise<T | undefined> {
 		return this.items.get(id)
 	}
+
+  public static sortItemsByEffects<T extends AbstractItem>(items: T[]): T[][] {
+    const result: T[][] = []
+
+    for (const item of items) {
+      let found = false
+
+      for (const items of result) {
+        if (items[0].effects.sequenceEqual(item.effects)) {
+          items.push(item)
+          found = true
+          break
+        }
+      }
+
+      if (!found) {
+        result.push([item])
+      }
+    }
+
+    return result
+  }
 }
 
 export default ItemCollection

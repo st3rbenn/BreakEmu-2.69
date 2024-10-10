@@ -9,9 +9,9 @@ import {
 } from "@breakEmu_Protocol/IO"
 import WorldClient from "@breakEmu_World/WorldClient"
 import DialogHandler from "@breakEmu_World/handlers/dialog/DialogHandler"
-import MapPoint from "../map/MapPoint"
-import MapElement from "../map/element/MapElement"
-import Dialog from "./Dialog"
+import MapPoint from "../../map/MapPoint"
+import MapElement from "../../map/element/MapElement"
+import Dialog from "../Dialog"
 
 class ZaapDialog extends Dialog {
 	logger: Logger = new Logger("ZaapDialog")

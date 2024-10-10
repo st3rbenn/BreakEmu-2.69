@@ -1,4 +1,5 @@
 class Experience {
+	static experiences: Map<number, Experience> = new Map()
 	level: number
 	characterExp: number
 	jobExp: number
@@ -8,7 +9,6 @@ class Experience {
 	nextLevel: Experience | null = null
 
 	static maxCharacterLevel: number
-	static experiences: Map<number, Experience> = new Map()
 	static maxJobLevel: number
 	static maxGuildLevel: number
 	static maxMountLevel: number
@@ -101,8 +101,8 @@ class Experience {
 			if (experience >= value.jobExp) {
 				level = value.level
 			} else {
-        break
-      }
+				break
+			}
 		}
 
 		return level

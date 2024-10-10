@@ -1,10 +1,16 @@
 {
-  "presets": [
-    "@babel/preset-env",
-    "@babel/preset-typescript"
-  ],
+  "presets": ["@babel/preset-env", "@babel/preset-typescript"],
   "plugins": [
-    "@babel/plugin-transform-typescript"
-  ],
-  "compact": true
+    ["module-resolver", {
+      "root": ["./src"],
+      "alias": {
+        "@breakEmu_API": "./src/breakEmu_API",
+        "@breakEmu_Core": "./src/breakEmu_Core",
+        "@breakEmu_Server": "./src/breakEmu_Server",
+        "@breakEmu_World": "./src/breakEmu_World",
+        "@breakEmu_Auth": "./src/breakEmu_Auth",
+        "@breakEmu_Protocol": "./src/breakEmu_Protocol"
+      }
+    }]
+  ]
 }

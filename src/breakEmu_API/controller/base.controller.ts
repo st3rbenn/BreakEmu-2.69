@@ -8,7 +8,7 @@ import Container from "@breakEmu_Core/container/Container"
 abstract class BaseController {
 	protected _logger: Logger = new Logger("BaseController")
 	protected container: Container = Container.getInstance()
-	protected _database: Database = this.container.get(Database)
+	protected database: Database = this.container.get(Database)
 
 	private _socket: AuthClient | WorldServer
 

@@ -6,6 +6,7 @@ import {
 	DofusMessage,
 	FightCommonInformations,
 	FightStartingPositions,
+	GameContextActorInformations,
 	GameContextRemoveElementMessage,
 	GameRolePlayShowActorMessage,
 	HouseInformations,
@@ -26,6 +27,7 @@ import MapInteractiveElement from "./element/MapInteractiveElement"
 import MapStatedElement from "./element/MapStatedElement"
 import HandlerRegistry from "./element/interactiveElement/HandlerRegistry"
 import InteractiveSkill from "@breakEmu_API/model/InteractiveSkill.model"
+import Npc from "@breakEmu_API/model/npc.model"
 
 class MapInstance {
 	/*get monsterGroupCount(): number {
@@ -82,6 +84,7 @@ class MapInstance {
 			return
 		}
 		let actorInformations = entity.getActorInformations()
+
 		try {
 			await this.send(new GameRolePlayShowActorMessage(actorInformations))
 
@@ -106,11 +109,21 @@ class MapInstance {
 		client: WorldClient
 	): Promise<void> {
 		try {
-			const entities = this.getEntities<Character>(Character).map(
-				(character: Character) => {
-					return character.getActorInformations()
+      const entitiesInMap: GameContextActorInformations[] = []
+			this.getEntities<Entity>(Character).map(
+				(entity: Entity) => {
+					entitiesInMap.push(entity.getActorInformations())
 				}
 			)
+
+      this.getEntities<Entity>(Npc).map(
+        (entity: Entity) => {
+          entitiesInMap.push(entity.getActorInformations())
+        }
+      )
+
+      console.log("entitiesInMap")
+      console.log(entitiesInMap)
 
 			const interactiveElements = this.getInteractiveElements(
 				client?.selectedCharacter
@@ -125,7 +138,7 @@ class MapInstance {
 				this.record.subareaId,
 				this.record.id,
 				houses,
-				entities,
+				entitiesInMap,
 				interactiveElements,
 				statedElements,
 				this.record.getMapObstacles(),

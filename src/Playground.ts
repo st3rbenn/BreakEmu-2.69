@@ -387,7 +387,18 @@ interface Recipe {
 	skillId: number
 }
 
+interface Npc {
+	id: number
+	name: string
+	look: string
+	gender: number
+	actions: number[]
+	dialogMessages: [number, number][]
+	dialogReplies: [number, number][]
+}
+
 class Playground {
+	public database: Database = new Database()
 	public logger: Logger = new Logger("Playground")
 
 	messageId: number = 0
@@ -423,41 +434,41 @@ class Playground {
 		 */
 
 		try {
-			// const recipesJson: string = "recipes"
-			// const jsonFile = this.readJsonFile(recipesJson)
-			// const recipesData = JSON.parse(jsonFile) as Recipe[]
+			// const npcsJson: string = "testNpc"
+			// const jsonFile = this.readJsonFile(npcsJson)
+			// const npcs = JSON.parse(jsonFile) as Npc
+			const allRecords = await this.database.prisma.interactiveSkill.findMany()
 
-			// for (const recipe of recipesData) {
-			// 	await this?.database?.prisma?.recipe?.create({
-			// 		data: {
-			// 			resultId: recipe.resultId,
-			// 			resultName: recipe.resultName,
-			// 			resultType: recipe.resultType,
-			// 			resultLevel: recipe.resultLevel,
-			// 			ingredients: recipe.ingredients,
-			// 			quantities: recipe.quantities,
-			// 			jobId: recipe.jobId,
-			// 			skillId: recipe.skillId,
-			// 		},
-			// 	})
+			const seen = new Set()
+			const duplicates = allRecords.filter((record) => {
+				// Concaténer toutes les colonnes pour chaque enregistrement
+				const recordCopy = { ...record }
+        recordCopy.id = 0
+				const key = Object.values(recordCopy).join("|")
 
-			// 	this.logger.write(
-			// 		`Recipe ${recipe.resultName} added`,
-			// 		ansiColorCodes.bgGreen
-			// 	)
-			// }
+				// Vérifier si cette clé a déjà été vue
+				if (seen.has(key)) {
+					this.logger.write(`Duplicate found: ${key}`, ansiColorCodes.bgRed)
+					return true // C'est un doublon
+				}
 
-			const dataHex = "4c350101"
+				// Sinon, ajouter la clé au Set et continuer
+				this.logger.write(`Not a duplicate: ${key}`, ansiColorCodes.bgGreen)
+				seen.add(key)
+				return false
+			})
 
-			const buffer = Buffer.from(dataHex, "hex")
+			const idsToDelete = duplicates.map((record) => record.id)
 
-			const res = this.deserialize(buffer)
+			await this.database.prisma.interactiveSkill.deleteMany({
+				where: {
+					id: {
+						in: idsToDelete,
+					},
+				},
+			})
 
-      if (res) {
-        console.log(res)
-      }
-
-      this.logger.write("finish ✨")
+			this.logger.write("finish ✨")
 		} catch (error) {
 			this.logger.write(error + "TRACE : " + error.stack, ansiColorCodes.bgRed)
 		}

@@ -12,7 +12,6 @@ import Container from "@breakEmu_Core/container/Container"
 
 class AuthController extends BaseController {
 	public _logger: Logger = new Logger("AuthController")
-	public database: Database = this.container.get(Database)
 
 	constructor(client: AuthClient) {
 		super(client)

@@ -2,7 +2,7 @@ import Achievement from "@breakEmu_API/model/achievement.model"
 import AchievementObjective from "@breakEmu_API/model/achievementObjective.model"
 import Character from "@breakEmu_API/model/character.model"
 import ObjectiveCriterion from "./objectiveCriterion/ObjectiveCriterion"
-import CriterionManager from "./objectiveCriterion/CriterionManager"
+import AchievementCriterionManager from "./objectiveCriterion/AchievementCriterionManager"
 import AchievementManager from "../AchievementManager"
 import Container from "@breakEmu_Core/container/Container"
 
@@ -25,7 +25,7 @@ class AchievementObjectiveHandler {
 	}
 
 	initializeCriterion() {
-		const manager = new CriterionManager(this)
+		const manager = new AchievementCriterionManager(this)
 		this.criterion = manager.generateCriterion()
 	}
 

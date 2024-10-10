@@ -8,7 +8,7 @@ abstract class TransitionServer {
 	abstract logger: Logger
 	private redis: Redis | null = null
 	private readonly uri: string
-  public container: Container = Container.getInstance()
+	public container: Container = Container.getInstance()
 
 	constructor(uri: string) {
 		this.uri = uri
@@ -17,10 +17,18 @@ abstract class TransitionServer {
 	async connect(): Promise<void> {
 		try {
 			this.redis = new Redis(this.uri)
-			this.logger.write(
-				"Connected to TransitionServer with Redis",
-				ansiColorCodes.dim
-			)
+
+      this.redis.on("error", async (error) => {
+        await this.logger.writeAsync(
+          `Error connecting to TransitionServer with Redis: ${error}`,
+          ansiColorCodes.red
+        )
+      })
+
+      await this.logger.writeAsync(
+        `Connected to TransitionServer with Redis`,
+        ansiColorCodes.green
+      )
 		} catch (error) {
 			await this.logger.writeAsync(
 				`Error connecting to TransitionServer with Redis: ${error}`,
@@ -110,13 +118,13 @@ abstract class TransitionServer {
 		}
 	}
 
-  async deleteKey(key: string): Promise<void> {
-    if (!this.redis) {
-      throw new Error("Cannot delete key: Redis client is not connected")
-    }
+	async deleteKey(key: string): Promise<void> {
+		if (!this.redis) {
+			throw new Error("Cannot delete key: Redis client is not connected")
+		}
 
-    await this.redis.del(key)
-  }
+		await this.redis.del(key)
+	}
 
 	public get redisClient(): Redis | null {
 		return this.redis

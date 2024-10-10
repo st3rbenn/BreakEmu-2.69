@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client"
 import Character from "@breakEmu_API/model/character.model"
-import Finishmoves from "@breakEmu_API/model/finishmoves.model"
+import Finishmoves from "@breakEmu_API/model/finishMoves.model"
 import Job from "@breakEmu_API/model/job.model"
 import GameMap from "@breakEmu_API/model/map.model"
 import Spell from "@breakEmu_API/model/spell.model"
@@ -22,7 +22,6 @@ import Container from "@breakEmu_Core/container/Container"
 class UserController extends BaseController {
 	public _logger: Logger = new Logger("UserController")
 	public container: Container = Container.getInstance()
-	public _database: Database = this.container.get(Database)
 
 	constructor(client?: AuthClient) {
 		super(client as AuthClient)
@@ -33,7 +32,7 @@ class UserController extends BaseController {
 
 	async update(account: Account) {
 		try {
-			const user = await this._database.prisma.user.findUnique({
+			const user = await this.database.prisma.user.findUnique({
 				where: {
 					username: account.username,
 				},
@@ -44,7 +43,7 @@ class UserController extends BaseController {
 				return
 			}
 
-			// await this._database.prisma.user.update({
+			// await this.database.prisma.user.update({
 			//   data: {
 
 			//   }
@@ -61,12 +60,12 @@ class UserController extends BaseController {
 		client: WorldClient
 	): Promise<Account | undefined> {
 		try {
-			const acc = (await this._database.prisma.user.findUnique({
+			const acc = (await this.database.prisma.user.findUnique({
 				where: {
 					pseudo: nickname,
 				},
 			})) as Prisma.PromiseReturnType<
-				typeof this._database.prisma.user.findUnique
+				typeof this.database.prisma.user.findUnique
 			>
 
 			if (!acc) {
@@ -93,10 +92,11 @@ class UserController extends BaseController {
 				acc.ip,
 				acc.role,
 				acc.is_banned,
-				acc.tagNumber as number
+				acc.tagNumber as number,
+        acc.bankKamas
 			)
 
-			const characters = await this._database.prisma.character.findMany({
+			const characters = await this.database.prisma.character.findMany({
 				where: {
 					userId: acc.id,
 				},
@@ -163,12 +163,12 @@ class UserController extends BaseController {
 				const items = await this.container
 					.get(CharacterItemController)
 					.getCharacterItemsByCharacterId(character.id)
-				const bankItems = await this.container
-					.get(bankItemController)
-					.getBankItems(character.id)
+				// const bankItems = await this.container
+				// 	.get(bankItemController)
+				// 	.getBankItems(character.accountId, character.id)
 
 				character.inventory = new Inventory(character, items)
-				character.bank = new Bank(character, bankItems, c.bankKamas)
+				// character.bank = new Bank(character, [], 0)
 
 				account.characters.set(character.id, character)
 			}
@@ -182,6 +182,21 @@ class UserController extends BaseController {
 			return
 		}
 	}
+
+  async updateBankKamas(accountId: number, kamas: number) {
+    try {
+      await this.database.prisma.user.update({
+        where: {
+          id: accountId,
+        },
+        data: {
+          bankKamas: kamas,
+        },
+      })
+    } catch (error) {
+      this._logger.error("Error while updating bank kamas", error as any)
+    }
+  }
 }
 
 export default UserController

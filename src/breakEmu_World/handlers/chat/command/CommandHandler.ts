@@ -9,6 +9,7 @@ import WarpCommandHandler from "./handler/WarpCommandHandler"
 import PlayerCommandHandler from "./handler/PlayerCommandHandler"
 import GuildCommandHandler from "./handler/GuildCommandHandler"
 import BankCommandHandler from "./handler/BankCommandHandler"
+import NpcCommandHandler from "./handler/NpcCommandHandler"
 
 interface ICommandHandler {
 	command: string
@@ -66,6 +67,7 @@ class CommandHandler {
 		this.registerCommandHandlers(PlayerCommandHandler.commandHandler)
 		this.registerCommandHandlers(BankCommandHandler.commandHandler)
 		this.registerCommandHandlers(GuildCommandHandler.commandHandler)
+    this.registerCommandHandlers(NpcCommandHandler.commandHandler)
 		this.registerCommandHandlers(UtilsCommandHandler.commandHandler)
 		this.registerCommandHandlers(ModeratorCommandHandler.commandHandler)
 
@@ -124,8 +126,6 @@ class CommandHandler {
 		}
 
 		await handler.execute(subArgs.slice(1), message, character)
-
-		await character.reply("Sub-command executed.")
 	}
 
 	async checkConditions(
