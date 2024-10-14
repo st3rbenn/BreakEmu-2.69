@@ -2,6 +2,7 @@ import EffectCollection from "@breakEmu_World/manager/entities/effect/EffectColl
 import Item from "./item.model"
 import { BidExchangerObjectInfo, ItemTypeEnum, ObjectItem, ObjectItemNotInContainer, ObjectItemQuantity } from "@breakEmu_Protocol/IO"
 import AbstractItem from "@breakEmu_World/manager/items/AbstractItem"
+import CharacterItem from "./characterItem.model"
 
 class AuctionHouseItem extends AbstractItem {
 	auctionHouseId: number
@@ -45,6 +46,19 @@ class AuctionHouseItem extends AbstractItem {
       ItemTypeEnum[this.record.typeEnum as keyof typeof ItemTypeEnum],
       this.effects.getObjectEffects(),
       prices
+    )
+  }
+
+  toCharacterItem(charactrerId: number) {
+    return new CharacterItem(
+      charactrerId,
+      this.gId,
+      this.quantity,
+      this.position,
+      this.look,
+      this.effects,
+      this.appearanceId,
+      this.id
     )
   }
 

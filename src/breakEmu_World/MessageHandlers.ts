@@ -30,7 +30,14 @@ import {
 	ExchangeBidHouseSearchMessage,
 	ExchangeBidHouseTypeMessage,
 	ExchangeCraftCountRequestMessage,
+	ExchangeObjectMoveKamaMessage,
 	ExchangeObjectMoveMessage,
+	ExchangeObjectTransfertAllFromInvMessage,
+	ExchangeObjectTransfertAllToInvMessage,
+	ExchangeObjectTransfertExistingFromInvMessage,
+	ExchangeObjectTransfertExistingToInvMessage,
+	ExchangeObjectTransfertListFromInvMessage,
+	ExchangeObjectTransfertListToInvMessage,
 	ExchangeReadyMessage,
 	ExchangeSetCraftRecipeMessage,
 	FinishMoveListRequestMessage,
@@ -80,6 +87,7 @@ import TeleportHandler from "./handlers/map/teleport/TeleportHandler"
 import ServerListHandler from "./handlers/server/ServerListHandler"
 import NpcHandler from "./handlers/map/npc/NpcHandler"
 import AuctionHouseHandler from "./manager/map/element/interactiveElement/AuctionHouseHandler"
+import ContextExchangeHandler from "./handlers/exchange/ContextExchangeHandler"
 
 class MessageHandlers {
 	private logger = new Logger("MessageHandlers")
@@ -380,7 +388,7 @@ class MessageHandlers {
 				client: WorldClient,
 				message: ExchangeSetCraftRecipeMessage
 			) =>
-				await ContextHandler.handleExchangeSetCraftRecipeMessage(
+				await ContextExchangeHandler.handleExchangeSetCraftRecipeMessage(
 					client,
 					message
 				),
@@ -388,19 +396,82 @@ class MessageHandlers {
 				client: WorldClient,
 				message: ExchangeObjectMoveMessage
 			) =>
-				await ContextHandler.handleExchangeObjectMoveMessage(client, message),
+				await ContextExchangeHandler.handleExchangeObjectMoveMessage(
+					client,
+					message
+				),
+			[ExchangeObjectTransfertListFromInvMessage.id]: async (
+				client: WorldClient,
+				message: ExchangeObjectTransfertListFromInvMessage
+			) =>
+				ContextExchangeHandler.handleExchangeObjectTransfertListFromInvMessage(
+					client,
+					message
+				),
+			[ExchangeObjectTransfertListToInvMessage.id]: async (
+				client: WorldClient,
+				message: ExchangeObjectTransfertListToInvMessage
+			) =>
+				ContextExchangeHandler.handleExchangeObjectTransfertListToInvMessage(
+					client,
+					message
+				),
+			[ExchangeObjectTransfertAllFromInvMessage.id]: async (
+				client: WorldClient,
+				message: ExchangeObjectTransfertAllFromInvMessage
+			) =>
+				ContextExchangeHandler.handleExchangeObjectTransfertAllFromInvMessage(
+					client,
+					message
+				),
+			[ExchangeObjectTransfertAllToInvMessage.id]: async (
+				client: WorldClient,
+				message: ExchangeObjectTransfertAllToInvMessage
+			) =>
+				ContextExchangeHandler.handleExchangeObjectTransfertAllToInvMessage(
+					client,
+					message
+				),
+			[ExchangeObjectTransfertExistingFromInvMessage.id]: async (
+				client: WorldClient,
+				message: ExchangeObjectTransfertExistingFromInvMessage
+			) =>
+				ContextExchangeHandler.handleExchangeObjectTransfertExistingFromInvMessage(
+					client,
+					message
+				),
+			[ExchangeObjectTransfertExistingToInvMessage.id]: async (
+				client: WorldClient,
+				message: ExchangeObjectTransfertExistingToInvMessage
+			) =>
+				ContextExchangeHandler.handleExchangeObjectTransfertExistingToInvMessage(
+					client,
+					message
+				),
 			[ExchangeCraftCountRequestMessage.id]: async (
 				client: WorldClient,
 				message: ExchangeCraftCountRequestMessage
 			) =>
-				await ContextHandler.handleExchangeCraftCountRequestMessage(
+				await ContextExchangeHandler.handleExchangeCraftCountRequestMessage(
+					client,
+					message
+				),
+			[ExchangeObjectMoveKamaMessage.id]: async (
+				client: WorldClient,
+				message: ExchangeObjectMoveKamaMessage
+			) =>
+				await ContextExchangeHandler.handleExchangeObjectMoveKamaMessage(
 					client,
 					message
 				),
 			[ExchangeReadyMessage.id]: async (
 				client: WorldClient,
 				message: ExchangeReadyMessage
-			) => await ContextHandler.handleExchangeReadyMessage(client, message),
+			) =>
+				await ContextExchangeHandler.handleExchangeReadyMessage(
+					client,
+					message
+				),
 			[NpcGenericActionRequestMessage.id]: async (
 				client: WorldClient,
 				message: NpcGenericActionRequestMessage
@@ -415,13 +486,21 @@ class MessageHandlers {
 					message
 				),
 			[ExchangeBidHouseSearchMessage.id]: async (
-        client: WorldClient,
-        message: ExchangeBidHouseSearchMessage
-      ) => await AuctionHouseHandler.exchangeBidHouseSearchMessage(client.selectedCharacter, message),
-      [ExchangeBidHouseBuyMessage.id]: async(
-        client: WorldClient,
-        message: ExchangeBidHouseBuyMessage
-      ) => await AuctionHouseHandler.exchangeBidHouseBuyMessage(client.selectedCharacter, message),
+				client: WorldClient,
+				message: ExchangeBidHouseSearchMessage
+			) =>
+				await AuctionHouseHandler.exchangeBidHouseSearchMessage(
+					client.selectedCharacter,
+					message
+				),
+			[ExchangeBidHouseBuyMessage.id]: async (
+				client: WorldClient,
+				message: ExchangeBidHouseBuyMessage
+			) =>
+				await AuctionHouseHandler.exchangeBidHouseBuyMessage(
+					client.selectedCharacter,
+					message
+				),
 		}
 	}
 

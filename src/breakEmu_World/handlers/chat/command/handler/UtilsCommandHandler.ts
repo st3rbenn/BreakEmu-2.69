@@ -1,7 +1,5 @@
 import Character from "@breakEmu_API/model/character.model"
 import Logger from "@breakEmu_Core/Logger"
-import { InteractiveTypeEnum } from "@breakEmu_Protocol/IO"
-import ZaapDialog from "@breakEmu_World/manager/dialog/ZaapDialog"
 import AccountRoleEnum from "../../../../enum/AccountRoleEnum"
 import { TCommandHandler } from "../CommandHandler"
 
@@ -15,11 +13,7 @@ class UtilsCommandHandler {
 			},
 			description: "Set the current map as the spawn point for the character",
 			command: "setSpawnPoint",
-			neededRole: [
-				AccountRoleEnum.USER,
-				AccountRoleEnum.ADMIN,
-				AccountRoleEnum.MODERATOR,
-			],
+			neededRole: AccountRoleEnum.MODERATOR,
 			show: true,
 			nbRequiredArgs: 0,
 		},
@@ -30,11 +24,7 @@ class UtilsCommandHandler {
 			},
 			description: "Teleport to the spawn point",
 			command: "spawn",
-			neededRole: [
-				AccountRoleEnum.USER,
-				AccountRoleEnum.ADMIN,
-				AccountRoleEnum.MODERATOR,
-			],
+			neededRole: AccountRoleEnum.MODERATOR,
 			show: true,
 			nbRequiredArgs: 0,
 		},
@@ -44,11 +34,7 @@ class UtilsCommandHandler {
 			},
 			description: "Open the zaap dialog",
 			command: "zaap",
-			neededRole: [
-				AccountRoleEnum.USER,
-				AccountRoleEnum.ADMIN,
-				AccountRoleEnum.MODERATOR,
-			],
+			neededRole: AccountRoleEnum.MODERATOR,
 			show: true,
 			nbRequiredArgs: 0,
 		},
@@ -59,11 +45,7 @@ class UtilsCommandHandler {
 			},
 			description: "Unblock the character",
 			command: "unblock",
-			neededRole: [
-				AccountRoleEnum.USER,
-				AccountRoleEnum.ADMIN,
-				AccountRoleEnum.MODERATOR,
-			],
+			neededRole: AccountRoleEnum.USER,
 			show: true,
 			nbRequiredArgs: 0,
 		},
@@ -114,7 +96,7 @@ class UtilsCommandHandler {
 		const map = character.map
 
 		if (map) {
-			const isBlocked = await map.instance.isCharacterBlocked(character)
+			const isBlocked = await map.instance()?.isCharacterBlocked(character)
 			if (isBlocked) {
 				const freeCell = map.unblockCell()
 				character.cellId = freeCell.id
@@ -129,12 +111,9 @@ class UtilsCommandHandler {
 	}
 
 	static async openZaapDialog(character: Character) {
-		await character.map?.instance?.forceUseInteractiveElement(
-			character,
-			509248,
-			25079,
-			154010371
-		)
+		await character.map
+			?.instance()
+			?.forceUseInteractiveElement(character, 509248, 25079, 154010371)
 	}
 }
 

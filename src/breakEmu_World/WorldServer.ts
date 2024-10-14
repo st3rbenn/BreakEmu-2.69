@@ -54,6 +54,7 @@ class WorldServer {
 			this.worldServerData.Id,
 			this.SERVER_STATE.toString()
 		)
+    this.container.register(WorldServer, this)
 
 		this.container.get(TaskManager).saveTaskHandler().setCron("*/5 * * * *").run()
 		this.container.get(TaskManager).elementBonusHandler()

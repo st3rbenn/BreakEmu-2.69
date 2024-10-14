@@ -1,4 +1,5 @@
 import Character from "@breakEmu_API/model/character.model"
+import CharacterItem from "@breakEmu_API/model/characterItem.model"
 import Logger from "@breakEmu_Core/Logger"
 import {
 	DialogTypeEnum,
@@ -7,11 +8,11 @@ import {
 	ObjectItem,
 	StorageInventoryContentMessage,
 } from "@breakEmu_Protocol/IO"
-import Exchange from "../exchange/Exchange"
-import BankItem from "@breakEmu_API/model/BankItem.model"
 import DialogHandler from "@breakEmu_World/handlers/dialog/DialogHandler"
 import WorldClient from "@breakEmu_World/WorldClient"
+import Exchange from "../exchange/Exchange"
 import Bank from "../items/Bank"
+import BankItem from "@breakEmu_API/model/BankItem.model"
 
 class BankExchange extends Exchange {
 	logger: Logger = new Logger("BankExchange")
@@ -77,6 +78,22 @@ class BankExchange extends Exchange {
 		}
 	}
 
+	public async moveItems(items: CharacterItem[] | BankItem[]): Promise<void> {
+		try {
+			await this.character.bank.moveItems(items)
+		} catch (error) {
+			this.logger.error("Error while moving items: ", error as any)
+		}
+	}
+
+	public async moveKamas(quantity: number): Promise<void> {
+		try {
+			await this.character.bank.moveKamas(quantity)
+		} catch (error) {
+			this.logger.error("Error while moving kamas: ", error as any)
+		}
+	}
+
 	public moveItemPriced(
 		objectUID: number,
 		quantity: number,
@@ -92,9 +109,6 @@ class BankExchange extends Exchange {
 		throw new Error("Method not implemented.")
 	}
 	public ready(ready: boolean, step: number): void {
-		throw new Error("Method not implemented.")
-	}
-	public moveKamas(quantity: number): void {
 		throw new Error("Method not implemented.")
 	}
 }

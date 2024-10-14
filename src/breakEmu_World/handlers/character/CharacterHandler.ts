@@ -68,8 +68,6 @@ class CharacterHandler {
 			await client.Send(new CharacterCapabilitiesMessage(4095))
 			await client.Send(new SequenceNumberRequestMessage())
 
-			client.selectedCharacter.testIfCharacterDataIsValid()
-
 			await client.selectedCharacter.refreshAll()
 		} catch (error) {
 			this.logger.write(

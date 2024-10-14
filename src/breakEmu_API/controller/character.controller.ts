@@ -32,84 +32,6 @@ class CharacterController {
 		throw new Error("Method not implemented.")
 	}
 
-	public async getCharactersByAccountId(
-		accountId: number
-	): Promise<Character[] | undefined> {
-		try {
-			const characters = await this.database.prisma.character.findMany({
-				where: {
-					userId: accountId,
-				},
-			})
-
-			let charactersList: Character[] = []
-
-			for (const c of characters) {
-				const look: ContextEntityLook = ContextEntityLook.parseFromString(
-					c.look as string
-				)
-
-				const character = new Character(
-					c.id,
-					c.userId,
-					c.breed_id,
-					c.sex,
-					c.cosmeticId,
-					c.name,
-					Number(c.experience),
-					look,
-					Number(c.mapId),
-					Number(c.cellId),
-					c.direction,
-					c.kamas,
-					c.statsPoints,
-					c.knownEmotes?.toString().split(",").map(Number) || [],
-					new Map<number, CharacterShortcut>(),
-					c.knownOrnaments?.toString().split(",").map(Number) || [],
-					c.knownTitles?.toString().split(",").map(Number) || [],
-					c.activeOrnament as number,
-					c.activeTitle as number,
-					Job.loadFromJson(JSON.parse(c.jobs?.toString() as string)),
-					Finishmoves.loadFromJson(
-						JSON.parse(c.finishMoves?.toString() as string)
-					),
-					GameMap.getMapById(Number(c.mapId)) as GameMap,
-					EntityStats.loadFromJSON(JSON.parse(c.stats?.toString() as string)),
-					c.finishedAchievements?.toString().split(",").map(Number) || [],
-					c.almostFinishedAchievements?.toString().split(",").map(Number) || [],
-					c.finishedAchievementObjectives?.toString().split(",").map(Number) ||
-						[],
-					c.untakenAchievementsReward?.toString().split(",").map(Number) || []
-				)
-
-				character.spawnMapId = c.spawnMapId
-				character.spawnCellId = c.spawnCellId
-
-				const shrts = Character.loadShortcutsFromJson(
-					JSON.parse(c.shortcuts?.toString() as string)
-				)
-
-				character.generalShortcutBar.shortcuts = shrts.generalShortcuts
-				character.spellShortcutBar.shortcuts = shrts.spellShortcuts
-
-				character.spells = Spell.loadFromJson(
-					JSON.parse(c.spells?.toString() as string),
-					character
-				)
-
-				charactersList.push(character)
-			}
-
-			return charactersList
-		} catch (error) {
-			await this._logger.writeAsync(
-				`Error while getting characters for account ${accountId} \n ${
-					(error as any).stack
-				}`
-			)
-		}
-	}
-
 	public async countCharacterByAccountId(accountId: number): Promise<number> {
 		try {
 			const count = await this.database.prisma.character.count({
@@ -310,7 +232,11 @@ class CharacterController {
 				},
 			})
 		} catch (error) {
-			console.log(error)
+			this._logger.write(
+				`Error while updating character ${character.name}: ${
+					(error as any).stack
+				}`
+			)
 		}
 	}
 

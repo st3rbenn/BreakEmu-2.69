@@ -18,7 +18,7 @@ class ModeratorCommandHandler {
 
 			description: "Teleport to a map and cell",
 			command: "tp !mapId ?cellId",
-			neededRole: [AccountRoleEnum.MODERATOR],
+			neededRole: AccountRoleEnum.MODERATOR,
 			show: true,
 			nbRequiredArgs: 1,
 		},
@@ -28,7 +28,7 @@ class ModeratorCommandHandler {
 			},
 			description: "Enable/Disable godmode",
 			command: "god",
-			neededRole: [AccountRoleEnum.MODERATOR],
+			neededRole: AccountRoleEnum.MODERATOR,
 			show: true,
 			nbRequiredArgs: 0,
 		},
@@ -38,10 +38,37 @@ class ModeratorCommandHandler {
 			},
 			description: "Display what a player is doing",
 			command: "whatPlayerDoing",
-			neededRole: [AccountRoleEnum.MODERATOR],
+			neededRole: AccountRoleEnum.MODERATOR,
 			show: true,
 			nbRequiredArgs: 0,
 		},
+		tti: {
+			execute: async (args, message, character) => {
+				await this.tryTextInformation(character, args)
+			},
+			description: "Try to send a text information",
+			command: "tti",
+			neededRole: AccountRoleEnum.MODERATOR,
+			show: true,
+			nbRequiredArgs: 2,
+		},
+	}
+
+	static async tryTextInformation(character: Character, args: string[]) {
+		if (args.length < 2) {
+			await character.replyError("invalid format - !tti type messageId")
+			return
+		}
+
+		if (RegExp(/\D/).test(args[0]) && RegExp(/\D/).test(args[1])) {
+			await character.replyError("invalid format - !tti type messageId")
+			return
+		}
+
+		const type = parseInt(args[0])
+		const messageId = parseInt(args[1])
+
+		await character.textInformation(type, messageId, [])
 	}
 
 	static async whatPlayerDoingCommand(character: Character) {

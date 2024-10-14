@@ -7,6 +7,7 @@ import {
 	CharacterInventoryPositionEnum,
 	ObjectItem,
 	StorageInventoryContentMessage,
+	StorageKamasUpdateMessage,
 	StorageObjectRemoveMessage,
 	StorageObjectUpdateMessage,
 } from "@breakEmu_Protocol/IO"
@@ -27,18 +28,20 @@ class Bank extends ItemCollection<BankItem> {
 		return Array.from(this.items.values()).find((item) => item.gId === gId)
 	}
 
+	public getItemsByUids(uids: number[]): BankItem[] {
+		return Array.from(this.items.values()).filter((item) =>
+			uids.includes(item.id)
+		)
+	}
+
 	public async moveItem(itemId: number, quantity: number) {
 		try {
 			let item: CharacterItem | BankItem | undefined = undefined
-			console.log("Moving item", itemId, quantity)
 			if (quantity > 0) {
 				item = await this.character.inventory.getItem(itemId)
 				if (item) {
-					console.log("Item found in inventory")
 					const itemRes = await this.character.inventory.getItemByGid(item.gId)
-					console.log("Item result", itemRes)
 					if (itemRes != null && (await this.canAddItem(itemRes, quantity))) {
-						console.log("Adding item to bank")
 						await this.addNewItem(itemRes, quantity)
 					}
 				}
@@ -56,6 +59,12 @@ class Bank extends ItemCollection<BankItem> {
 			}
 		} catch (error) {
 			console.log(error)
+		}
+	}
+
+	public async moveItems(items: CharacterItem[] | BankItem[]): Promise<void> {
+		for (const item of items) {
+			await this.moveItem(item.id, item.quantity)
 		}
 	}
 
@@ -135,6 +144,36 @@ class Bank extends ItemCollection<BankItem> {
 		} catch (error) {
 			console.log(error)
 		}
+	}
+
+	public async moveKamas(quantity: number): Promise<void> {
+		console.log("Moving kamas", quantity)
+		if (quantity < 0) {
+			const absQuantity = Math.abs(quantity)
+			if (this.character.account.bankKamas >= absQuantity) {
+				await this.character.inventory.addKamas(absQuantity)
+			} else {
+				return // Not enough bank kamas to withdraw
+			}
+		} else {
+			const isRemoved = await this.character.inventory.removeKamas(quantity)
+			if (!isRemoved) {
+				return // Not enough kamas to deposit
+			}
+		}
+
+		this.character.account.bankKamas += quantity
+
+		console.log("New kamas amount", this.character.account.bankKamas)
+		await this.container
+			.get(UserController)
+			.updateBankKamas(
+				this.character.accountId,
+				this.character.account.bankKamas
+			)
+		await this.character.client?.Send(
+			new StorageKamasUpdateMessage(this.character.account.bankKamas)
+		)
 	}
 
 	public async refresh() {

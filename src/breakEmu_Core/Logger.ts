@@ -135,6 +135,7 @@ class Logger {
 		const progressPercent = (this.loadedParameters / this.totalParameters) * 100
 
 		// Efface la ligne actuelle et positionne le curseur au début
+
 		process.stdout.clearLine(0)
 		process.stdout.cursorTo(0)
 

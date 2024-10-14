@@ -120,7 +120,7 @@ export default class BigEndianWriter extends ExtendedBuffer
 	}
 
 	public writeBytes(data: Int8Array): void {
-		super.writeBuffer(Buffer.from(data))
+		super.writeBuffer(Buffer.from(data.buffer))
 	}
 
 	public writeChar(data: string): void {

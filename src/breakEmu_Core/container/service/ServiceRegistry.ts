@@ -1,9 +1,11 @@
 // serviceRegistry.ts
 import Database from "@breakEmu_API/Database"
+import AuctionHouseItemController from "@breakEmu_API/controller/auctionHouseItem.controller"
 import BankItemController from "@breakEmu_API/controller/bankItem.controller"
 import CharacterController from "@breakEmu_API/controller/character.controller"
-import NpcController from "@breakEmu_API/controller/npc.controller"
 import CharacterItemController from "@breakEmu_API/controller/characterItem.controller"
+import NpcController from "@breakEmu_API/controller/npc.controller"
+import UserController from "@breakEmu_API/controller/user.controller"
 import WorldController from "@breakEmu_API/controller/world.controller"
 import AuthTransition from "@breakEmu_Auth/AuthTransition"
 import TaskManager from "@breakEmu_Core/bull/TaskManager"
@@ -52,10 +54,11 @@ export function registerServices(container: Container) {
 		() => new CharacterController()
 	)
 	container.registerFactory(NpcController, () => new NpcController())
-	// container.registerFactory(
-	// 	AuctionHouseItemController,
-	// 	() => new AuctionHouseItemController()
-	// )
+	container.registerFactory(
+		AuctionHouseItemController,
+		() => new AuctionHouseItemController()
+	)
+	container.registerFactory(UserController, () => new UserController())
 
 	// Si vous avez besoin d'une logique plus complexe pour certains services,
 	// vous pouvez utiliser des factories :

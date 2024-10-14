@@ -54,11 +54,13 @@ abstract class ItemCollection<T extends AbstractItem> {
 	public abstract onItemsQuantityChanged(item: T[]): Promise<void>
 
 	public async addItems(items: T[]) {
+    console.log(`Adding items: ${items.length}`)
 		try {
 			let addedItems: T[] = []
 			let stackedItems: T[] = []
 
 			for (const item of items) {
+        console.log(`Add item: ${item.id} with quantity: ${item.quantity}`)
 				item.initialize()
 
 				let sameItem: T | undefined = await this.getSameItem(
@@ -110,12 +112,9 @@ abstract class ItemCollection<T extends AbstractItem> {
 						sameItem.quantity -= item.quantity
 						unstackedItems.push(sameItem)
 					} else if (sameItem.quantity === item.quantity) {
-						console.log(
-							`Removing item completely from Inventory: ${sameItem.id}`
-						)
 						this.items.delete(sameItem.id)
 						removedItems.push(sameItem)
-						await this.removeItem(sameItem)
+						await this.removeItem(sameItem, item.quantity)
 					} else {
 						console.warn(
 							`Item quantity incorrect: ${sameItem.quantity} < ${item.quantity}`
@@ -178,6 +177,8 @@ abstract class ItemCollection<T extends AbstractItem> {
 				return
 			}
 
+      console.log(`Removing item: ${item.id} with quantity: ${quantity}`)
+
 			if (item.quantity >= quantity) {
 				if (item.quantity == quantity) {
 					this.items.delete(item.id)
@@ -187,7 +188,10 @@ abstract class ItemCollection<T extends AbstractItem> {
 					this.onItemUnstacked(item)
 					this.onItemQuantityChanged(item)
 				}
-			}
+			} else {
+					this.items.delete(item.id)
+					this.onItemRemoved(item)
+      }
 		}
 	}
 

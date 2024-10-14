@@ -140,6 +140,11 @@ class AuctionHouseDialog extends Dialog {
 			if (this.character.kamas >= price!) {
 				bought = true
 				await this.character.inventory.removeKamas(price!)
+				await this.character.inventory.addItem(
+					item.toCharacterItem(this.character.id),
+					qty!,
+					this.character.id
+				)
 				await this.onItemBought(item)
 				await this.onItemRemove(uid!)
 			} else {
@@ -159,7 +164,7 @@ class AuctionHouseDialog extends Dialog {
 			await this.onItemRemove(uid!)
 		}
 
-    await this.onBuy(uid!, bought)
+		await this.onBuy(uid!, bought)
 	}
 
 	private async onBuy(uid: number, bought: boolean) {
@@ -186,12 +191,12 @@ class AuctionHouseDialog extends Dialog {
 			)
 			await this.container
 				.get(AuctionHouseItemController)
-				.removeItem(item.id, this.auctionHouse.id)
+				.removeItem(item.id, this.auctionHouse)
 		} else {
 			item.sold = true
 			await this.container
 				.get(AuctionHouseItemController)
-				.modifySoldStatus(item.id, item.price, this.auctionHouse.id, true)
+				.modifySoldStatus(item.id, item.price, this.auctionHouse, true)
 		}
 	}
 

@@ -1144,7 +1144,7 @@ class Database {
 				)
 
 				for (const item of auctionHousesItems.filter(
-					(i) => i.auctionHouseId === ah.id
+					(i) => i.auctionHouseId === ah.id && i.sold === false
 				)) {
 					const itemRecord = new AuctionHouseItem(
 						item.uid,
@@ -1157,12 +1157,14 @@ class Database {
 						item.look as string,
 						item.auctionHouseId,
 						item.sellerId,
-            item.sold
+						item.sold
 					)
 
-          auctionHouseRecord.items.set(item.uid, itemRecord)
+					auctionHouseRecord.items.set(item.uid, itemRecord)
 				}
-        await this.logger.writeAsync(`Loaded ${auctionHouseRecord.items.size} items for auction house ${ah.id}`)
+				await this.logger.writeAsync(
+					`Loaded ${auctionHouseRecord.items.size} items for auction house ${ah.id}`
+				)
 				AuctionHouse.auctionHouses.set(ah.id, auctionHouseRecord)
 			}
 

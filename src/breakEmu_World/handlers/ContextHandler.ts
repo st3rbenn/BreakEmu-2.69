@@ -1,4 +1,7 @@
-import { NpcGenericActionRequestMessage } from "./../../breakEmu_Protocol/IO/network/protocol"
+import {
+	ExchangeObjectMoveKamaMessage,
+	NpcGenericActionRequestMessage,
+} from "./../../breakEmu_Protocol/IO/network/protocol"
 import Recipe from "@breakEmu_API/model/recipe.model"
 import Logger from "@breakEmu_Core/Logger"
 import {
@@ -168,73 +171,6 @@ class ContextHandler {
 				`Error while sending TitleSelectedMessage: ${(error as any).stack}`,
 				"red"
 			)
-		}
-	}
-
-	static async handleExchangeSetCraftRecipeMessage(
-		client: WorldClient,
-		message: ExchangeSetCraftRecipeMessage
-	) {
-		const objectGID = message.objectGID
-		if (!Recipe.getRecipeByResultId(objectGID as number)) {
-			await client.selectedCharacter.reply("Recipe not found")
-			return
-		}
-
-		if (!client.selectedCharacter.isCraftDialog) {
-			return
-		}
-
-		const craftExchange = client.selectedCharacter.dialog as CraftExchange
-
-		await craftExchange.setRecipe(objectGID as number)
-	}
-
-	static async handleExchangeObjectMoveMessage(
-		client: WorldClient,
-		message: ExchangeObjectMoveMessage
-	) {
-		const objectUID = message.objectUID
-		const quantity = message.quantity
-
-		if (client.selectedCharacter.isCraftDialog) {
-			const craftExchange = client.selectedCharacter.dialog as CraftExchange
-
-			console.log(`SENDING MOVE ITEM: ${objectUID} quantity: ${quantity} `)
-
-			await craftExchange.moveItem(objectUID as number, quantity as number)
-		} else if (client.selectedCharacter.isBankDialog) {
-			console.log("BANK EXCHANGE")
-			const bankExchange = client.selectedCharacter.dialog as BankExchange
-
-			console.log(
-				`SENDING MOVE ITEM: ${objectUID} quantity: ${quantity} into bank`
-			)
-
-			await bankExchange.moveItem(objectUID as number, quantity as number)
-		}
-	}
-
-	static async handleExchangeCraftCountRequestMessage(
-		client: WorldClient,
-		message: ExchangeCraftCountRequestMessage
-	): Promise<void> {
-		const craftExchange = client.selectedCharacter.dialog as CraftExchange
-
-		craftExchange.setCount(message.count as number)
-
-		await client.Send(
-			new ExchangeCraftCountModifiedMessage(craftExchange.count)
-		)
-	}
-
-	static async handleExchangeReadyMessage(
-		client: WorldClient,
-		message: ExchangeReadyMessage
-	) {
-		if (client.selectedCharacter.dialog instanceof Exchange) {
-			const exchange = client.selectedCharacter.dialog as CraftExchange
-			await exchange.ready(message.ready as boolean, message.step as number)
 		}
 	}
 

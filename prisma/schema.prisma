@@ -104,7 +104,6 @@ model world {
   created_at          DateTime   @default(now())
   updated_at          DateTime   @updatedAt
   deleted_at          DateTime?
-  bankItem            bankItem[]
 }
 
 model breed {
@@ -251,8 +250,6 @@ model item {
 model bankItem {
   accountId    Int
   account      user    @relation(fields: [accountId], references: [id])
-  serverId     Int
-  server       world   @relation(fields: [serverId], references: [id])
   itemId       Int
   item         item    @relation(fields: [gId], references: [id])
   gId          Int
@@ -262,7 +259,7 @@ model bankItem {
   appearanceId Int
   look         String? @db.Text
 
-  @@id([accountId, serverId, itemId])
+  @@id([accountId, itemId])
 }
 
 model weapon {

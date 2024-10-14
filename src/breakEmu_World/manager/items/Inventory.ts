@@ -86,6 +86,12 @@ class Inventory extends ItemCollection<CharacterItem> {
 		return null
 	}
 
+	public getItemsByUids(uids: number[]): CharacterItem[] {
+		return Array.from(this.items.values()).filter((item) =>
+			uids.includes(item.id)
+		)
+	}
+
 	public getWeapon(): CharacterItem | null {
 		return this.getEquipedItem(
 			CharacterInventoryPositionEnum.ACCESSORY_POSITION_WEAPON
@@ -146,6 +152,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 			if (this.character.kamas + kamas > this.maxKamas) {
 				this.character.kamas = this.maxKamas
 			} else {
+				console.log(`addKamas: ${kamas}`)
 				this.character.kamas += kamas
 			}
 
@@ -156,6 +163,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 	}
 
 	public async removeKamas(kamas: number) {
+		console.log(`removeKamas: ${kamas}`)
 		try {
 			if (this.character.kamas - kamas < 0) {
 				this.character.kamas = 0
@@ -164,6 +172,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 			}
 
 			await this.refreshKamas()
+			return true
 		} catch (error) {
 			this.logger.error(error as any)
 		}
@@ -600,7 +609,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 
 	public async onItemAdded(item: CharacterItem): Promise<void> {
 		try {
-			const it = await item.getObjectItem()
+			const it = item.getObjectItem()
 			await this.character.client?.Send(new ObjectAddedMessage(it, 0))
 			await this.refreshWeight()
 		} catch (error) {

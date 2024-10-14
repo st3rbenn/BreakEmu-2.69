@@ -76,6 +76,7 @@ import Skill from "./skill.model"
 import Spell from "./spell.model"
 import Container from "@breakEmu_Core/container/Container"
 import Npc from "./npc.model"
+import AuctionHouseItemController from "@breakEmu_API/controller/auctionHouseItem.controller"
 
 class Character extends Entity {
 	private container: Container = Container.getInstance()
@@ -150,7 +151,7 @@ class Character extends Entity {
 
 	godMode: boolean = false
 
-	account: Account | undefined = undefined
+	account: Account
 
 	constructor(
 		id: number,
@@ -275,132 +276,6 @@ class Character extends Entity {
 		await BreedManager.getInstance().learnBreedSpells(character)
 
 		return character
-	}
-
-	public testIfCharacterDataIsValid(): void {
-		if (this.id === 0) {
-			console.error("Character ID is 0")
-		}
-		if (this.accountId === 0) {
-			console.error("Account ID is 0")
-		}
-		if (this.breed === null) {
-			console.error("Breed is null")
-		}
-		if (this.name === "") {
-			console.error("Name is empty")
-		}
-		if (this.look === null) {
-			console.error("Look is null")
-		}
-		if (this.level === 0) {
-			console.error("Level is 0")
-		}
-		if (this.mapId === 0) {
-			console.error("Map ID is 0")
-		}
-		if (this.cellId === 0) {
-			console.error("Cell ID is 0")
-		}
-		if (this.direction === 0) {
-			console.error("Direction is 0")
-		}
-		if (this.kamas === 0) {
-			console.error("Kamas is 0")
-		}
-		if (this.stats === null) {
-			console.error("Stats is null")
-		}
-		if (this.finishmoves === null) {
-			console.error("Finishmoves is null")
-		}
-		if (this.experience === 0) {
-			console.error("Experience is 0")
-		}
-
-		if (this.skillsAllowed.size === 0) {
-			console.error("SkillsAllowed is empty")
-		}
-
-		if (this.jobs.size === 0) {
-			console.error("Jobs is empty")
-		}
-
-		if (this.spells.size === 0) {
-			console.error("Spells is empty")
-		}
-
-		if (this.knownEmotes.length === 0) {
-			console.error("KnownEmotes is empty")
-		}
-
-		if (this.shortcuts.size === 0) {
-			console.error("Shortcuts is empty")
-		}
-
-		if (this.knownOrnaments.length === 0) {
-			console.error("KnownOrnaments is empty")
-		}
-
-		if (this.knownTitles.length === 0) {
-			console.error("KnownTitles is empty")
-		}
-
-		if (this.finishedAchievements.length === 0) {
-			console.error("FinishedAchievements is empty")
-		}
-
-		if (this.almostFinishedAchievements.length === 0) {
-			console.error("AlmostFinishedAchievements is empty")
-		}
-
-		if (this.finishedAchievementObjectives.length === 0) {
-			console.error("FinishedAchievementObjectives is empty")
-		}
-
-		if (this.untakenAchievementsReward.length === 0) {
-			console.error("UntakenAchievementsReward is empty")
-		}
-
-		if (this.map === null) {
-			console.error("Map is null")
-		}
-
-		if (this.map && this.map.instance === null) {
-			console.error("Map instance is null")
-		}
-
-		if (this.inventory === null) {
-			console.error("Inventory is null")
-		}
-
-		if (this.bank === null) {
-			console.error("Bank is null")
-		}
-
-		if (this.client === null) {
-			console.error("Client is null")
-		}
-
-		if (this.context === null) {
-			console.error("Context is null")
-		}
-
-		if (this.humanOptions.size === 0) {
-			console.error("HumanOptions is empty")
-		}
-
-		if (this.generalShortcutBar === null) {
-			console.error("GeneralShortcutBar is null")
-		}
-
-		if (this.spellShortcutBar === null) {
-			console.error("SpellShortcutBar is null")
-		}
-
-		if (this.knownZaaps.size === 0) {
-			console.error("KnownZaaps is empty")
-		}
 	}
 
 	public getJobs(jobId: number): Job | undefined {
@@ -718,9 +593,9 @@ class Character extends Entity {
 				this.refreshInventory(),
 				this.refreshShortcuts(),
 				this.sendServerExperienceModificator(),
+				this.createHumanOptions(),
 			])
 
-			this.createHumanOptions()
 			await this.onCharacterLoadingComplete()
 		} catch (error) {
 			console.log(error)
@@ -965,7 +840,27 @@ class Character extends Entity {
 				89,
 				[]
 			)
+			//TODO: message if item in auction house is sold or not and if sold, send the item to the buyer in bank and show a message to know how many items are sold and how much kamas the player won
+			await this.checkSoldItemInAuctionHouse()
 			await this?.client?.Send(new AlmanachCalendarDateMessage(1))
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	public async checkSoldItemInAuctionHouse() {
+		try {
+			const getAllItemSold = await this.container
+				.get(AuctionHouseItemController)
+				.getItemSoldBySellerId(this.id)
+
+			console.log(getAllItemSold)
+
+			await this.textInformation(
+				TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
+				67,
+				[]
+			)
 		} catch (error) {
 			console.log(error)
 		}
@@ -1058,7 +953,7 @@ class Character extends Entity {
 			await this.textInformation(
 				TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
 				65,
-				[gid.toString(), quantity.toString(), price.toString()]
+				[price.toString(), "", gid.toString(), quantity.toString()]
 			)
 		} catch (error) {
 			console.log(error)
@@ -1369,6 +1264,14 @@ class Character extends Entity {
 			})
 		}
 		return JSON.stringify(finishmoves)
+	}
+
+	public async save() {
+		try {
+			await this.container.get(CharacterController).updateCharacter(this)
+		} catch (error) {
+			console.log(error)
+		}
 	}
 }
 

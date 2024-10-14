@@ -14,7 +14,7 @@ import NpcCommandHandler from "./handler/NpcCommandHandler"
 interface ICommandHandler {
 	command: string
 	description: string
-	neededRole: number[]
+	neededRole: number
 
 	show: boolean
 	nbRequiredArgs: number
@@ -35,7 +35,7 @@ export type TCommandHandler = Record<string, ICommandHandler>
 class CommandHandler {
 	logger: Logger = new Logger("CommandHandler")
 
-  constructor() {}
+	constructor() {}
 
 	commandHandlers: TCommandHandler = {
 		help: {
@@ -45,11 +45,7 @@ class CommandHandler {
 			description: "Display available commands",
 			command: "help",
 
-			neededRole: [
-				AccountRoleEnum.USER,
-				AccountRoleEnum.ADMIN,
-				AccountRoleEnum.MODERATOR,
-			],
+			neededRole: AccountRoleEnum.USER,
 			show: true,
 			nbRequiredArgs: 0,
 			asHelp: true,
@@ -67,7 +63,7 @@ class CommandHandler {
 		this.registerCommandHandlers(PlayerCommandHandler.commandHandler)
 		this.registerCommandHandlers(BankCommandHandler.commandHandler)
 		this.registerCommandHandlers(GuildCommandHandler.commandHandler)
-    this.registerCommandHandlers(NpcCommandHandler.commandHandler)
+		this.registerCommandHandlers(NpcCommandHandler.commandHandler)
 		this.registerCommandHandlers(UtilsCommandHandler.commandHandler)
 		this.registerCommandHandlers(ModeratorCommandHandler.commandHandler)
 
@@ -109,7 +105,7 @@ class CommandHandler {
 			return
 		}
 
-		if (!handler.neededRole.includes(character?.account?.role as number)) {
+		if (!this.checkRole(handler, character)) {
 			await character.replyWarning(
 				"You don't have the right to use this sub-command."
 			)
@@ -141,7 +137,7 @@ class CommandHandler {
 			return
 		}
 
-		if (!command.neededRole.includes(character?.account?.role as number)) {
+		if (!this.checkRole(command, character)) {
 			await character.replyWarning(
 				"You don't have the right to use this command."
 			)
@@ -172,10 +168,7 @@ class CommandHandler {
 
 		for (const commandName in commandHandlers) {
 			const command = commandHandlers[commandName]
-			if (
-				command.neededRole.includes(character?.account?.role as number) &&
-				command.show
-			) {
+			if (this.checkRole(command, character) && command.show) {
 				allCommands += `<br>${command.command} ${
 					command.description ? `- ${command.description}` : ""
 				}`
@@ -183,12 +176,7 @@ class CommandHandler {
 				if (command.hasSubCommands && command.subCommandHandlers) {
 					for (const subCommandName in command.subCommandHandlers) {
 						const subCommand = command.subCommandHandlers[subCommandName]
-						if (
-							subCommand.neededRole.includes(
-								character?.account?.role as number
-							) &&
-							subCommand.show
-						) {
+						if (this.checkRole(command, character) && subCommand.show) {
 							allCommands += `<br>&nbsp;&nbsp;&nbsp;&nbsp;${subCommand.command} - ${subCommand.description}`
 						}
 					}
@@ -197,6 +185,14 @@ class CommandHandler {
 		}
 
 		await character.reply(allCommands)
+	}
+
+	checkRole(command: ICommandHandler, character: Character): boolean {
+		// Assuming command has a requiredRole property that indicates the minimum required role for execution
+		const requiredRole = command.neededRole
+
+		// Compare the role of the character with the required role
+		return character.account.role >= requiredRole
 	}
 }
 

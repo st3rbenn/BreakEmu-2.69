@@ -31,7 +31,6 @@ class bankItemController {
 			const bankItem = await this.database.prisma.bankItem.create({
 				data: {
 					accountId: character.accountId,
-					serverId: this.container.get(WorldServer).worldServerData.Id,
 					itemId: item.id,
 					gId: item.gId,
 					appearanceId: item.appearanceId,
@@ -53,7 +52,6 @@ class bankItemController {
 			const bankItem = await this.database.prisma.bankItem.findFirst({
 				where: {
 					accountId,
-					serverId: this.container.get(WorldServer).worldServerData.Id,
 					gId: gid,
 				},
 			})
@@ -71,7 +69,6 @@ class bankItemController {
 			const bankItem = await this.database.prisma.bankItem.findFirst({
 				where: {
 					accountId,
-					serverId: this.container.get(WorldServer).worldServerData.Id,
 					itemId,
 				},
 			})
@@ -89,7 +86,6 @@ class bankItemController {
 		try {
 			const allBankItems = await this.database.prisma.bankItem.findMany({
 				where: {
-					serverId: this.container.get(WorldServer).worldServerData.Id,
 					accountId,
 				},
 			})
@@ -147,6 +143,7 @@ class bankItemController {
 		quantity: number = 0
 	): Promise<boolean> {
 		try {
+      this.logger.info(`Removing ${quantity} of item ${itemId} from bank of account ${accountId}`)
 			const bankItem = await this.getBankItemByItemId(
 				accountId,
 				itemId
@@ -159,9 +156,8 @@ class bankItemController {
 				//delete item
 				await this.database.prisma.bankItem.delete({
 					where: {
-						accountId_serverId_itemId: {
+						accountId_itemId: {
 							accountId,
-							serverId: this.container.get(WorldServer).worldServerData.Id,
 							itemId,
 						},
 					},
@@ -179,9 +175,8 @@ class bankItemController {
 
 			await this.database.prisma.bankItem.update({
 				where: {
-					accountId_serverId_itemId: {
+					accountId_itemId: {
 						accountId,
-						serverId: this.container.get(WorldServer).worldServerData.Id,
 						itemId,
 					},
 				},
@@ -217,9 +212,8 @@ class bankItemController {
 
 			await this.database.prisma.bankItem.update({
 				where: {
-					accountId_serverId_itemId: {
+					accountId_itemId: {
 						accountId,
-						serverId: this.container.get(WorldServer).worldServerData.Id,
 						itemId,
 					},
 				},
@@ -239,9 +233,8 @@ class bankItemController {
 		try {
 			await this.database.prisma.bankItem.update({
 				where: {
-					accountId_serverId_itemId: {
+					accountId_itemId: {
 						accountId: accountId,
-						serverId: this.container.get(WorldServer).worldServerData.Id,
 						itemId: item.id,
 					},
 				},

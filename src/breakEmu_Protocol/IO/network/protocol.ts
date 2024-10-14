@@ -54716,7 +54716,7 @@ export interface RawStorageKamasUpdateMessage {
 }
 
 export class StorageKamasUpdateMessage extends DofusMessage {
-	public static id: number = 9471
+	public static id: number = 1813
 
 	public kamasTotal: number | undefined = 0
 
@@ -71488,7 +71488,7 @@ export interface RawExchangeObjectMoveKamaMessage {
 }
 
 export class ExchangeObjectMoveKamaMessage extends DofusMessage {
-	public static id: number = 1621
+	public static id: number = 9034
 
 	public quantity: number | undefined = 0
 
@@ -71523,7 +71523,7 @@ export interface RawExchangeObjectTransfertExistingToInvMessage {
 }
 
 export class ExchangeObjectTransfertExistingToInvMessage extends DofusMessage {
-	public static id: number = 6444
+	public static id: number = 3216
 
 	// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
 	public serialize(writer: BinaryWriter): void {}
@@ -71548,7 +71548,7 @@ export interface RawExchangeObjectTransfertListFromInvMessage {
 }
 
 export class ExchangeObjectTransfertListFromInvMessage extends DofusMessage {
-	public static id: number = 9384
+	public static id: number = 1749
 
 	public ids: number[] | undefined
 
@@ -71588,7 +71588,7 @@ export interface RawExchangeObjectTransfertAllToInvMessage {
 }
 
 export class ExchangeObjectTransfertAllToInvMessage extends DofusMessage {
-	public static id: number = 6225
+	public static id: number = 7702
 
 	// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
 	public serialize(writer: BinaryWriter): void {}
@@ -71613,7 +71613,7 @@ export interface RawExchangeObjectTransfertListToInvMessage {
 }
 
 export class ExchangeObjectTransfertListToInvMessage extends DofusMessage {
-	public static id: number = 8258
+	public static id: number = 8263
 
 	public ids: number[] | undefined
 
@@ -71707,7 +71707,7 @@ export interface RawExchangeObjectTransfertAllFromInvMessage {
 }
 
 export class ExchangeObjectTransfertAllFromInvMessage extends DofusMessage {
-	public static id: number = 1221
+	public static id: number = 1018
 
 	// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
 	public serialize(writer: BinaryWriter): void {}
@@ -71731,7 +71731,7 @@ export interface RawExchangeObjectTransfertExistingFromInvMessage {
 }
 
 export class ExchangeObjectTransfertExistingFromInvMessage extends DofusMessage {
-	public static id: number = 5796
+	public static id: number = 6912
 
 	// eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars
 	public serialize(writer: BinaryWriter): void {}
@@ -74483,7 +74483,7 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	5956: ExchangeObjectRemovedFromBagMessage,
 	5273: PartyJoinMessage,
 	1656: WatchInventoryContentMessage,
-	9471: StorageKamasUpdateMessage,
+	1813: StorageKamasUpdateMessage,
 	8778: HouseSellingUpdateMessage,
 	5098: ShortcutBarReplacedMessage,
 	7522: JobBookSubscriptionMessage,
@@ -74899,14 +74899,14 @@ export const messages: { [key: number]: typeof DofusMessage } = {
 	2661: InteractiveUseWithParamRequestMessage,
 	9947: GameRolePlayAttackMonsterRequestMessage,
 	4717: GameMapMovementConfirmMessage,
-	1621: ExchangeObjectMoveKamaMessage,
-	6444: ExchangeObjectTransfertExistingToInvMessage,
-	9384: ExchangeObjectTransfertListFromInvMessage,
-	6225: ExchangeObjectTransfertAllToInvMessage,
-	8258: ExchangeObjectTransfertListToInvMessage,
+	9034: ExchangeObjectMoveKamaMessage,
+	3216: ExchangeObjectTransfertExistingToInvMessage,
+	1749: ExchangeObjectTransfertListFromInvMessage,
+	7702: ExchangeObjectTransfertAllToInvMessage,
+	8263: ExchangeObjectTransfertListToInvMessage,
 	8847: ExchangeObjectTransfertListWithQuantityToInvMessage,
-	1221: ExchangeObjectTransfertAllFromInvMessage,
-	5796: ExchangeObjectTransfertExistingFromInvMessage,
+	1018: ExchangeObjectTransfertAllFromInvMessage,
+	6912: ExchangeObjectTransfertExistingFromInvMessage,
 	6305: NpcDialogReplyMessage,
 	9656: PaddockBuyRequestMessage,
 	663: PaddockSellRequestMessage,

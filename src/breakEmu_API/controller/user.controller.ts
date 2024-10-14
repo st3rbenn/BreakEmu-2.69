@@ -93,7 +93,7 @@ class UserController extends BaseController {
 				acc.role,
 				acc.is_banned,
 				acc.tagNumber as number,
-        acc.bankKamas
+				acc.bankKamas
 			)
 
 			const characters = await this.database.prisma.character.findMany({
@@ -163,12 +163,12 @@ class UserController extends BaseController {
 				const items = await this.container
 					.get(CharacterItemController)
 					.getCharacterItemsByCharacterId(character.id)
-				// const bankItems = await this.container
-				// 	.get(bankItemController)
-				// 	.getBankItems(character.accountId, character.id)
+				const bankItems = await this.container
+					.get(bankItemController)
+					.getBankItems(character.accountId, character.id)
 
 				character.inventory = new Inventory(character, items)
-				// character.bank = new Bank(character, [], 0)
+				character.bank = new Bank(character, bankItems, acc.bankKamas)
 
 				account.characters.set(character.id, character)
 			}
@@ -183,20 +183,20 @@ class UserController extends BaseController {
 		}
 	}
 
-  async updateBankKamas(accountId: number, kamas: number) {
-    try {
-      await this.database.prisma.user.update({
-        where: {
-          id: accountId,
-        },
-        data: {
-          bankKamas: kamas,
-        },
-      })
-    } catch (error) {
-      this._logger.error("Error while updating bank kamas", error as any)
-    }
-  }
+	async updateBankKamas(accountId: number, kamas: number) {
+		try {
+			await this.database.prisma.user.update({
+				where: {
+					id: accountId,
+				},
+				data: {
+					bankKamas: kamas,
+				},
+			})
+		} catch (error) {
+			this._logger.error("Error while updating bank kamas", error as any)
+		}
+	}
 }
 
 export default UserController
