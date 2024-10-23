@@ -1,4 +1,4 @@
-import { CellData } from "@breakEmu_API/model/map.model"
+import GameMap, { CellData } from "@breakEmu_API/model/map.model"
 
 class Cell {
 	id: number
@@ -24,6 +24,31 @@ class Cell {
 	public isWalkable(): boolean {
 		return (this.losMov & 1) == 0
 	}
+
+  public getNearCells(
+    gameMap: GameMap
+  ): Cell[] {
+    const nearCells: Cell[] = []
+    const nearCellsId = [
+      this.id - 14,
+      this.id - 1,
+      this.id + 1,
+      this.id + 14,
+    ]
+    for (const cellId of nearCellsId) {
+      const cell = gameMap.cells.get(cellId)
+      if (cell) {
+        nearCells.push(cell)
+      }
+    }
+    return nearCells
+  }
+
+  public getCenterCell(
+    gameMap: GameMap
+  ): Cell {
+    return gameMap.cells.get(this.id + 1) as Cell
+  }
 
 	public save(): CellData {
 		return {

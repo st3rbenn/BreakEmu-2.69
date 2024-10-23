@@ -31,3 +31,4 @@ dofus:
   jobXpRate: 1.5
   dropRate: 1.5
   itemStarter: [10784, 10785, 10794, 10798, 10799, 10800, 10801]
+  transferToBankWhenFull: true

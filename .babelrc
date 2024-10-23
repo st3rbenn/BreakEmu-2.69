@@ -11,6 +11,7 @@
         "@breakEmu_Auth": "./src/breakEmu_Auth",
         "@breakEmu_Protocol": "./src/breakEmu_Protocol"
       }
-    }]
+    }],
+    ["@babel/plugin-proposal-decorators", { "legacy": true }],
   ]
 }

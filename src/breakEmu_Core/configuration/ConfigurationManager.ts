@@ -156,6 +156,7 @@ class ConfigurationManager extends DofusConfiguration {
 				jobXpRate: this.jobXpRate,
 				dropRate: this.dropRate,
 				itemStarter: this.itemStarter,
+        transferToBankWhenFull: this.transferToBankWhenFull,
 			},
 			debug: {
 				showDebugMessages: this.showDebugMessages,
@@ -200,6 +201,7 @@ class ConfigurationManager extends DofusConfiguration {
 		this.startKamas = 0
 		this.startStatsPoints = 0
 		this.XpRate = 1
+    this.transferToBankWhenFull = true
 
 		this.showDebugMessages = false
 		this.showProtocolMessage = false

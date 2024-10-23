@@ -8,11 +8,15 @@ import {
 	ExchangeBidHouseBuyResultMessage,
 	ExchangeBidHouseGenericItemRemovedMessage,
 	ExchangeBidHouseInListRemovedMessage,
+	ExchangeBidHouseItemAddOkMessage,
+	ExchangeBidHouseItemRemoveOkMessage,
 	ExchangeBidHouseSearchMessage,
 	ExchangeStartedBidBuyerMessage,
+	ExchangeStartedBidSellerMessage,
 	ExchangeTypesExchangerDescriptionForUserMessage,
 	ExchangeTypesItemsExchangerDescriptionForUserMessage,
 	ItemTypeEnum,
+	NpcActionEnum,
 	SellerBuyerDescriptor,
 	TextInformationTypeEnum,
 } from "@breakEmu_Protocol/IO"
@@ -25,6 +29,7 @@ import ansiColorCodes from "@breakEmu_Core/Colors"
 import AuctionHouseItemController from "@breakEmu_API/controller/auctionHouseItem.controller"
 
 class AuctionHouseDialog extends Dialog {
+	static TAX_PERCENTAGE = 0.2
 	logger: Logger = new Logger("AuctionHouseDialog")
 
 	element: MapElement
@@ -47,12 +52,16 @@ class AuctionHouseDialog extends Dialog {
 		}
 	}
 
-	async open(): Promise<void> {
+	async open(isSell: boolean = false): Promise<void> {
 		try {
 			this.character.isAuctionHouseDialog = true
-			await this.sendAuctionHouseList()
+			if (isSell) {
+				await this.sendAuctionHouseListForSell()
+			} else {
+				await this.sendAuctionHouseListForBuy()
+			}
 		} catch (error) {
-			this.logger.error(error as any)
+			this.logger.error(`Error while opening auction house dialog`)
 		}
 	}
 
@@ -61,28 +70,38 @@ class AuctionHouseDialog extends Dialog {
 			this.character.removeDialog()
 			this.character.isAuctionHouseDialog = false
 		} catch (error) {
-			this.logger.error(error as any)
+			this.logger.error("Error while closing auction house dialog")
 		}
 	}
 
-	private async sendAuctionHouseList() {
+	private async sendAuctionHouseListForBuy() {
 		try {
 			await this.character.client.Send(
-				new ExchangeStartedBidBuyerMessage(
-					new SellerBuyerDescriptor(
-						this.auctionHouse.quantities,
-						this.auctionHouse.itemsTypes,
-						0,
-						0,
-						200,
-						this.auctionHouse.maxItemPerAccount,
-						0,
-						50
-					)
+				new ExchangeStartedBidBuyerMessage(this.getSellerBuyerDescriptor())
+			)
+		} catch (error) {
+			this.logger.error("Error while sending auction house list for buy")
+		}
+	}
+
+	public async sendAuctionHouseListForSell() {
+		try {
+			const itemAlreadyOnSale = await this.container
+				.get(AuctionHouseItemController)
+				.getItemsBySellerId(this.character.accountId)
+
+			const itemsToSell = itemAlreadyOnSale?.map((x) =>
+				x.toObjectItemToSellInBid()
+			)
+
+			await this.character.client.Send(
+				new ExchangeStartedBidSellerMessage(
+					this.getSellerBuyerDescriptor(),
+					itemsToSell
 				)
 			)
 		} catch (error) {
-			this.logger.error(error as any)
+			this.logger.error("Error while sending auction house list for sell")
 		}
 	}
 
@@ -98,7 +117,7 @@ class AuctionHouseDialog extends Dialog {
 			this.typeRecentlyWatched = type
 			this.gidRecentlyWatched = undefined
 		} catch (error) {
-			this.logger.error(error as any)
+			this.logger.error("Error while sending bid house type message")
 		}
 	}
 
@@ -116,13 +135,13 @@ class AuctionHouseDialog extends Dialog {
 
 			await client.Send(
 				new ExchangeTypesItemsExchangerDescriptionForUserMessage(
-					this.typeRecentlyWatched as ItemTypeEnum,
+					this.typeRecentlyWatched || itemByGids[0].record.typeId,
 					message.genId,
-					sortedItems
+					sortedItems || []
 				)
 			)
 		} catch (error) {
-			this.logger.error(error as any)
+			this.logger.error("Error while sending bid house search message")
 		}
 	}
 
@@ -136,35 +155,39 @@ class AuctionHouseDialog extends Dialog {
 
 		const item = this.auctionHouse.getItemByUidAndPrice(uid!, price!)
 
-		if (item) {
-			if (this.character.kamas >= price!) {
-				bought = true
-				await this.character.inventory.removeKamas(price!)
-				await this.character.inventory.addItem(
-					item.toCharacterItem(this.character.id),
-					qty!,
-					this.character.id
-				)
-				await this.onItemBought(item)
-				await this.onItemRemove(uid!)
+		try {
+			if (item) {
+				if (this.character.kamas >= price!) {
+					bought = true
+					await this.character.inventory.removeKamas(price!)
+					await this.character.inventory.addItem(
+						item.toCharacterItem(this.character.id),
+						qty!,
+						this.character.id
+					)
+					await this.onItemBought(item)
+					await this.onItemRemove(uid!)
+				} else {
+					await this.character.textInformation(
+						TextInformationTypeEnum.TEXT_INFORMATION_ERROR,
+						82,
+						[]
+					)
+				}
 			} else {
 				await this.character.textInformation(
-					TextInformationTypeEnum.TEXT_INFORMATION_ERROR,
-					82,
+					TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
+					64,
 					[]
 				)
+
+				await this.onItemRemove(uid!)
 			}
-		} else {
-			await this.character.textInformation(
-				TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
-				64,
-				[]
-			)
 
-			await this.onItemRemove(uid!)
+			await this.onBuy(uid!, bought)
+		} catch (error) {
+			this.logger.error("Error while sending bid house buy message")
 		}
-
-		await this.onBuy(uid!, bought)
 	}
 
 	private async onBuy(uid: number, bought: boolean) {
@@ -173,7 +196,7 @@ class AuctionHouseDialog extends Dialog {
 				new ExchangeBidHouseBuyResultMessage(uid, bought)
 			)
 		} catch (error) {
-			console.log(error)
+			this.logger.error("Error while sending bid house buy result message")
 		}
 	}
 
@@ -182,21 +205,25 @@ class AuctionHouseDialog extends Dialog {
 			.get(WorldServer)
 			.clients.get(item.sellerId)
 
-		if (sellerConnected) {
-			await sellerConnected.selectedCharacter.bank.addKamas(item.price)
-			await sellerConnected.selectedCharacter.notifyNewSale(
-				item.gId,
-				item.quantity,
-				item.price
-			)
-			await this.container
-				.get(AuctionHouseItemController)
-				.removeItem(item.id, this.auctionHouse)
-		} else {
-			item.sold = true
-			await this.container
-				.get(AuctionHouseItemController)
-				.modifySoldStatus(item.id, item.price, this.auctionHouse, true)
+		try {
+			if (sellerConnected) {
+				await sellerConnected.selectedCharacter.bank.addKamas(item.price)
+				await sellerConnected.selectedCharacter.notifyNewSale(
+					item.gId,
+					item.quantity,
+					item.price
+				)
+				await this.container
+					.get(AuctionHouseItemController)
+					.removeItem(item.id, this.auctionHouse)
+			} else {
+				item.sold = true
+				await this.container
+					.get(AuctionHouseItemController)
+					.modifySoldStatus(item.id, item.price, this.auctionHouse, true)
+			}
+		} catch (error) {
+			this.logger.error("Error while handling item bought")
 		}
 	}
 
@@ -216,7 +243,7 @@ class AuctionHouseDialog extends Dialog {
 				await this.onGidRemove()
 			}
 		} catch (error) {
-			console.log(error)
+			this.logger.error("Error while sending bid house in list removed message")
 		}
 	}
 
@@ -226,11 +253,13 @@ class AuctionHouseDialog extends Dialog {
 				new ExchangeBidHouseGenericItemRemovedMessage(this.gidRecentlyWatched!)
 			)
 		} catch (error) {
-			console.log(error)
+			this.logger.error(
+				"Error while sending bid house generic item removed message"
+			)
 		}
 	}
 
-	private sortItems(items: AuctionHouseItem[]): BidExchangerObjectInfo[] {
+	public sortItems(items: AuctionHouseItem[]): BidExchangerObjectInfo[] {
 		const result: BidExchangerObjectInfo[] = []
 
 		for (const itemsD of ItemCollection.sortItemsByEffects(items)) {
@@ -243,13 +272,104 @@ class AuctionHouseDialog extends Dialog {
 					result.push(
 						item[0].toBidExchangerObjectInfo(this.buildPrices(item[0], i))
 					)
-				} else {
-					console.log("Item not found")
 				}
 			}
 		}
 
 		return result
+	}
+
+	public async sellItem(objectUID: number, price: number, quantity: number) {
+		try {
+			const itemFromInventory = await this.character.inventory.getItem(
+				objectUID
+			)
+
+			if (
+				itemFromInventory &&
+				itemFromInventory.quantity >= quantity &&
+				itemFromInventory.canBeExchanged()
+			) {
+				const cutedItem = await this.character.inventory.cutItem(
+					itemFromInventory,
+					quantity
+				)
+
+				await this.character.inventory.removeItem(itemFromInventory, quantity)
+
+				const auctionItem = await cutedItem.toAuctionHouseItem(
+					price,
+					this.character.accountId,
+					this.auctionHouse.id
+				)
+
+				if (auctionItem) {
+					await this.onSellItemAdd(auctionItem)
+				}
+			}
+		} catch (error) {
+			this.logger.error("Error while selling item")
+		}
+	}
+
+	public async moveItem(objectUID: number, quantity: number) {
+		try {
+			const item = this.auctionHouse.getItemByUid(objectUID)
+
+			if (item) {
+				const itemAlreadyInInventory = await this.character.inventory.getItemByGid(
+					item.gId
+				)
+				await this.auctionHouse.removeItem(objectUID)
+
+				const characterItem = item.toCharacterItem(this.character.id)
+
+				await this.character.inventory.addItem(
+					characterItem,
+					quantity,
+					this.character.id
+				)
+
+				await this.character.client.Send(
+					new ExchangeBidHouseItemRemoveOkMessage(objectUID)
+				)
+			}
+		} catch (error) {
+			this.logger.error("Error while moving item: ", error as any)
+		}
+	}
+
+	private async onSellItemAdd(item: AuctionHouseItem) {
+		this.auctionHouse.addItem(item)
+		try {
+			await this.character.client.Send(
+				new ExchangeBidHouseItemAddOkMessage(item.toObjectItemToSellInBid())
+			)
+		} catch (error) {
+			this.logger.error("Error while adding item to sell")
+		}
+	}
+
+	public async onNpcAction(
+		character: Character,
+		actionId: number
+	): Promise<void> {
+		console.log("actionId", actionId)
+		try {
+			if (
+				actionId === NpcActionEnum.SELL12 ||
+				actionId === NpcActionEnum.SELL5
+			) {
+				return await this.open(true)
+			} else if (
+				actionId === NpcActionEnum.BUY6 ||
+				actionId === NpcActionEnum.BUY11
+			) {
+				return await this.open()
+			}
+		} catch (error) {
+			this.logger.error("Error while handling npc action for auction house")
+		}
 	}
 
 	private buildPrices(item: AuctionHouseItem, quantityIndex: number): number[] {
@@ -262,6 +382,19 @@ class AuctionHouseDialog extends Dialog {
 		prices.push(item.price)
 
 		return prices
+	}
+
+	private getSellerBuyerDescriptor() {
+		return new SellerBuyerDescriptor(
+			this.auctionHouse.quantities,
+			this.auctionHouse.itemsTypes,
+			AuctionHouseDialog.TAX_PERCENTAGE * 10,
+			0,
+			200,
+			this.character.level * this.auctionHouse.maxItemPerAccount,
+			0,
+			50
+		)
 	}
 }
 

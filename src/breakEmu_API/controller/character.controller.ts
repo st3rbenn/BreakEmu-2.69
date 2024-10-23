@@ -20,7 +20,7 @@ import WorldClient from "@breakEmu_World/WorldClient"
 import BaseController from "./base.controller"
 
 class CharacterController {
-	public _logger: Logger = new Logger("CharacterController")
+	public logger: Logger = new Logger("CharacterController")
 	public container: Container = Container.getInstance()
 	public database: Database = this.container.get(Database)
 
@@ -42,7 +42,7 @@ class CharacterController {
 
 			return count
 		} catch (error) {
-			await this._logger.writeAsync(
+			await this.logger.writeAsync(
 				`Error while counting characters for account ${accountId} \n ${
 					(error as any).stack
 				}`
@@ -58,7 +58,7 @@ class CharacterController {
 		const characters = client.account.characters
 
 		if (characters && characters.size >= this.MaxCharacterSlots) {
-			await this._logger.writeAsync(
+			await this.logger.writeAsync(
 				`Error while creating character: too many characters`
 			)
 			throw new Error(
@@ -73,14 +73,14 @@ class CharacterController {
 		)
 
 		if (characterWithSameName) {
-			await this._logger.writeAsync(
+			await this.logger.writeAsync(
 				`Error while creating character: character with same name already exists: ${message.name}`
 			)
 			throw new Error(CharacterCreationResultEnum.ERR_INVALID_NAME.toString())
 		}
 
 		if (!this.NAME_REGEX.test(message.name as string)) {
-			await this._logger.writeAsync(
+			await this.logger.writeAsync(
 				`Error while creating character: invalid name: ${message.name}`
 			)
 			throw new Error(CharacterCreationResultEnum.ERR_INVALID_NAME.toString())
@@ -154,9 +154,7 @@ class CharacterController {
 			character.client = client
 			return character
 		} catch (error) {
-			this._logger.write(
-				`Error while creating character: ${(error as any).stack}`
-			)
+			this.logger.write(`Error while creating character`)
 			throw new Error(CharacterCreationResultEnum.ERR_NO_REASON.toString())
 		}
 	}
@@ -189,7 +187,6 @@ class CharacterController {
 
 	public async updateCharacter(character: Character) {
 		try {
-			this._logger.write(`Updating character ${character.name}`)
 			const jobs: Job[] = []
 
 			character?.jobs.forEach((job) => {
@@ -231,8 +228,10 @@ class CharacterController {
 					activeTitle: character.activeTitle,
 				},
 			})
+
+			this.logger.info(`Character ${character.name} updated successfully`)
 		} catch (error) {
-			this._logger.write(
+			this.logger.write(
 				`Error while updating character ${character.name}: ${
 					(error as any).stack
 				}`

@@ -437,36 +437,57 @@ class Playground {
 			// const npcsJson: string = "testNpc"
 			// const jsonFile = this.readJsonFile(npcsJson)
 			// const npcs = JSON.parse(jsonFile) as Npc
-			const allRecords = await this.database.prisma.interactiveSkill.findMany()
+			const allRecords = await this.database.prisma.interactiveSkill.findMany({
+        where: {
+          skillId: {
+            equals: "0"
+          }
+        }
+      })
 
-			const seen = new Set()
-			const duplicates = allRecords.filter((record) => {
-				// Concaténer toutes les colonnes pour chaque enregistrement
-				const recordCopy = { ...record }
-        recordCopy.id = 0
-				const key = Object.values(recordCopy).join("|")
+      for(const record of allRecords) {
+        await this.database.prisma.interactiveSkill.update({
+          where: {
+            id: record.id
+          },
+          data: {
+            skillId: "114"
+          }
+        })
 
-				// Vérifier si cette clé a déjà été vue
-				if (seen.has(key)) {
-					this.logger.write(`Duplicate found: ${key}`, ansiColorCodes.bgRed)
-					return true // C'est un doublon
-				}
+        this.logger.write(`Update record with id ${record.id}`, ansiColorCodes.bgGreen)
+      }
 
-				// Sinon, ajouter la clé au Set et continuer
-				this.logger.write(`Not a duplicate: ${key}`, ansiColorCodes.bgGreen)
-				seen.add(key)
-				return false
-			})
+      this.logger.write(`Update ${allRecords.length} records`, ansiColorCodes.bgGreen)
 
-			const idsToDelete = duplicates.map((record) => record.id)
+			// const seen = new Set()
+			// const duplicates = allRecords.filter((record) => {
+			// 	// Concaténer toutes les colonnes pour chaque enregistrement
+			// 	const recordCopy = { ...record }
+      //   recordCopy.id = 0
+			// 	const key = Object.values(recordCopy).join("|")
 
-			await this.database.prisma.interactiveSkill.deleteMany({
-				where: {
-					id: {
-						in: idsToDelete,
-					},
-				},
-			})
+			// 	// Vérifier si cette clé a déjà été vue
+			// 	if (seen.has(key)) {
+			// 		this.logger.write(`Duplicate found: ${key}`, ansiColorCodes.bgRed)
+			// 		return true // C'est un doublon
+			// 	}
+
+			// 	// Sinon, ajouter la clé au Set et continuer
+			// 	this.logger.write(`Not a duplicate: ${key}`, ansiColorCodes.bgGreen)
+			// 	seen.add(key)
+			// 	return false
+			// })
+
+			// const idsToDelete = duplicates.map((record) => record.id)
+
+			// await this.database.prisma.interactiveSkill.deleteMany({
+			// 	where: {
+			// 		id: {
+			// 			in: idsToDelete,
+			// 		},
+			// 	},
+			// })
 
 			this.logger.write("finish ✨")
 		} catch (error) {

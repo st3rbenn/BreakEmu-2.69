@@ -1,6 +1,7 @@
 import Npc from "@breakEmu_API/model/npc.model"
 import Logger from "@breakEmu_Core/Logger"
 import { NpcActionEnum, NpcGenericActionRequestMessage } from "@breakEmu_Protocol/IO"
+import AuctionHouseDialog from "@breakEmu_World/manager/dialog/auctionHouse/AuctionHouseDialog"
 import WorldClient from "@breakEmu_World/WorldClient"
 
 class NpcHandler {
@@ -14,6 +15,10 @@ class NpcHandler {
 			this.logger.write(
 				`NpcGenericActionRequestMessage: actionId -> ${message.npcActionId} npcId -> ${message.npcId} npcMapId -> ${message.npcMapId}`
 			)
+
+      if(client.selectedCharacter.dialog) {
+        await client.selectedCharacter.dialog.onNpcAction(client.selectedCharacter, message.npcActionId as NpcActionEnum)
+      }
 
 			const npc = client.selectedCharacter.map
 				.instance()

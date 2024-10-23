@@ -13,6 +13,7 @@ abstract class ItemCollection<T extends AbstractItem> {
 	private _items: Map<number, T> = new Map<number, T>()
 	public count: number = 0
 	public container: Container = Container.getInstance()
+  inventoryLock: boolean = false
 
 	constructor(items: T[] = []) {
 		this._items = this.createContainer()
@@ -54,13 +55,13 @@ abstract class ItemCollection<T extends AbstractItem> {
 	public abstract onItemsQuantityChanged(item: T[]): Promise<void>
 
 	public async addItems(items: T[]) {
-    console.log(`Adding items: ${items.length}`)
+		console.log(`Adding items: ${items.length}`)
 		try {
 			let addedItems: T[] = []
 			let stackedItems: T[] = []
 
 			for (const item of items) {
-        console.log(`Add item: ${item.id} with quantity: ${item.quantity}`)
+				console.log(`Add item: ${item.id} with quantity: ${item.quantity}`)
 				item.initialize()
 
 				let sameItem: T | undefined = await this.getSameItem(
@@ -133,8 +134,18 @@ abstract class ItemCollection<T extends AbstractItem> {
 
 	public async addItem(item: T, quantity: number = 1, characterId: number) {
 		try {
+			// Attendre que l'inventaire soit disponible
+			while (this.inventoryLock) {
+				await new Promise((resolve) => setTimeout(resolve, 10)) // petite pause pour éviter la surcharge CPU
+			}
+
+			// Verrouiller l'inventaire
+			this.inventoryLock = true
+
+			// Initialiser l'item
 			item.initialize()
 
+			// Rechercher un item identique dans l'inventaire
 			let sameItem: T | undefined = await this.getSameItem(
 				item.gId,
 				item.effects,
@@ -145,28 +156,67 @@ abstract class ItemCollection<T extends AbstractItem> {
 				console.log(
 					`sameItem found for addItem: ${sameItem.quantity} > ${quantity}`
 				)
+				// Si un item identique est trouvé, stacker les quantités
 				sameItem.quantity += quantity
-				this.onItemQuantityChanged(sameItem)
-				this.onItemStacked(sameItem)
+				await this.onItemQuantityChanged(sameItem)
+				await this.onItemStacked(sameItem)
 			} else {
+				// Sinon, créer un nouvel item dans l'inventaire
 				item.quantity = quantity
 				const result = await this.container
 					.get(CharacterItemController)
 					.createCharacterItem(item, characterId)
 
 				if (result) {
-					console.log(
-						`new item created with id: ${result.id} and quantity: ${result.quantity} (name: ${result.record.name})`
-					)
 					item.id = result.id
 					this.items.set(result.id, item)
-					this.onItemAdded(item)
+					await this.onItemAdded(item)
 				}
 			}
 		} catch (error) {
 			console.log(error)
+		} finally {
+			// Déverrouiller l'inventaire
+			this.inventoryLock = false
 		}
 	}
+
+	// public async addItem(item: T, quantity: number = 1, characterId: number) {
+	// 	try {
+	// 		item.initialize()
+
+	// 		let sameItem: T | undefined = await this.getSameItem(
+	// 			item.gId,
+	// 			item.effects,
+	// 			item.position
+	// 		)
+
+	// 		if (sameItem != undefined) {
+	// 			console.log(
+	// 				`sameItem found for addItem: ${sameItem.quantity} > ${quantity}`
+	// 			)
+	// 			sameItem.quantity += quantity
+	// 			await this.onItemQuantityChanged(sameItem)
+	// 			await this.onItemStacked(sameItem)
+	// 		} else {
+	// 			item.quantity = quantity
+	// 			const result = await this.container
+	// 				.get(CharacterItemController)
+	// 				.createCharacterItem(item, characterId)
+
+	// 			if (result) {
+	// 				// console.log(
+	// 				// 	`new item created with id: ${result.id} and quantity: ${result.quantity} (name: ${result.record.name})`
+	// 				// )
+	// 				item.id = result.id
+	// 				this.items.set(result.id, item)
+	// 				await this.onItemAdded(item)
+	// 			}
+	// 		}
+	// 	} catch (error) {
+	// 		console.log(error)
+	// 	}
+	// }
 
 	public async removeItem(item: T, quantity: number = 1) {
 		if (item != null) {
@@ -177,7 +227,7 @@ abstract class ItemCollection<T extends AbstractItem> {
 				return
 			}
 
-      console.log(`Removing item: ${item.id} with quantity: ${quantity}`)
+			console.log(`Removing item: ${item.id} with quantity: ${quantity}`)
 
 			if (item.quantity >= quantity) {
 				if (item.quantity == quantity) {
@@ -189,9 +239,9 @@ abstract class ItemCollection<T extends AbstractItem> {
 					this.onItemQuantityChanged(item)
 				}
 			} else {
-					this.items.delete(item.id)
-					this.onItemRemoved(item)
-      }
+				this.items.delete(item.id)
+				this.onItemRemoved(item)
+			}
 		}
 	}
 
@@ -229,27 +279,27 @@ abstract class ItemCollection<T extends AbstractItem> {
 		return this.items.get(id)
 	}
 
-  public static sortItemsByEffects<T extends AbstractItem>(items: T[]): T[][] {
-    const result: T[][] = []
+	public static sortItemsByEffects<T extends AbstractItem>(items: T[]): T[][] {
+		const result: T[][] = []
 
-    for (const item of items) {
-      let found = false
+		for (const item of items) {
+			let found = false
 
-      for (const items of result) {
-        if (items[0].effects.sequenceEqual(item.effects)) {
-          items.push(item)
-          found = true
-          break
-        }
-      }
+			for (const items of result) {
+				if (items[0].effects.sequenceEqual(item.effects)) {
+					items.push(item)
+					found = true
+					break
+				}
+			}
 
-      if (!found) {
-        result.push([item])
-      }
-    }
+			if (!found) {
+				result.push([item])
+			}
+		}
 
-    return result
-  }
+		return result
+	}
 }
 
 export default ItemCollection

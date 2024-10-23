@@ -12,6 +12,9 @@ import SubArea from "./SubArea.model"
 import MapScrollAction from "./mapScrollAction.model"
 
 class GameMap {
+	public static MAP_WIDTH: number = 14
+	public static MAP_HEIGHT: number = 20
+
 	id: number
 	subareaId: number
 	version: number
@@ -152,6 +155,46 @@ class GameMap {
 		}) as number
 	}
 
+	static findNearWalkableCell(mapId: number, cellPoint: MapPoint): number {
+		const map = GameMap.getMapById(mapId)
+		if (map) {
+			const cells = map.cells
+			const cell = cells.get(cellPoint.cellId)
+			if (cell) {
+				if (cell.isWalkable()) {
+					return cellPoint.cellId
+				}
+				const nearCells = cell.getNearCells(map)
+				for (const nearCell of nearCells) {
+					if (nearCell.isWalkable()) {
+						return nearCell.id
+					}
+				}
+			}
+		}
+		return -1
+	}
+
+	public getCenterCell(): Cell {
+		const middleY = Math.floor(GameMap.MAP_HEIGHT / 2) // Ligne centrale
+		const middleX = Math.floor(GameMap.MAP_WIDTH / 2) // Colonne centrale approximative
+
+		// Parcourir les cellules pour trouver celle qui correspond
+		let centerCell: Cell | undefined = undefined
+		this.cells.forEach((cell) => {
+			const position = new MapPoint(cell.id)
+			if (position.x === middleX && position.y === middleY) {
+				centerCell = cell
+			}
+		})
+
+		if (centerCell) {
+      return centerCell
+    }
+
+    return this.randomWalkableCell()
+	}
+
 	public randomWalkableCell(): Cell {
 		return this.cells.get(
 			Array.from(this.cells.keys()).find((cellId) => {
@@ -194,8 +237,12 @@ class GameMap {
 		const cell = this.cells.get(cellId)
 		if (cell) {
 			return cell.isWalkable()
-		}
-		return false
+		} else {
+      const nextCellId = GameMap.getNeighbourCellId(cellId, MapScrollEnum.RIGHT)
+      return this.isCellWalkable(nextCellId as number)
+    }
+
+    return false
 	}
 
 	public getNearestCellId(interactiveType: InteractiveTypeEnum): number {
@@ -207,15 +254,6 @@ class GameMap {
 		}
 
 		return this.randomWalkableCell().id
-	}
-
-	public isCellBlocked(cellId: number): boolean {
-		if (cellId < 0 || cellId > 559) return false
-		const cell = this.cells.get(cellId)
-		if (cell) {
-			return cell.isWalkable()
-		}
-		return false
 	}
 
 	public unblockCell(): Cell {

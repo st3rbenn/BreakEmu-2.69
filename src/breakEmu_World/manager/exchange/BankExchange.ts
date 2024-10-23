@@ -40,7 +40,6 @@ class BankExchange extends Exchange {
 
 			this.characterBank.items.forEach(async (item) => {
 				const obj = item.getObjectItem()
-				console.log(obj)
 				objs.push(obj)
 			})
 
@@ -111,6 +110,9 @@ class BankExchange extends Exchange {
 	public ready(ready: boolean, step: number): void {
 		throw new Error("Method not implemented.")
 	}
+  public onNpcAction(character: Character, actionId: number): Promise<void> {
+    throw new Error("Method not implemented.")
+  }
 }
 
 export default BankExchange

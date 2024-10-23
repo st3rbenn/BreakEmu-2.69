@@ -35,9 +35,9 @@ class InteractiveElementBonus extends Task {
 				mapId
 			)
 			if (element) {
-				console.log(
-					`Exécution de la tâche pour l'élément ${elementId}-${element.mapId}...`
-				)
+				// console.log(
+				// 	`Exécution de la tâche pour l'élément ${elementId}-${element.mapId}...`
+				// )
 				if (element.ageBonus < InteractiveElementBonus.AGE_BONUS_MAX) {
 					InteractiveElementBonus.updateAgeBonus(element)
 				}

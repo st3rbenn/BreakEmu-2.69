@@ -13,13 +13,10 @@ import Container from "@breakEmu_Core/container/Container"
 class ServerListHandler {
 	private static container: Container = Container.getInstance()
 	public static async handleServerListRequestMessage(client: WorldClient) {
-		const token: number[] = Buffer.from(
-			[...Array(32)].map(() => Math.random().toString(36)[2]).join("")
-		).toJSON().data
 
 		const reloginTokenStatusMessage = new ReloginTokenStatusMessage(
 			false,
-			token.toString()
+			client.token.toString()
 		)
 
 		await client.Send(reloginTokenStatusMessage)
@@ -37,16 +34,13 @@ class ServerListHandler {
 	}
 
 	public static async handleServerSelectionMessage(client: WorldClient) {
-		const token: number[] = Buffer.from(
-			[...Array(32)].map(() => Math.random().toString(36)[2]).join("")
-		).toJSON().data
 
 		const selectedServerDataMessage = new SelectedServerDataMessage(
 			this.container.get(WorldServer).worldServerData?.Id,
 			this.container.get(WorldServer).worldServerData?.Address,
 			[this.container.get(WorldServer).worldServerData?.Port as number, 5555],
 			true,
-			token
+			client.token
 		)
 
 		await client.Send(selectedServerDataMessage)

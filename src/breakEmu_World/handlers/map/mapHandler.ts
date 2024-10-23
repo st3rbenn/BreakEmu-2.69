@@ -72,7 +72,7 @@ class MapHandler {
 		try {
 			if (client.selectedCharacter?.isMoving) {
 				await client.selectedCharacter.stopMove()
-				await client?.Send(new BasicNoOperationMessage())
+				// await client?.Send(new BasicNoOperationMessage())
 			}
 		} catch (error) {
 			this.logger.error(
@@ -142,11 +142,10 @@ class MapHandler {
 							ansiColorCodes.bgRed
 						)
 
-						const adjacentCell = GameMap.findNearMapBorder(
-							teleportedMap,
-							scrollType,
-							cellPoint
-						)
+						const adjacentCell = GameMap.findNearWalkableCell(
+              teleportMapId,
+              cellPoint
+            )
 
 						await client.selectedCharacter.teleport(teleportMapId, adjacentCell)
 

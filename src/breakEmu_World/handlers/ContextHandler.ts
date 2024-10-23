@@ -1,37 +1,28 @@
-import {
-	ExchangeObjectMoveKamaMessage,
-	NpcGenericActionRequestMessage,
-} from "./../../breakEmu_Protocol/IO/network/protocol"
-import Recipe from "@breakEmu_API/model/recipe.model"
+import AuctionHouse from "@breakEmu_API/model/auctionHouse.model"
+import Container from "@breakEmu_Core/container/Container"
 import Logger from "@breakEmu_Core/Logger"
 import {
-	GameContextEnum,
-	TitlesAndOrnamentsListRequestMessage,
+  GameContextEnum,
+  TitlesAndOrnamentsListRequestMessage,
 } from "@breakEmu_Protocol/IO"
-import CraftExchange from "@breakEmu_World/manager/dialog/job/CraftExchange"
-import Exchange from "@breakEmu_World/manager/exchange/Exchange"
+import {
+  AdminQuietCommandMessage,
+  EmoteAddMessage,
+  ObjectAveragePricesMessage,
+  OrnamentGainedMessage,
+  OrnamentSelectedMessage,
+  OrnamentSelectRequestMessage,
+  TitleGainedMessage,
+  TitlesAndOrnamentsListMessage,
+  TitleSelectedMessage,
+  TitleSelectRequestMessage
+} from "@breakEmu_Protocol/IO/network/protocol"
 import WorldClient from "@breakEmu_World/WorldClient"
 import {
-	AdminQuietCommandMessage,
-	EmoteAddMessage,
-	ExchangeCraftCountModifiedMessage,
-	ExchangeCraftCountRequestMessage,
-	ExchangeObjectMoveMessage,
-	ExchangeReadyMessage,
-	ExchangeSetCraftRecipeMessage,
-	GameContextCreateMessage,
-	OrnamentGainedMessage,
-	OrnamentSelectedMessage,
-	OrnamentSelectRequestMessage,
-	TitleGainedMessage,
-	TitlesAndOrnamentsListMessage,
-	TitleSelectedMessage,
-	TitleSelectRequestMessage,
-} from "@breakEmu_Protocol/IO/network/protocol"
+  GameMapChangeOrientationMessage,
+  GameMapChangeOrientationRequestMessage,
+} from "./../../breakEmu_Protocol/IO/network/protocol"
 import AchievementHandler from "./achievement/AchievementHandler"
-import Container from "@breakEmu_Core/container/Container"
-import CharacterItemController from "@breakEmu_API/controller/characterItem.controller"
-import BankExchange from "@breakEmu_World/manager/exchange/BankExchange"
 
 enum AdminQuietCommande {
 	moveto = "moveto",
@@ -52,6 +43,7 @@ class ContextHandler {
 			} else {
 				await Promise.all([
 					character.createContext(GameContextEnum.ROLE_PLAY),
+          this.handleObjectAveragePricesGetMessage(client),
 					AchievementHandler.handleAchievementListMessage(character),
 					character.refreshStats(),
 				])
@@ -200,6 +192,50 @@ class ContextHandler {
 				}`,
 				"red"
 			)
+		}
+	}
+
+	static async handleGameMapChangeOrientationRequestMessage(
+		client: WorldClient,
+		message: GameMapChangeOrientationRequestMessage
+	) {
+		const { direction } = message
+		try {
+			client.selectedCharacter.direction = direction!
+
+			await client.Send(
+				new GameMapChangeOrientationMessage(
+					client.selectedCharacter.getActorOrientation()
+				)
+			)
+		} catch (error) {
+			this.logger.write(
+				`Error while handling GameMapChangeOrientationRequestMessage: ${
+					(error as any).stack
+				}`,
+				"red"
+			)
+		}
+	}
+
+	public static async handleObjectAveragePricesGetMessage(client: WorldClient) {
+		const averagesPrices = AuctionHouse.averagePrices
+
+		const avgPricesArray = Array.from(averagesPrices.values())
+		const idsOfItems = Array.from(averagesPrices.keys())
+
+		const objectAveragePricesMessage = new ObjectAveragePricesMessage(
+			idsOfItems,
+			avgPricesArray
+		)
+
+    console.log("Sending ObjectAveragePricesMessage")
+    console.log(objectAveragePricesMessage)
+
+		try {
+			await client.Send(objectAveragePricesMessage)
+		} catch (error) {
+			this.logger.error("Error while sending ObjectAveragePricesMessage: ")
 		}
 	}
 

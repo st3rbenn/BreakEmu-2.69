@@ -1,7 +1,10 @@
+import AuctionHouseItemController from "@breakEmu_API/controller/auctionHouseItem.controller"
 import CharacterController from "@breakEmu_API/controller/character.controller"
 import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
+import Container from "@breakEmu_Core/container/Container"
 import {
 	ActorAlignmentInformations,
+	ActorOrientation,
 	ActorRestrictionsInformations,
 	AlmanachCalendarDateMessage,
 	BasicNoOperationMessage,
@@ -46,8 +49,8 @@ import TeleportHandler from "@breakEmu_World/handlers/map/teleport/TeleportHandl
 import AchievementManager from "@breakEmu_World/manager/achievement/AchievementManager"
 import BreedManager from "@breakEmu_World/manager/breed/BreedManager"
 import Dialog from "@breakEmu_World/manager/dialog/Dialog"
-import ZaapDialog from "@breakEmu_World/manager/dialog/zaap/ZaapDialog"
 import CraftExchange from "@breakEmu_World/manager/dialog/job/CraftExchange"
+import ZaapDialog from "@breakEmu_World/manager/dialog/zaap/ZaapDialog"
 import Entity from "@breakEmu_World/manager/entities/Entity"
 import ContextEntityLook from "@breakEmu_World/manager/entities/look/ContextEntityLook"
 import Characteristic from "@breakEmu_World/manager/entities/stats/characteristic"
@@ -58,6 +61,7 @@ import Inventory from "@breakEmu_World/manager/items/Inventory"
 import JobManager from "@breakEmu_World/manager/job/JobManager"
 import MapPoint from "@breakEmu_World/manager/map/MapPoint"
 import PathReader from "@breakEmu_World/manager/map/PathReader"
+import MapElement from "@breakEmu_World/manager/map/element/MapElement"
 import GeneralShortcutBar from "@breakEmu_World/manager/shortcut/GeneralShortcutBar"
 import SpellShortcutBar from "@breakEmu_World/manager/shortcut/SpellShortcutBar"
 import CharacterShortcut from "@breakEmu_World/manager/shortcut/character/CharacterShortcut"
@@ -74,9 +78,8 @@ import Job from "./job.model"
 import GameMap from "./map.model"
 import Skill from "./skill.model"
 import Spell from "./spell.model"
-import Container from "@breakEmu_Core/container/Container"
-import Npc from "./npc.model"
-import AuctionHouseItemController from "@breakEmu_API/controller/auctionHouseItem.controller"
+import Database from "@breakEmu_API/Database"
+import AccountRoleEnum from "@breakEmu_World/enum/AccountRoleEnum"
 
 class Character extends Entity {
 	private container: Container = Container.getInstance()
@@ -107,6 +110,10 @@ class Character extends Entity {
 	isCraftDialog: boolean = false
 	isNpcDialog: boolean = false
 	isAuctionHouseDialog: boolean = false
+
+	startRecord: boolean = false
+	listMaps: Map<number, GameMap> = new Map()
+	lastElementsUsed: Map<number, MapElement> = new Map()
 
 	status: PlayerStatusEnum = PlayerStatusEnum.PLAYER_STATUS_AVAILABLE
 
@@ -150,6 +157,8 @@ class Character extends Entity {
 	spawnCellId: number = 0
 
 	godMode: boolean = false
+	editMode: boolean = false
+	infoMode: boolean = false
 
 	account: Account
 
@@ -294,34 +303,42 @@ class Character extends Entity {
 	}
 
 	public async addExperience(experience: number) {
-		this.experience += experience
-		const levelFloor = Experience.getCharacterExperienceLevelFloor(this.level)
-		const nextLevelFloor = Experience.getCharacterExperienceNextLevelFloor(
-			this.level
-		)
+		try {
+			this.experience += experience
+			const levelFloor = Experience.getCharacterExperienceLevelFloor(this.level)
+			const nextLevelFloor = Experience.getCharacterExperienceNextLevelFloor(
+				this.level
+			)
 
-		if (
-			(this.experience >= nextLevelFloor &&
-				this.level < Experience.maxCharacterLevel) ||
-			(experience < levelFloor && this.level > 1)
-		) {
-			const current = this.level
-			this.level = Experience.getCharacterLevel(this.experience)
-			const difference = this.level - current
-			await this.OnLevelChanged(current, difference)
+			if (
+				(this.experience >= nextLevelFloor &&
+					this.level < Experience.maxCharacterLevel) ||
+				(experience < levelFloor && this.level > 1)
+			) {
+				const current = this.level
+				this.level = Experience.getCharacterLevel(this.experience)
+				const difference = this.level - current
+				await this.OnLevelChanged(current, difference)
+			}
+
+			await this.refreshStats()
+		} catch (error) {
+			console.error(error)
 		}
-
-		await this.refreshStats()
 	}
 
 	public async setDialog(dialog: Dialog) {
-		if (this.dialog) {
-			console.log(`Closing dialog ${this.dialog}`)
-			await this.dialog.close()
-		}
+		try {
+			if (this.dialog) {
+				console.log(`Closing dialog ${this.dialog}`)
+				await this.dialog.close()
+			}
 
-		this.dialog = dialog
-		await this.dialog.open()
+			this.dialog = dialog
+			await this.dialog.open()
+		} catch (error) {
+			console.error(error)
+		}
 	}
 
 	public removeDialog() {
@@ -330,22 +347,22 @@ class Character extends Entity {
 	}
 
 	public async leaveDialog() {
-		try {
-			if (this.dialog) {
+		if (this.dialog) {
+			try {
 				await this.dialog.close()
+			} catch (error) {
+				console.log(error)
 			}
-		} catch (error) {
-			console.log(error)
 		}
 	}
 
-	private whatDialog() {
-		return {
-			isZaapDialog: this.dialog instanceof ZaapDialog,
-			isBankDialog: this.dialog instanceof BankDialog,
-			isCraftDialog: this.dialog instanceof CraftExchange,
-		}
-	}
+	// private whatDialog() {
+	// 	return {
+	// 		isZaapDialog: this.dialog instanceof ZaapDialog,
+	// 		isBankDialog: this.dialog instanceof BankDialog,
+	// 		isCraftDialog: this.dialog instanceof CraftExchange,
+	// 	}
+	// }
 
 	public toCharacterBaseInformations(): CharacterBaseInformations {
 		return new CharacterBaseInformations(
@@ -381,6 +398,10 @@ class Character extends Entity {
 		)
 	}
 
+	public getActorOrientation() {
+		return new ActorOrientation(this.id, this.direction)
+	}
+
 	public getActorRestrictions() {
 		return new ActorRestrictionsInformations(
 			false,
@@ -412,22 +433,22 @@ class Character extends Entity {
 	}
 
 	public async resendUnTakenRewardAchievements() {
-		try {
-			if (this.untakenAchievementsReward.length === 0) return
-			for (const achiev of this.untakenAchievementsReward) {
-				if (achiev === 0) continue
-				const achievement = this.container
-					.get(AchievementManager)
-					.getAchievementById(achiev)
-				if (achievement) {
+		if (this.untakenAchievementsReward.length === 0) return
+		for (const achiev of this.untakenAchievementsReward) {
+			if (achiev === 0) continue
+			const achievement = this.container
+				.get(AchievementManager)
+				.getAchievementById(achiev)
+			if (achievement) {
+				try {
 					await AchievementHandler.handleSendAchievementFinishedMessage(
 						this,
 						achievement
 					)
+				} catch (error) {
+					console.log(error)
 				}
 			}
-		} catch (error) {
-			console.log(error)
 		}
 	}
 
@@ -457,12 +478,11 @@ class Character extends Entity {
 			)
 		}
 		if (this.activeTitle != null) {
-			this.humanOptions.set(
-				3,
-				new HumanOptionTitle(this.activeTitle, "MODERATOR")
-			)
+			this.humanOptions.set(3, new HumanOptionTitle(this.activeTitle, ""))
 		} else {
-			this.humanOptions.set(3, new HumanOptionTitle(0, "MODERATOR"))
+			if (this.account.role === AccountRoleEnum.MODERATOR) {
+				this.humanOptions.set(3, new HumanOptionTitle(215, ""))
+			}
 		}
 
 		if (this.guildId !== null) {
@@ -616,6 +636,12 @@ class Character extends Entity {
 		}
 	}
 
+	public async reloadMap() {
+		if (this.map) {
+			await this.map.instance().sendMapComplementaryInformations(this.client)
+		}
+	}
+
 	public async simulateMove(): Promise<boolean> {
 		if (this.busy) return false
 
@@ -687,11 +713,11 @@ class Character extends Entity {
 		// }
 	}
 
-	public async teleport(mapId: number, cellId: number | null = null) {
+	public async teleport(mapId: number, cellId: number = 397, direction?: number) {
 		const gameMap = GameMap.getMapById(mapId)
 		if (gameMap) {
 			try {
-				await this.teleportPlayer(gameMap as GameMap, cellId)
+				await this.teleportPlayer(gameMap as GameMap, cellId, direction)
 				await this.refreshStats()
 			} catch (error) {
 				console.log(error)
@@ -701,18 +727,23 @@ class Character extends Entity {
 
 	public async teleportPlayer(
 		teleportMap: GameMap,
-		cellId: number | null = null
+		cellId: number | null = null,
+    direction?: number
 	) {
 		if (this.busy) return
 
 		this.changeMap = true
 
 		if (cellId === null) {
-			cellId = teleportMap.getNearestCellId(this.cellId)
+			cellId = teleportMap.getCenterCell().id
 		}
 
 		this.cellId = cellId
 		this.mapId = teleportMap.id
+    
+    // if(direction) {
+    //   this.direction = direction
+    // }
 
 		try {
 			if (this.map !== null && this.map.instance) {
@@ -852,15 +883,15 @@ class Character extends Entity {
 		try {
 			const getAllItemSold = await this.container
 				.get(AuctionHouseItemController)
-				.getItemSoldBySellerId(this.id)
+				.getItemsSoldBySellerId(this.id)
 
 			console.log(getAllItemSold)
 
-			await this.textInformation(
-				TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
-				67,
-				[]
-			)
+			// await this.textInformation(
+			// 	TextInformationTypeEnum.TEXT_INFORMATION_MESSAGE,
+			// 	67,
+			// 	[]
+			// )
 		} catch (error) {
 			console.log(error)
 		}
@@ -901,7 +932,7 @@ class Character extends Entity {
 
 	public async replyWarning(value: any): Promise<void> {
 		try {
-			await this.reply(`<br>${value}`, "ED7F10", false, false)
+			await this.reply(`${value}`, "ED7F10", false, false)
 		} catch (error) {
 			console.log(error)
 		}
@@ -1271,6 +1302,37 @@ class Character extends Entity {
 			await this.container.get(CharacterController).updateCharacter(this)
 		} catch (error) {
 			console.log(error)
+		}
+	}
+
+	public async interactToDeleteElement(args: string[]) {
+		//TODO: when player interact using useInteract methode from mapInstance, check if the player is in godMode, if yes, delete the entity
+		//try refreshing the map using sendComplementaryInformationsMessage
+	}
+
+	public async interactElementToSetZaap() {
+		const type = "16"
+		const skillId = "114"
+		if (this.godMode) {
+			if (this.lastElementsUsed.size > 0) {
+				for (const element of this.lastElementsUsed.values()) {
+					await this.container.get(Database).prisma.interactiveSkill.update({
+						where: {
+							id: element.record.skill.id,
+							identifier: element.record.skill.identifier,
+						},
+						data: {
+							skillId: skillId,
+							type: type,
+						},
+					})
+
+					await this.reply(`Zaap set at map ${element.mapInstance.record.id}`)
+					this.lastElementsUsed.delete(element.record.id)
+				}
+			}
+		} else {
+			await this.replyError("You are not in godMode")
 		}
 	}
 }

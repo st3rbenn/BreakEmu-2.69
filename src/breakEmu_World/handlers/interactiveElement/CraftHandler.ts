@@ -1,8 +1,8 @@
 import Character from "@breakEmu_API/model/character.model"
 import Logger from "@breakEmu_Core/Logger"
-import MapElement from "../MapElement"
+import MapElement from "../../manager/map/element/MapElement"
 import IInteractiveElementHandler from "./IInteractiveElementHandler"
-import CraftExchange from "../../../dialog/job/CraftExchange"
+import CraftExchange from "../../manager/dialog/job/CraftExchange"
 import Skill from "breakEmu_API/model/skill.model"
 
 class CraftHandler implements IInteractiveElementHandler {

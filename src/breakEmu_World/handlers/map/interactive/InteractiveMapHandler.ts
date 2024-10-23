@@ -1,6 +1,6 @@
 import Logger from "@breakEmu_Core/Logger"
 import { InteractiveUseRequestMessage } from "@breakEmu_Protocol/IO/network/protocol"
-import WorldClient from "./@breakEmu_World/WorldClient"
+import WorldClient from "@breakEmu_World/WorldClient"
 class InteractiveMapHandler {
 	private static logger: Logger = new Logger("InteractiveMapHandler")
 	public static async handleInteractiveUse(

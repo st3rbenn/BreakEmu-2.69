@@ -136,10 +136,11 @@ class Logger {
 
 		// Efface la ligne actuelle et positionne le curseur au début
 
-		process.stdout.clearLine(0)
-		process.stdout.cursorTo(0)
+		// process.stdout.clearLine(0)
+		// process.stdout.cursorTo(0)
 
-		process.stdout.write(`Loading progress: ${progressPercent.toFixed(2)}%`)
+		// process.stdout.write(`Loading progress: ${progressPercent.toFixed(2)}%`)
+    this.logger.info(`Loading progress: ${progressPercent.toFixed(2)}%`)
 
 		// Si tu souhaites passer à la ligne une fois le chargement terminé
 		if (loaded >= max) {

@@ -12,10 +12,12 @@ import Item from "./item.model"
 import Container from "@breakEmu_Core/container/Container"
 import { randomUUID } from "crypto"
 import BankItem from "./BankItem.model"
+import AuctionHouseItem from "./auctionHouseItem.model"
+import AuctionHouseItemController from "@breakEmu_API/controller/auctionHouseItem.controller"
 
 class CharacterItem extends AbstractItem {
 	characterId: number
-  private container: Container = Container.getInstance()
+	private container: Container = Container.getInstance()
 
 	constructor(
 		characterId: number,
@@ -25,7 +27,7 @@ class CharacterItem extends AbstractItem {
 		look: string,
 		effects: EffectCollection,
 		appearanceId: number,
-    id?: number
+		id?: number
 	) {
 		super(gId, position, quantity, effects, appearanceId, look, id)
 		this.characterId = characterId
@@ -57,9 +59,9 @@ class CharacterItem extends AbstractItem {
 		)
 	}
 
-  public getObjectQuantity(): ObjectItemQuantity {
-    return new ObjectItemQuantity(this.id, this.quantity)
-  }
+	public getObjectQuantity(): ObjectItemQuantity {
+		return new ObjectItemQuantity(this.id, this.quantity)
+	}
 
 	public getObjectItemQuantity(): ObjectItemQuantity {
 		throw new Error("Method not implemented.")
@@ -81,71 +83,98 @@ class CharacterItem extends AbstractItem {
 		return this.record.exchangeable
 	}
 
-  public hasSet(): boolean {
-    return this.record.itemSetid !== 0
-  }
+	public hasSet(): boolean {
+		return this.record.itemSetid !== 0
+	}
 
-  public clone(quantity?: number): CharacterItem {
-    const clone = new CharacterItem(
-      this.characterId,
-      this.gId,
-      quantity || this.quantity,
-      this.position,
-      this.look,
-      this.effects,
-      this.appearanceId
-    )
-    return clone
-  }
+	public clone(quantity?: number): CharacterItem {
+		const clone = new CharacterItem(
+			this.characterId,
+			this.gId,
+			quantity || this.quantity,
+			this.position,
+			this.look,
+			this.effects,
+			this.appearanceId
+		)
+		return clone
+	}
 
-  public async save(): Promise<void> {
-    await this.container.get(CharacterItemController).updateItem(this)
-  }
+	public async save(): Promise<void> {
+		await this.container.get(CharacterItemController).updateItem(this)
+	}
 
-  public static async createFromItem(item: Item, characterId: number): Promise<CharacterItem> {
-    const characterItem = new CharacterItem(
-      characterId,
-      item.id,
-      1,
-      CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
-      "",
-      item.effects,
-      item.appearanceId
-    )
+	public static async createFromItem(
+		item: Item,
+		characterId: number
+	): Promise<CharacterItem> {
+		const characterItem = new CharacterItem(
+			characterId,
+			item.id,
+			1,
+			CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
+			"",
+			item.effects,
+			item.appearanceId
+		)
 
-    await characterItem.save()
-    return characterItem
-  }
+		await characterItem.save()
+		return characterItem
+	}
 
-  public getEffects(itemCount: number): EffectCollection {
-    if(this.effects.effects.size >= itemCount) {
-      const effects: Effect[] = []
+	public getEffects(itemCount: number): EffectCollection {
+		if (this.effects.effects.size >= itemCount) {
+			const effects: Effect[] = []
 
-      this.effects.effects.forEach((effect, key) => {
-        if(effects.length < itemCount) {
-          effects.push(effect)
-        }
-      })
+			this.effects.effects.forEach((effect, key) => {
+				if (effects.length < itemCount) {
+					effects.push(effect)
+				}
+			})
 
-      return new EffectCollection(effects)
-    } else {
-      return new EffectCollection()
-    }
-  }
+			return new EffectCollection(effects)
+		} else {
+			return new EffectCollection()
+		}
+	}
 
-  public toBankItem(accountId: number): BankItem {
-    return new BankItem(
-      this.id,
-      this.gId,
-      this.position,
-      this.quantity,
-      this.effects,
-      this.appearanceId,
-      this.look,
-      accountId,
-      this.characterId
-    )
-  }
+	public toBankItem(accountId: number): BankItem {
+		return new BankItem(
+			this.id,
+			this.gId,
+			this.position,
+			this.quantity,
+			this.effects,
+			this.appearanceId,
+			this.look,
+			accountId,
+			this.characterId
+		)
+	}
+
+	public async toAuctionHouseItem(
+		price: number,
+		accountId: number,
+    auctionHouseId: number
+	): Promise<AuctionHouseItem | null> {
+		try {
+      const item = await this.container.get(AuctionHouseItemController).addNewItem(
+        accountId,
+        auctionHouseId,
+        price,
+        this
+      )
+
+      if(item) {
+        return item
+      }
+
+      return null
+		} catch (error) {
+      return null
+			throw new Error("Error while converting item to auction house item")
+		}
+	}
 }
 
 export default CharacterItem

@@ -42,7 +42,7 @@ class MessageCriteriaManager {
 						)
 						break
 					default:
-						console.log("Unknown criterion identifier: " + id)
+						console.error("Unknown criterion identifier: " + id)
 				}
 			}
 

@@ -6,6 +6,7 @@ import TransitionServer from "@breakEmu_Server/TransitionServer"
 import WorldServerManager from "@breakEmu_World/WorldServerManager"
 import AuthServer from "./AuthServer"
 import Container from "@breakEmu_Core/container/Container"
+import AuthClient from "./AuthClient"
 
 class AuthTransition extends TransitionServer {
 	logger: Logger = new Logger("AuthTransition")
@@ -27,7 +28,7 @@ class AuthTransition extends TransitionServer {
 		for (const client of this.container.get(AuthServer).GetClients()) {
 			const gameServerMessage = await this.container
 				.get(WorldServerManager)
-				.gameServerInformation(server, client, message.status)
+				.gameServerInformation(server, client.account, message.status)
 			const serverStatusUpdateMessage = new ServerStatusUpdateMessage(
 				gameServerMessage
 			)
@@ -36,11 +37,18 @@ class AuthTransition extends TransitionServer {
 		}
 	}
 
-	public async sendAccountTransferMessage(pseudo: string, ipAddress: string): Promise<void> {
-    //TODO: ENCRYPT THE DATA BEFORE SENDING
-		this.logger.writeAsync(`accountTransfer: ${pseudo}`)
-		const key = `accountTransfer:${pseudo}`
-		await this.redisClient?.setex(key, 60, JSON.stringify({ pseudo: pseudo, ipAddress: ipAddress })) // Set key with 60 seconds expiry
+	public async sendAccountTransferMessage(client: AuthClient): Promise<void> {
+		//TODO: ENCRYPT THE DATA BEFORE SENDING
+		this.logger.writeAsync(`accountTransfer: ${client.account.pseudo}`)
+		const key = `accountTransfer:${client.account.pseudo}`
+		await this.redisClient?.setex(
+			key,
+			60,
+			JSON.stringify({
+				pseudo: client.account.pseudo,
+				ipAddress: client.ipAddress,
+			})
+		) // Set key with 60 seconds expiry
 	}
 
 	public async startListeningForServerStatusUpdates(): Promise<void> {

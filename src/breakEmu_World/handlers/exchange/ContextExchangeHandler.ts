@@ -15,6 +15,7 @@ import {
 	ExchangeReadyMessage,
 	ExchangeSetCraftRecipeMessage,
 } from "@breakEmu_Protocol/IO"
+import AuctionHouseDialog from "@breakEmu_World/manager/dialog/auctionHouse/AuctionHouseDialog"
 import CraftExchange from "@breakEmu_World/manager/dialog/job/CraftExchange"
 import BankExchange from "@breakEmu_World/manager/exchange/BankExchange"
 import Exchange from "@breakEmu_World/manager/exchange/Exchange"
@@ -57,18 +58,26 @@ class ContextExchangeHandler {
 			if (client.selectedCharacter.isCraftDialog) {
 				const craftExchange = client.selectedCharacter.dialog as CraftExchange
 
-				console.log(`SENDING MOVE ITEM: ${objectUID} quantity: ${quantity} `)
-
 				await craftExchange.moveItem(objectUID as number, quantity as number)
-			} else if (client.selectedCharacter.isBankDialog) {
-				console.log("BANK EXCHANGE")
+				return
+			}
+
+			if (client.selectedCharacter.isBankDialog) {
 				const bankExchange = client.selectedCharacter.dialog as BankExchange
 
-				console.log(
-					`SENDING MOVE ITEM: ${objectUID} quantity: ${quantity} into bank`
-				)
-
 				await bankExchange.moveItem(objectUID as number, quantity as number)
+				return
+			}
+
+			if (client.selectedCharacter.isAuctionHouseDialog) {
+				const auctionHouseExchange = client.selectedCharacter
+					.dialog as AuctionHouseDialog
+
+				await auctionHouseExchange.moveItem(
+					objectUID as number,
+					Math.abs(quantity as number)
+				)
+        return
 			}
 		} catch (error) {
 			this.logger.error("Error while moving item: ", error as any)

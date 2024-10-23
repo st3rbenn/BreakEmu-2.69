@@ -1,5 +1,6 @@
 import Logger from "../Logger"
 import Task from "./Task"
+import AveragePriceTask from "./tasks/AveragePriceTask"
 import BonusTask from "./tasks/BonusTask"
 import SaveTask from "./tasks/SaveTask"
 
@@ -8,6 +9,7 @@ class TaskManager {
 	private static logger: Logger = new Logger("TaskManager")
 
 	private saveTask: SaveTask
+  private averagePriceTask: AveragePriceTask
 
 	static getInstance(): TaskManager {
 		if (!TaskManager._instance) {
@@ -21,6 +23,11 @@ class TaskManager {
 		this.saveTask = new SaveTask()
 		return this.saveTask
 	}
+
+  averagePriceHandler(): AveragePriceTask {
+    this.averagePriceTask = new AveragePriceTask()
+    return this.averagePriceTask
+  }
 
 	elementBonusHandler(): void {
 		console.log("Initialisation de la tâche BonusTask...")

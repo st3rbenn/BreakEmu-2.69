@@ -1,17 +1,17 @@
-import Container from "./breakEmu_Core/container/Container"
+import { registerServices } from "@breakEmu_Core/container/service/ServiceRegistry"
 import Database from "./breakEmu_API/Database"
 import World from "./breakEmu_API/model/world.model"
 import ansiColorCodes from "./breakEmu_Core/Colors"
 import Logger from "./breakEmu_Core/Logger"
 import ConfigurationManager from "./breakEmu_Core/configuration/ConfigurationManager"
+import Container from "./breakEmu_Core/container/Container"
 import { ServerStatusEnum } from "./breakEmu_Protocol/IO"
 import WorldServer from "./breakEmu_World/WorldServer"
 import WorldServerManager from "./breakEmu_World/WorldServerManager"
 import WorldTransition from "./breakEmu_World/WorldTransition"
 import CommandHandler from "./breakEmu_World/handlers/chat/command/CommandHandler"
-import { registerServices } from "@breakEmu_Core/container/service/ServiceRegistry"
 
-class Main {
+class WorldMain {
 	private container: Container
 
 	constructor() {
@@ -50,7 +50,7 @@ class Main {
 	}
 }
 
-const main = new Main()
+const main = new WorldMain()
 main.Start()
 
 process.on("SIGINT", async () => {
@@ -68,3 +68,7 @@ process.on("SIGINT", async () => {
 	await worldTransition.disconnect()
 	process.exit(0)
 })
+
+
+
+export default WorldMain

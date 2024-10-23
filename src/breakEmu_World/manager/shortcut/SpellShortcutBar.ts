@@ -19,14 +19,10 @@ class SpellShortcutBar extends ShortcutBar {
 			const shortcut = this.getShortcut(slotId)
 
 			if (shortcut) {
-				// Supprimer le raccourci de la barre de raccourcis locale
 				this.shortcuts.delete(slotId)
 
-				// Supprimer le raccourci de la barre de raccourcis du personnage
-				// Assurez-vous que shortcut.slotId est bien l'identifiant correct à utiliser ici
 				this.character.shortcuts.delete(shortcut.slotId)
 
-				// Envoyer une notification de suppression au serveur
 				if (this.character.client) {
 					const message = new ShortcutBarRemovedMessage(this.barEnum, slotId)
 					await this.character.client.Send(message)

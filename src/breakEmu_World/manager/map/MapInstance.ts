@@ -25,7 +25,7 @@ import SkillManager from "../skills/SkillManager"
 import MapElement from "./element/MapElement"
 import MapInteractiveElement from "./element/MapInteractiveElement"
 import MapStatedElement from "./element/MapStatedElement"
-import HandlerRegistry from "./element/interactiveElement/HandlerRegistry"
+import HandlerRegistry from "../../handlers/interactiveElement/HandlerRegistry"
 import InteractiveSkill from "@breakEmu_API/model/InteractiveSkill.model"
 import Npc from "@breakEmu_API/model/npc.model"
 
@@ -34,10 +34,10 @@ class MapInstance {
         return this.getEntities(MonsterGroup)
     }*/
 
-	private entities: Map<any, Entity> = new Map()
+	public entities: Map<any, Entity> = new Map()
 	public elements: Map<any, MapElement> = new Map()
 
-	private handlerRegistry: HandlerRegistry = HandlerRegistry.getInstance()
+	private handlerRegistry: HandlerRegistry = new HandlerRegistry()
 
 	public mute: boolean = false
 
@@ -109,21 +109,14 @@ class MapInstance {
 		client: WorldClient
 	): Promise<void> {
 		try {
-      const entitiesInMap: GameContextActorInformations[] = []
-			this.getEntities<Entity>(Character).map(
-				(entity: Entity) => {
-					entitiesInMap.push(entity.getActorInformations())
-				}
-			)
+			const entitiesInMap: GameContextActorInformations[] = []
+			this.getEntities<Entity>(Character).map((entity: Entity) => {
+				entitiesInMap.push(entity.getActorInformations())
+			})
 
-      this.getEntities<Entity>(Npc).map(
-        (entity: Entity) => {
-          entitiesInMap.push(entity.getActorInformations())
-        }
-      )
-
-      console.log("entitiesInMap")
-      console.log(entitiesInMap)
+			this.getEntities<Entity>(Npc).map((entity: Entity) => {
+				entitiesInMap.push(entity.getActorInformations())
+			})
 
 			const interactiveElements = this.getInteractiveElements(
 				client?.selectedCharacter
@@ -193,6 +186,36 @@ class MapInstance {
 				return
 			}
 
+			if (character.godMode) {
+				if (character.infoMode) {
+					await character.reply(`
+            - element type: ${element.record.skill.type}
+            - element skillId: ${element.record.skill.skillId}
+            - element param1: ${element.record.skill.param1}
+            - element param2: ${element.record.skill.param2}
+            - element identifier: ${element.record.skill.identifier}
+            - element elementType: ${element.record.elementType}
+            `)
+					await this.sendInteractiveUseError(
+						character,
+						elementId,
+						skillInstanceUid
+					)
+					return
+				}
+
+				if (character.editMode) {
+					character.lastElementsUsed.set(element.record.id, element)
+					character.reply(`Element ${elementId} recorded`)
+					await this.sendInteractiveUseError(
+						character,
+						elementId,
+						skillInstanceUid
+					)
+					return
+				}
+			}
+
 			const skill = element.record.skill
 			if (!skill) {
 				console.error("Skill not found for element", elementId)
@@ -203,6 +226,7 @@ class MapInstance {
 				)
 				return
 			}
+			console.log("interact with skill: ", skill?.id)
 
 			const duration = this.calculateDuration(skill)
 
@@ -277,7 +301,8 @@ class MapInstance {
 			try {
 				await character.teleport(
 					parseInt(element.record.skill.param1),
-					parseInt(element.record.skill.param2)
+					parseInt(element.record.skill.param2),
+          parseInt(element.record.skill.param3 as string)
 				)
 			} catch (error) {
 				console.log(error)
@@ -362,7 +387,7 @@ class MapInstance {
 	}
 
 	public async isCharacterBlocked(character: Character): Promise<boolean> {
-		return !this.record.isCellBlocked(character.cellId)
+		return !this.record.isCellWalkable(character.cellId)
 	}
 }
 

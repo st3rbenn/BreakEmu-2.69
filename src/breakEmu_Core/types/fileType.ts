@@ -41,6 +41,7 @@ interface IDofusInfo {
   jobXpRate: number
   dropRate: number
   itemStarter: number[]
+  transferToBankWhenFull: boolean
 }
 
 interface IDatabaseCredentials {

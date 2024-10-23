@@ -58,7 +58,7 @@ class Bank extends ItemCollection<BankItem> {
 				}
 			}
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}
 
@@ -108,7 +108,7 @@ class Bank extends ItemCollection<BankItem> {
 				await this.character.inventory.updateItem(item)
 			}
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}
 
@@ -142,12 +142,11 @@ class Bank extends ItemCollection<BankItem> {
 				.get(UserController)
 				.updateBankKamas(this.character.accountId, this.kamas)
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}
 
 	public async moveKamas(quantity: number): Promise<void> {
-		console.log("Moving kamas", quantity)
 		if (quantity < 0) {
 			const absQuantity = Math.abs(quantity)
 			if (this.character.account.bankKamas >= absQuantity) {
@@ -164,7 +163,6 @@ class Bank extends ItemCollection<BankItem> {
 
 		this.character.account.bankKamas += quantity
 
-		console.log("New kamas amount", this.character.account.bankKamas)
 		await this.container
 			.get(UserController)
 			.updateBankKamas(
@@ -184,7 +182,7 @@ class Bank extends ItemCollection<BankItem> {
 				new StorageInventoryContentMessage(objectItems, this.kamas)
 			)
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}
 
@@ -194,7 +192,7 @@ class Bank extends ItemCollection<BankItem> {
 			await this.character.client.Send(new StorageObjectUpdateMessage(itemObj))
 			await this.refresh()
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}
 
@@ -206,7 +204,7 @@ class Bank extends ItemCollection<BankItem> {
 				.removeBankItem(this.character.accountId, item.id)
 			await this.refresh()
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}
 
@@ -216,7 +214,7 @@ class Bank extends ItemCollection<BankItem> {
 			await this.character.client.Send(new StorageObjectUpdateMessage(itemObj))
 			await this.refresh()
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}
 
@@ -226,7 +224,7 @@ class Bank extends ItemCollection<BankItem> {
 			await this.character.client.Send(new StorageObjectUpdateMessage(itemObj))
 			await this.refresh()
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}
 
@@ -236,7 +234,7 @@ class Bank extends ItemCollection<BankItem> {
 			await this.character.client.Send(new StorageObjectUpdateMessage(itemObj))
 			await this.refresh()
 		} catch (error) {
-			console.log(error)
+			console.error(error)
 		}
 	}
 	public onItemsAdded(items: BankItem[]): Promise<void> {

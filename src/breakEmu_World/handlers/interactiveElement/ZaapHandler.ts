@@ -1,7 +1,7 @@
 import Character from "@breakEmu_API/model/character.model"
 import Logger from "@breakEmu_Core/Logger"
 import ZaapDialog from "@breakEmu_World/manager/dialog/zaap/ZaapDialog"
-import MapElement from "../MapElement"
+import MapElement from "../../manager/map/element/MapElement"
 import IInteractiveElementHandler from "./IInteractiveElementHandler"
 
 class ZaapHandler implements IInteractiveElementHandler {

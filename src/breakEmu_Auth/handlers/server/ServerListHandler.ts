@@ -91,9 +91,7 @@ class ServerListHandler {
 
 		await client.Send(selectedServerDataMessage)
 
-		await this.container
-			.get(AuthTransition)
-			.sendAccountTransferMessage(client.account?.pseudo as string, client.ipAddress)
+		await this.container.get(AuthTransition).sendAccountTransferMessage(client)
 
 		await client.disconnect()
 	}

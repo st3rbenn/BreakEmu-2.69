@@ -31,7 +31,7 @@ class AchievementCriterionManager {
 				const id = splitted[0]
 				const params = splitted[1].split(",")
 
-				console.log(id, params)
+				// console.log(id, params)
 
 				switch (id) {
 					case LevelObjectiveCriterion.identifier:

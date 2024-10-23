@@ -95,13 +95,11 @@ class Experience {
 
 	public static getJobLevel(experience: number): number {
 		let level = 1
-
-		// Itérer directement sur les valeurs de la Map sans la convertir en Array
 		for (const value of this.experiences.values()) {
-			if (experience >= value.jobExp) {
-				level = value.level
-			} else {
-				break
+			if (experience > 0 && value.jobExp > 0) {
+				if (experience >= value.jobExp) {
+          level = value.level
+				}
 			}
 		}
 

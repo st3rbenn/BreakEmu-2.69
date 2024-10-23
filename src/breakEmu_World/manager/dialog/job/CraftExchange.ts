@@ -32,6 +32,7 @@ class CraftExchange extends JobExchange {
 			await this.character.client.Send(
 				new ExchangeStartOkCraftWithInformationMessage(this.skill.id)
 			)
+			await this.character.inventory.refresh()
 		} catch (error) {
 			this.logger.error("Error while opening craft exchange: ", error as any)
 		}
@@ -96,7 +97,6 @@ class CraftExchange extends JobExchange {
 
 		if (recipe) {
 			try {
-				console.log(`Setting recipe ${recipeId}`)
 				this.lastRecipeId = recipeId
 
 				for (const ingredient of recipe.ingredients) {
@@ -109,7 +109,7 @@ class CraftExchange extends JobExchange {
 					}
 				}
 			} catch (error) {
-				console.log(error)
+				this.logger.error("Error while setting recipe: ")
 			}
 		}
 	}
@@ -174,7 +174,7 @@ class CraftExchange extends JobExchange {
 
 			await this.jobInventory.clear(this)
 		} catch (error) {
-			console.error("Error during crafting:", error)
+			this.logger.error("Error during crafting:")
 			await this.onCraftResult(CraftResultEnum.CRAFT_FAILED)
 		}
 	}
@@ -183,8 +183,6 @@ class CraftExchange extends JobExchange {
 		recipe: Recipe,
 		resultItem: CharacterItem | undefined
 	): Promise<void> {
-		console.log("handleCraftResult")
-
 		try {
 			if (resultItem) {
 				if (resultItem.quantity > 1) {
@@ -201,7 +199,7 @@ class CraftExchange extends JobExchange {
 				}
 			}
 		} catch (error) {
-			console.error("Error handling craft result:", error)
+			this.logger.error("Error handling craft result:")
 			await this.onCraftResult(CraftResultEnum.CRAFT_FAILED)
 		}
 	}
@@ -250,6 +248,9 @@ class CraftExchange extends JobExchange {
 	public moveKamas(quantity: number): void {
 		throw new Error("Method not implemented.")
 	}
+  public onNpcAction(character: Character, actionId: number): Promise<void> {
+    throw new Error("Method not implemented.")
+  }
 }
 
 export default CraftExchange

@@ -1,6 +1,6 @@
 import EffectCollection from "@breakEmu_World/manager/entities/effect/EffectCollection"
 import Item from "./item.model"
-import { BidExchangerObjectInfo, ItemTypeEnum, ObjectItem, ObjectItemNotInContainer, ObjectItemQuantity } from "@breakEmu_Protocol/IO"
+import { BidExchangerObjectInfo, ItemTypeEnum, ObjectItem, ObjectItemNotInContainer, ObjectItemQuantity, ObjectItemToSellInBid } from "@breakEmu_Protocol/IO"
 import AbstractItem from "@breakEmu_World/manager/items/AbstractItem"
 import CharacterItem from "./characterItem.model"
 
@@ -57,8 +57,18 @@ class AuctionHouseItem extends AbstractItem {
       this.position,
       this.look,
       this.effects,
-      this.appearanceId,
-      this.id
+      this.appearanceId
+    )
+  }
+
+  toObjectItemToSellInBid() {
+    return new ObjectItemToSellInBid(
+      this.gId,
+      this.effects.getObjectEffects(),
+      this.id,
+      this.quantity,
+      this.price,
+      0
     )
   }
 

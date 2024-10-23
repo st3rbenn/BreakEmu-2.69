@@ -8,6 +8,7 @@ abstract class Dialog {
 	public character: Character
 	abstract open(): Promise<void>
 	abstract close(): Promise<void>
+  abstract onNpcAction(character: Character, actionId: number): Promise<void>
 }
 
 export default Dialog

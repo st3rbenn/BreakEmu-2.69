@@ -19,7 +19,7 @@ class NpcCommandHandler {
 			},
 			description: "Npc commands",
 			command: "npc",
-			neededRole: [AccountRoleEnum.MODERATOR],
+			neededRole: AccountRoleEnum.MODERATOR,
 			show: true,
 			nbRequiredArgs: 0,
 			asHelp: true,
@@ -31,7 +31,7 @@ class NpcCommandHandler {
 					},
 					description: "Create a new npc",
 					command: "new !npcTemplateId ?cellId",
-					neededRole: [AccountRoleEnum.MODERATOR],
+					neededRole: AccountRoleEnum.MODERATOR,
 					show: true,
 					nbRequiredArgs: 1,
 				},
@@ -41,7 +41,7 @@ class NpcCommandHandler {
 					},
 					description: "List all npcs in the map",
 					command: "list",
-					neededRole: [AccountRoleEnum.MODERATOR],
+					neededRole: AccountRoleEnum.MODERATOR,
 					show: true,
 					nbRequiredArgs: 0,
 				},
@@ -51,7 +51,7 @@ class NpcCommandHandler {
 					},
 					description: "Delete a npc",
 					command: "delete !npcId",
-					neededRole: [AccountRoleEnum.MODERATOR],
+					neededRole: AccountRoleEnum.MODERATOR,
 					show: true,
 					nbRequiredArgs: 1,
 				},
@@ -80,8 +80,8 @@ class NpcCommandHandler {
 
 		const npcTemplateId = parseInt(args[0])
 		const cellId = parseInt(args[1]) || character.cellId
-    console.log('args cellId', parseInt(args[1]))
-    console.log('character cellId', character.cellId)
+		console.log("args cellId", parseInt(args[1]))
+		console.log("character cellId", character.cellId)
 
 		this.logger.info(`npcTemplateId: ${npcTemplateId}, cellId: ${cellId}`)
 

@@ -4,10 +4,7 @@ import Character from "@breakEmu_API/model/character.model"
 import ansiColorCodes from "@breakEmu_Core/Colors"
 import Logger from "@breakEmu_Core/Logger"
 import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
-import {
-  HelloGameMessage,
-  ProtocolRequired
-} from "@breakEmu_Protocol/IO"
+import { HelloGameMessage, ProtocolRequired } from "@breakEmu_Protocol/IO"
 import ServerClient from "@breakEmu_Server/ServerClient"
 import MessageHandlers from "@breakEmu_World/MessageHandlers"
 import WorldServer from "@breakEmu_World/WorldServer"
@@ -18,6 +15,7 @@ class WorldClient extends ServerClient {
 
 	account: Account
 	pseudo = ""
+	token: number[]
 
 	selectedCharacter: Character
 
@@ -44,6 +42,7 @@ class WorldClient extends ServerClient {
 				)
 			)
 			await this.Send(new HelloGameMessage())
+      this.token = this.generateToken()
 			this.Socket.on(
 				"data",
 				async (data) =>
@@ -66,6 +65,12 @@ class WorldClient extends ServerClient {
 				ansiColorCodes.red
 			)
 		}
+	}
+
+	public generateToken(): number[] {
+		return Buffer.from(
+			[...Array(32)].map(() => Math.random().toString(36)[2]).join("")
+		).toJSON().data
 	}
 }
 

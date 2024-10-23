@@ -1,9 +1,6 @@
-import { PrismaClient } from "@prisma/client"
-import ansiColorCodes from "../breakEmu_Core/Colors"
-import Logger from "../breakEmu_Core/Logger"
 import InteractiveElementBonus from "@breakEmu_Core/bull/tasks/BonusTask"
-import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
-import { GenericActionEnum, InteractiveTypeEnum } from "@breakEmu_Protocol/IO"
+import Container from "@breakEmu_Core/container/Container"
+import { InteractiveTypeEnum } from "@breakEmu_Protocol/IO"
 import AchievementManager from "@breakEmu_World/manager/achievement/AchievementManager"
 import BreedManager from "@breakEmu_World/manager/breed/BreedManager"
 import Effect from "@breakEmu_World/manager/entities/effect/Effect"
@@ -11,11 +8,17 @@ import EffectCollection from "@breakEmu_World/manager/entities/effect/EffectColl
 import EffectDice from "@breakEmu_World/manager/entities/effect/EffectDice"
 import MapPoint from "@breakEmu_World/manager/map/MapPoint"
 import Cell from "@breakEmu_World/manager/map/cell/Cell"
+import { PrismaClient } from "@prisma/client"
+import ansiColorCodes from "../breakEmu_Core/Colors"
+import Logger from "../breakEmu_Core/Logger"
 import InteractiveElementModel from "./model/InteractiveElement.model"
 import InteractiveSkill from "./model/InteractiveSkill.model"
+import SubArea from "./model/SubArea.model"
 import Achievement from "./model/achievement.model"
 import AchievementObjective from "./model/achievementObjective.model"
 import AchievementReward from "./model/achievementReward.model"
+import AuctionHouse from "./model/auctionHouse.model"
+import AuctionHouseItem from "./model/auctionHouseItem.model"
 import Breed from "./model/breed.model"
 import Experience from "./model/experience.model"
 import Finishmoves from "./model/finishMoves.model"
@@ -24,19 +27,15 @@ import Item from "./model/item.model"
 import ItemSet from "./model/itemSet.model"
 import GameMap, { CellData } from "./model/map.model"
 import MapScrollAction from "./model/mapScrollAction.model"
+import Npc from "./model/npc.model"
+import NpcAction from "./model/npcAction.model"
+import NpcReply from "./model/npcReply.model"
+import NpcTemplate from "./model/npcTemplate.model"
+import Recipe from "./model/recipe.model"
 import Skill from "./model/skill.model"
 import Spell from "./model/spell.model"
 import SpellLevel from "./model/spellLevel.model"
 import World from "./model/world.model"
-import SubArea from "./model/SubArea.model"
-import Recipe from "./model/recipe.model"
-import Container from "@breakEmu_Core/container/Container"
-import NpcReply from "./model/npcReply.model"
-import NpcAction from "./model/npcAction.model"
-import Npc from "./model/npc.model"
-import NpcTemplate from "./model/npcTemplate.model"
-import AuctionHouse from "./model/auctionHouse.model"
-import AuctionHouseItem from "./model/auctionHouseItem.model"
 
 interface test {
 	id: number
@@ -198,6 +197,8 @@ class Database {
 			])
 
 			await this.loadMaps()
+      AuctionHouse.refreshAveragePrices()
+
 			await Promise.resolve()
 		} catch (error) {
 			await this.logger.writeAsync(
@@ -878,15 +879,16 @@ class Database {
 					// Utilise Promise.all pour ajouter tous les éléments interactifs en parallèle
 					await Promise.all(
 						foundedInteractives.map((el) => {
-							if (el.elementType === InteractiveTypeEnum.TYPE_ZAAP) {
+							if (el.elementType == InteractiveTypeEnum.TYPE_ZAAP) {
 								gameMap.hasZaap = true
 								gameMap.zaapCell = new MapPoint(el.cellId)
-							} else if (el.elementType === -1 || el.gfxId !== -1) {
-								if (el.skill) {
-									el.skill.skillId = 114
-									el.skill.actionIdentifier = GenericActionEnum.Teleport
-								}
-							}
+							} 
+              // else if (el.elementType == -1 || el.gfxId != -1) {
+							// 	if (el.skill) {
+							// 		el.skill.skillId = 114
+							// 		el.skill.actionIdentifier = GenericActionEnum.Teleport
+							// 	}
+							// }
 
 							if (el.bonesId !== -1) {
 								const bonesIds = Database.SkillsBonesIds[el.elementId]
@@ -924,6 +926,129 @@ class Database {
 
 		await this.logger.writeAsync(`Loaded ${GameMap.maps.size} maps`)
 		await this.loadNpcs()
+	}
+
+	async reloadMapWithId(mapId: number): Promise<void> {
+		this.logger.write(`Reloading map with id: ${mapId}`)
+		try {
+			const map = await this.prisma.map.findUnique({
+				where: {
+					id: mapId,
+				},
+			})
+
+			if (!map) {
+				throw new Error(`Map with id ${mapId} not found`)
+			}
+
+			const gameMap = GameMap.maps.get(mapId)
+
+			if (!gameMap) {
+				throw new Error(`Map with id ${mapId} not found in the cache`)
+			}
+			gameMap.instance().elements.clear()
+			gameMap.instance().entities.clear()
+
+			const allInteractiveElements = await this.prisma.interactiveElement.findMany(
+				{
+					where: {
+						mapId: map.id,
+					},
+				}
+			)
+			const foundAllNpcs = await this.prisma.npc.findMany({
+				where: {
+					npcspawn: {
+						every: {
+							mapId: map.id,
+						},
+					},
+				},
+				include: {
+					npcspawn: true,
+				},
+			})
+
+			// Utilise Promise.all pour ajouter tous les éléments interactifs en parallèle
+			await Promise.all(
+				allInteractiveElements.map(async (el) => {
+					if (el.elementType === InteractiveTypeEnum.TYPE_ZAAP) {
+						gameMap.hasZaap = true
+						gameMap.zaapCell = new MapPoint(el.cellId)
+					}
+
+					if (el.bonesId !== -1) {
+						const bonesIds = Database.SkillsBonesIds[el.elementId]
+						if (bonesIds) {
+							el.bonesId = bonesIds[Math.floor(Math.random() * bonesIds.length)]
+						}
+					}
+
+					const ie = new InteractiveElementModel(
+						el.id,
+						el.elementId,
+						el.cellId,
+						el.mapId,
+						el.gfxId,
+						el.bonesId,
+						el.elementType
+					)
+
+					const sk = await this.prisma.interactiveSkill.findMany({
+						where: {
+							identifier: el.elementId,
+						},
+					})
+
+					if (sk) {
+						const is = new InteractiveSkill(
+							sk[0].id,
+							sk[0].mapId,
+							sk[0].identifier,
+							sk[0].actionIdentifier as any,
+							sk[0].type,
+							sk[0].skillId as any,
+							sk[0].param1,
+							sk[0].param2,
+							sk[0].param3,
+							sk[0].criteria
+						)
+
+						const skill = Skill.getSkill(is.skillId)
+
+						if (skill) {
+							is.record = skill
+						}
+
+						ie.skill = is
+					}
+
+					if (ie.stated) {
+						ie.bonusTask = new InteractiveElementBonus(ie)
+						ie.bonusTask.setCron("*/300 * * * *").run()
+					}
+
+					gameMap.instance().addElement(ie)
+				})
+			)
+
+			for (const npc of foundAllNpcs) {
+				const npcRecord = new Npc(
+					npc.id,
+					npc.npcTemplateId,
+					npc.name,
+					npc.look,
+					npc.gender,
+					npc.npcspawn[0].mapId,
+					npc.npcspawn[0].cellId,
+					npc.npcspawn[0].direction
+				)
+
+				npcRecord.map.instance().addEntity(npcRecord)
+			}
+		} catch (error) {
+			this.logger.error(`Error loading map with id: ${mapId}`)
+		}
 	}
 
 	async loadAchievementObjectives(): Promise<void> {

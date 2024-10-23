@@ -8,6 +8,7 @@ import {
 	AchievementDetailedListRequestMessage,
 	AchievementDetailsRequestMessage,
 	AchievementRewardRequestMessage,
+	AdminCommandMessage,
 	AdminQuietCommandMessage,
 	AllianceRanksMessage,
 	AllianceRanksRequestMessage,
@@ -27,11 +28,14 @@ import {
 	ClientKeyMessage,
 	DofusMessage,
 	ExchangeBidHouseBuyMessage,
+	ExchangeBidHousePriceMessage,
 	ExchangeBidHouseSearchMessage,
 	ExchangeBidHouseTypeMessage,
 	ExchangeCraftCountRequestMessage,
+	ExchangeObjectModifyPricedMessage,
 	ExchangeObjectMoveKamaMessage,
 	ExchangeObjectMoveMessage,
+	ExchangeObjectMovePricedMessage,
 	ExchangeObjectTransfertAllFromInvMessage,
 	ExchangeObjectTransfertAllToInvMessage,
 	ExchangeObjectTransfertExistingFromInvMessage,
@@ -45,6 +49,7 @@ import {
 	FriendsGetListMessage,
 	FriendsListMessage,
 	GameContextCreateRequestMessage,
+	GameMapChangeOrientationRequestMessage,
 	GameMapMovementCancelMessage,
 	GameMapMovementConfirmMessage,
 	GameMapMovementRequestMessage,
@@ -53,6 +58,8 @@ import {
 	LeaveDialogRequestMessage,
 	MapInformationsRequestMessage,
 	NpcGenericActionRequestMessage,
+	ObjectAveragePricesGetMessage,
+	ObjectAveragePricesMessage,
 	ObjectSetPositionMessage,
 	OrnamentSelectRequestMessage,
 	PlayerStatusUpdateRequestMessage,
@@ -86,7 +93,7 @@ import InteractiveMapHandler from "./handlers/map/interactive/InteractiveMapHand
 import TeleportHandler from "./handlers/map/teleport/TeleportHandler"
 import ServerListHandler from "./handlers/server/ServerListHandler"
 import NpcHandler from "./handlers/map/npc/NpcHandler"
-import AuctionHouseHandler from "./manager/map/element/interactiveElement/AuctionHouseHandler"
+import AuctionHouseHandler from "./handlers/interactiveElement/AuctionHouseHandler"
 import ContextExchangeHandler from "./handlers/exchange/ContextExchangeHandler"
 
 class MessageHandlers {
@@ -112,8 +119,8 @@ class MessageHandlers {
 
 			[ReloginTokenRequestMessage.id]: async (
 				client: WorldClient,
-				message: DofusMessage
-			) => await client.Send(new ReloginTokenStatusMessage(false, "")),
+				message: ReloginTokenRequestMessage
+			) => {},
 			[ClientKeyMessage.id]: async () => {},
 			[BasicPingMessage.id]: async (
 				client: WorldClient,
@@ -404,7 +411,7 @@ class MessageHandlers {
 				client: WorldClient,
 				message: ExchangeObjectTransfertListFromInvMessage
 			) =>
-				ContextExchangeHandler.handleExchangeObjectTransfertListFromInvMessage(
+				await ContextExchangeHandler.handleExchangeObjectTransfertListFromInvMessage(
 					client,
 					message
 				),
@@ -412,7 +419,7 @@ class MessageHandlers {
 				client: WorldClient,
 				message: ExchangeObjectTransfertListToInvMessage
 			) =>
-				ContextExchangeHandler.handleExchangeObjectTransfertListToInvMessage(
+				await ContextExchangeHandler.handleExchangeObjectTransfertListToInvMessage(
 					client,
 					message
 				),
@@ -420,7 +427,7 @@ class MessageHandlers {
 				client: WorldClient,
 				message: ExchangeObjectTransfertAllFromInvMessage
 			) =>
-				ContextExchangeHandler.handleExchangeObjectTransfertAllFromInvMessage(
+				await ContextExchangeHandler.handleExchangeObjectTransfertAllFromInvMessage(
 					client,
 					message
 				),
@@ -428,7 +435,7 @@ class MessageHandlers {
 				client: WorldClient,
 				message: ExchangeObjectTransfertAllToInvMessage
 			) =>
-				ContextExchangeHandler.handleExchangeObjectTransfertAllToInvMessage(
+				await ContextExchangeHandler.handleExchangeObjectTransfertAllToInvMessage(
 					client,
 					message
 				),
@@ -436,7 +443,7 @@ class MessageHandlers {
 				client: WorldClient,
 				message: ExchangeObjectTransfertExistingFromInvMessage
 			) =>
-				ContextExchangeHandler.handleExchangeObjectTransfertExistingFromInvMessage(
+				await ContextExchangeHandler.handleExchangeObjectTransfertExistingFromInvMessage(
 					client,
 					message
 				),
@@ -444,7 +451,7 @@ class MessageHandlers {
 				client: WorldClient,
 				message: ExchangeObjectTransfertExistingToInvMessage
 			) =>
-				ContextExchangeHandler.handleExchangeObjectTransfertExistingToInvMessage(
+				await ContextExchangeHandler.handleExchangeObjectTransfertExistingToInvMessage(
 					client,
 					message
 				),
@@ -485,6 +492,14 @@ class MessageHandlers {
 					client.selectedCharacter,
 					message
 				),
+			[ExchangeObjectMovePricedMessage.id]: async (
+				client: WorldClient,
+				message: ExchangeObjectMovePricedMessage
+			) =>
+				await AuctionHouseHandler.handleExchangeObjectMovePricedMessage(
+					client,
+					message
+				),
 			[ExchangeBidHouseSearchMessage.id]: async (
 				client: WorldClient,
 				message: ExchangeBidHouseSearchMessage
@@ -493,12 +508,44 @@ class MessageHandlers {
 					client.selectedCharacter,
 					message
 				),
+			[ExchangeObjectModifyPricedMessage.id]: async (
+				client: WorldClient,
+				message: ExchangeObjectModifyPricedMessage
+			) =>
+				await AuctionHouseHandler.handleExchangeObjectModifyPricedMessage(
+					client,
+					message
+				),
 			[ExchangeBidHouseBuyMessage.id]: async (
 				client: WorldClient,
 				message: ExchangeBidHouseBuyMessage
 			) =>
 				await AuctionHouseHandler.exchangeBidHouseBuyMessage(
 					client.selectedCharacter,
+					message
+				),
+			[ExchangeBidHousePriceMessage.id]: async (
+				client: WorldClient,
+				message: ExchangeBidHousePriceMessage
+			) =>
+				await AuctionHouseHandler.handleExchangeBidHousePriceMessage(
+					client,
+					message
+				),
+			[ObjectAveragePricesGetMessage.id]: async (
+				client: WorldClient,
+				message: ObjectAveragePricesGetMessage
+			) => await ContextHandler.handleObjectAveragePricesGetMessage(client),
+			[AdminCommandMessage.id]: async (
+				client: WorldClient,
+				message: AdminCommandMessage
+			) => await ChatCommandHandler.handleAdminCommandMessage(client, message),
+			[GameMapChangeOrientationRequestMessage.id]: async (
+				client: WorldClient,
+				message: GameMapChangeOrientationRequestMessage
+			) =>
+				await ContextHandler.handleGameMapChangeOrientationRequestMessage(
+					client,
 					message
 				),
 		}

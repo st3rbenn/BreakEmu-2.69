@@ -1,6 +1,6 @@
 import Character from "@breakEmu_API/model/character.model"
 import Logger from "@breakEmu_Core/Logger"
-import BankExchange from "../../../exchange/BankExchange"
+import BankExchange from "../../manager/exchange/BankExchange"
 import IInteractiveElementHandler from "./IInteractiveElementHandler"
 
 class BankHandler implements IInteractiveElementHandler {

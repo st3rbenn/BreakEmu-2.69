@@ -31,7 +31,7 @@ class AuthentificationHandler {
 			new ServerSettingsMessage(false, true, "fr", 0, 0, 0, 200)
 		)
 		await client.Send(
-			new ServerOptionalFeaturesMessage([3, 5, 13, 20, 23, 124, 125, 150])
+			new ServerOptionalFeaturesMessage([3, 5, 13, 20, 23, 78, 124, 125, 150])
 		)
 		await client.Send(
 			new ServerSessionConstantsMessage([

@@ -10,6 +10,7 @@ import PlayerCommandHandler from "./handler/PlayerCommandHandler"
 import GuildCommandHandler from "./handler/GuildCommandHandler"
 import BankCommandHandler from "./handler/BankCommandHandler"
 import NpcCommandHandler from "./handler/NpcCommandHandler"
+import ServerCommandHandler from "./handler/ServerCommandHandler"
 
 interface ICommandHandler {
 	command: string
@@ -64,13 +65,14 @@ class CommandHandler {
 		this.registerCommandHandlers(BankCommandHandler.commandHandler)
 		this.registerCommandHandlers(GuildCommandHandler.commandHandler)
 		this.registerCommandHandlers(NpcCommandHandler.commandHandler)
+		this.registerCommandHandlers(ServerCommandHandler.commandHandler)
 		this.registerCommandHandlers(UtilsCommandHandler.commandHandler)
 		this.registerCommandHandlers(ModeratorCommandHandler.commandHandler)
 
 		this.logger.write("Command handlers loaded.")
 	}
 
-	async onMessageReceived(
+	async onCommandReceived(
 		command: string,
 		args: string[],
 		message: string,
@@ -156,7 +158,7 @@ class CommandHandler {
 
 		await command.execute(args, message, character)
 
-		await character.reply("Command executed.")
+		// await character.reply("Command executed.")
 	}
 
 	async helpCommand(

@@ -25,6 +25,7 @@ import ItemEffectsManager from "../effect/ItemEffectsManager"
 import ItemCollection from "./collections/ItemCollections"
 import Logger from "@breakEmu_Core/Logger"
 import Container from "@breakEmu_Core/container/Container"
+import ConfigurationManager from "@breakEmu_Core/configuration/ConfigurationManager"
 
 class Inventory extends ItemCollection<CharacterItem> {
 	public maxKamas: number = 2000000000
@@ -187,15 +188,6 @@ class Inventory extends ItemCollection<CharacterItem> {
 			let template = Item.getItem(gid)
 
 			if (template !== null) {
-				if (
-					this.currentWeight + template.realWeight * quantity >
-					(this.character.stats?.currentMaxWeight as number)
-				) {
-					this.character.inventory.full = true
-					await this.onError(ObjectErrorEnum.INVENTORY_FULL)
-					return
-				}
-
 				const obj = new CharacterItem(
 					this.character.id,
 					gid,
@@ -205,6 +197,23 @@ class Inventory extends ItemCollection<CharacterItem> {
 					template.effects.generate(perfect),
 					template.appearanceId
 				)
+				if (
+					this.currentWeight + template.realWeight * quantity >
+					(this.character.stats?.currentMaxWeight as number)
+				) {
+					this.character.inventory.full = true
+					await this.onError(ObjectErrorEnum.INVENTORY_FULL)
+
+					if (this.container.get(ConfigurationManager).transferToBankWhenFull) {
+						await this.character.bank.addNewItem(obj, quantity)
+
+						this.character.reply(
+							"Votre inventaire est plein, les objets ont été transférés dans votre banque."
+						)
+					}
+
+					return
+				}
 
 				await this.addItem(obj, quantity, this.character.id)
 				return obj
@@ -329,7 +338,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 	public async cutItem(
 		item: CharacterItem,
 		newQuantity: number,
-		newPos: CharacterInventoryPositionEnum,
+		newPos: CharacterInventoryPositionEnum = 63,
 		addItem: boolean = true
 	): Promise<CharacterItem> {
 		const newItem = item.clone()
@@ -403,7 +412,7 @@ class Inventory extends ItemCollection<CharacterItem> {
 				await this.onItemMoved(item, lastPosition)
 			}
 		} catch (error) {
-			console.log(error as any)
+			console.error(error as any)
 		}
 	}
 

@@ -1,5 +1,8 @@
 import Logger from "@breakEmu_Core/Logger"
-import { ChatClientMultiMessage } from "@breakEmu_Protocol/IO"
+import {
+	AdminCommandMessage,
+	ChatClientMultiMessage,
+} from "@breakEmu_Protocol/IO"
 import WorldClient from "../../WorldClient"
 import CommandHandler from "./command/CommandHandler"
 import Container from "@breakEmu_Core/container/Container"
@@ -15,19 +18,44 @@ class ChatHandler {
 		const { content } = message
 		const { command, args } = this.parseMessage(content as string)
 
-		if (command) {
+		try {
+			if (command) {
+				await this.container
+					.get(CommandHandler)
+					.onCommandReceived(command, args, content!, client.selectedCharacter)
+			} else {
+				this.logger.write(
+					`New message: ${content}, send by ${client.selectedCharacter.name}`
+				)
+			}
+		} catch (e) {
+			this.logger.error(`Error while executing command`)
+		}
+	}
+
+	public static async handleAdminCommandMessage(
+		client: WorldClient,
+		message: AdminCommandMessage
+	) {
+		const { messageUuid, content } = message
+
+		const { command, args } = this.parseMessage(content as string)
+
+		this.logger.write(
+			`New admin command: ${content}, send by ${client.selectedCharacter.name}`
+		)
+
+		try {
 			await this.container
 				.get(CommandHandler)
-				.onMessageReceived(
-					command,
+				.onCommandReceived(
+					command!,
 					args,
 					content as string,
 					client.selectedCharacter
 				)
-		} else {
-			this.logger.write(
-				`New message: ${content}, send by ${client.selectedCharacter.name}`
-			)
+		} catch (e) {
+			this.logger.error(`Error while executing admin command`)
 		}
 	}
 

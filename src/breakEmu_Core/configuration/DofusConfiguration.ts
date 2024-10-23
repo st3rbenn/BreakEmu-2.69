@@ -17,6 +17,7 @@ class DofusConfiguration extends ServerConfiguration {
   public jobXpRate: number = 0
   public dropRate: number = 0
   public itemStarter: number[] = []
+  public transferToBankWhenFull: boolean = false
 }
 
 export default DofusConfiguration

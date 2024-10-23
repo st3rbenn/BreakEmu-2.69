@@ -2,14 +2,14 @@ import Character from "@breakEmu_API/model/character.model"
 import CharacterItem from "@breakEmu_API/model/characterItem.model"
 import Recipe from "@breakEmu_API/model/recipe.model"
 import {
-  CharacterInventoryPositionEnum,
-  ExchangeObjectAddedMessage,
-  ExchangeObjectModifiedMessage,
-  ExchangeObjectRemovedMessage,
-  ExchangeObjectsAddedMessage,
-  ExchangeObjectsModifiedMessage,
-  ExchangeObjectsRemovedMessage,
-  ObjectItem
+	CharacterInventoryPositionEnum,
+	ExchangeObjectAddedMessage,
+	ExchangeObjectModifiedMessage,
+	ExchangeObjectRemovedMessage,
+	ExchangeObjectsAddedMessage,
+	ExchangeObjectsModifiedMessage,
+	ExchangeObjectsRemovedMessage,
+	ObjectItem,
 } from "@breakEmu_Protocol/IO"
 import CraftExchange from "@breakEmu_World/manager/dialog/job/CraftExchange"
 import ItemCollection from "./ItemCollections"
@@ -92,7 +92,7 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 					CharacterInventoryPositionEnum.INVENTORY_POSITION_NOT_EQUIPED,
 					false
 				)
-        itemCuted.id = item.id
+				itemCuted.id = item.id
 				this.items.set(itemCuted.id, itemCuted)
 				await this.onItemAdded(itemCuted)
 			}
@@ -131,6 +131,7 @@ class JobItemCollection extends ItemCollection<CharacterItem> {
 	public async onItemAdded(item: CharacterItem): Promise<void> {
 		try {
 			const itemObj = item.getObjectItem()
+			console.log(`ADDING ITEM TO JOB INVENTORY: ${JSON.stringify(itemObj)}`)
 			await this.character.client.Send(
 				new ExchangeObjectAddedMessage(false, itemObj)
 			)

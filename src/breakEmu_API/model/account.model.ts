@@ -18,7 +18,7 @@ class Account {
 	updated_at: Date
 	deleted_at: Date
 	IP: string
-	role: number
+	role: AccountRoleEnum
 	is_banned: boolean
   tagNumber: number
   bankKamas: number
